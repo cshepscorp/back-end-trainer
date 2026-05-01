@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Proxy Pattern</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --ink: #1a1917;
+    --muted: #6b6860;
+    --border: #e2ddd8;
+    --browser: #2563eb;
+    --server: #0e6b5e;
+    --nps: #7c3aed;
+    --warn: #b45309;
+    --sans: 'Outfit', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 48px 32px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .back-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 32px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--ink); }
+  .page-header {
+    margin-bottom: 44px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .intro {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 600px;
+  }
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 24px;
+    margin-bottom: 20px;
+  }
+  .hops {
+    display: flex;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .hop-node { flex: 1; min-width: 0; text-align: center; }
+  .hop-box {
+    border-radius: 8px;
+    padding: 14px 10px;
+    margin-bottom: 6px;
+    border: 1.5px solid;
+  }
+  .hop-box.browser { background: #eff6ff; border-color: #93c5fd; }
+  .hop-box.server  { background: #f0fdf4; border-color: #6ee7b7; }
+  .hop-box.npsapi  { background: #f5f3ff; border-color: #c4b5fd; }
+  .hop-icon { font-size: 24px; margin-bottom: 4px; }
+  .hop-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .hop-name.browser { color: var(--browser); }
+  .hop-name.server  { color: var(--server); }
+  .hop-name.npsapi  { color: var(--nps); }
+  .hop-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .arrow-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 0 6px;
+    flex-shrink: 0;
+    width: 90px;
+  }
+  .arrow-line { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .arrow-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .arrow-svg { width: 100%; }
+  .hop-details { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .hop-detail {
+    background: var(--surface2);
+    border-radius: 6px;
+    padding: 12px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .hop-detail .hd-num { font-family: var(--mono); font-size: 10px; font-weight: 500; margin-bottom: 4px; }
+  .hd-num.c1 { color: var(--browser); }
+  .hd-num.c2 { color: var(--server); }
+  .hd-num.c3 { color: var(--nps); }
+  .hd-num.c4 { color: var(--server); }
+  .hd-num.c5 { color: var(--browser); }
+  .hop-detail p { color: var(--muted); font-weight: 300; }
+  .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .why-card { border-radius: 8px; padding: 18px 20px; border: 1px solid; }
+  .why-card.good { background: #f0fdf4; border-color: #6ee7b7; }
+  .why-card.bad  { background: #fff7ed; border-color: #fcd34d; }
+  .why-card .wc-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .wc-label.good { color: var(--server); }
+  .wc-label.bad  { color: var(--warn); }
+  .why-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .why-card p { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.55; }
+  .code-block {
+    background: #1a1917;
+    color: #e6edf3;
+    border-radius: 8px;
+    padding: 20px 22px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    white-space: pre;
+    overflow-x: auto;
+    margin-bottom: 8px;
+  }
+  .code-caption {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    padding-left: 2px;
+  }
+  .cm { color: #8b949e; }
+  .ck { color: #ff7b72; }
+  .cs { color: #a5d6ff; }
+  .cv { color: #ffa657; }
+  .cf { color: #d2a8ff; }
+  .also-good-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .also-good-box h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+  .also-good-box p { font-size: 13.5px; font-weight: 300; color: var(--muted); line-height: 1.6; }
+  .also-good-box ul { margin-top: 10px; padding-left: 18px; }
+  .also-good-box li { font-size: 13.5px; font-weight: 300; color: var(--muted); margin-bottom: 5px; line-height: 1.55; }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← back to topics</a>
+
+<div class="page-header">
+  <div class="eyebrow">Backend patterns · Security</div>
+  <h1>The proxy pattern</h1>
+  <p class="intro">Why your frontend should never talk directly to a third-party API, and how a backend proxy solves the problem cleanly.</p>
+</div>
+
+<div class="section">
+  <div class="section-title">Request lifecycle — every hop</div>
+  <div class="diagram">
+    <div class="hops">
+      <div class="hop-node">
+        <div class="hop-box browser">
+          <div class="hop-icon">🌐</div>
+          <div class="hop-name browser">Browser</div>
+          <div class="hop-sub">React app</div>
+        </div>
+      </div>
+      <div class="arrow-col">
+        <div class="arrow-line">
+          <div class="arrow-label">① search request</div>
+          <svg class="arrow-svg" height="20" viewBox="0 0 90 20"><line x1="4" y1="10" x2="78" y2="10" stroke="#93c5fd" stroke-width="1.5"/><polygon points="78,6 86,10 78,14" fill="#93c5fd"/></svg>
+        </div>
+        <div class="arrow-line" style="margin-top:6px">
+          <svg class="arrow-svg" height="20" viewBox="0 0 90 20"><line x1="86" y1="10" x2="12" y2="10" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="12,6 4,10 12,14" fill="#6ee7b7"/></svg>
+          <div class="arrow-label">⑤ results back</div>
+        </div>
+      </div>
+      <div class="hop-node">
+        <div class="hop-box server">
+          <div class="hop-icon">⚙️</div>
+          <div class="hop-name server">Your server</div>
+          <div class="hop-sub">Express · key lives here</div>
+        </div>
+      </div>
+      <div class="arrow-col">
+        <div class="arrow-line">
+          <div class="arrow-label">② NPS request + key</div>
+          <svg class="arrow-svg" height="20" viewBox="0 0 90 20"><line x1="4" y1="10" x2="78" y2="10" stroke="#c4b5fd" stroke-width="1.5"/><polygon points="78,6 86,10 78,14" fill="#c4b5fd"/></svg>
+        </div>
+        <div class="arrow-line" style="margin-top:6px">
+          <svg class="arrow-svg" height="20" viewBox="0 0 90 20"><line x1="86" y1="10" x2="12" y2="10" stroke="#c4b5fd" stroke-width="1.5" stroke-dasharray="4 3"/><polygon points="12,6 4,10 12,14" fill="#c4b5fd"/></svg>
+          <div class="arrow-label">④ park data</div>
+        </div>
+      </div>
+      <div class="hop-node">
+        <div class="hop-box npsapi">
+          <div class="hop-icon">🏞️</div>
+          <div class="hop-name npsapi">NPS API</div>
+          <div class="hop-sub">api.nps.gov</div>
+        </div>
+      </div>
+    </div>
+    <div class="hop-details">
+      <div class="hop-detail">
+        <div class="hd-num c1">① Browser → Server</div>
+        <p>User types a search. React sends a fetch() to <em>your</em> server. No API key needed — the browser doesn't know the NPS API exists.</p>
+      </div>
+      <div class="hop-detail">
+        <div class="hd-num c2">② Server → NPS API</div>
+        <p>Your Express server receives the request, attaches the secret API key from an environment variable, and forwards it to api.nps.gov.</p>
+      </div>
+      <div class="hop-detail">
+        <div class="hd-num c3">③ NPS processes</div>
+        <p>NPS validates the key, queries their database, and prepares a JSON response of matching parks.</p>
+      </div>
+      <div class="hop-detail">
+        <div class="hd-num c4">④ NPS → Server</div>
+        <p>Park data returns to your server. Here you can filter, transform, or cache the response before passing it on.</p>
+      </div>
+      <div class="hop-detail">
+        <div class="hd-num c5">⑤ Server → Browser</div>
+        <p>Your server sends the clean response to the browser. React receives it and renders the park cards to the user.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Why it matters</div>
+  <div class="why-grid">
+    <div class="why-card good">
+      <div class="wc-label good">With a proxy ✓</div>
+      <h3>API key stays secret</h3>
+      <p>The key lives in an environment variable on your server. It never touches the browser. Even if someone opens dev tools and reads every network request, they cannot find it.</p>
+    </div>
+    <div class="why-card bad">
+      <div class="wc-label bad">Without a proxy ✗</div>
+      <h3>Key is fully exposed</h3>
+      <p>If the browser calls the NPS API directly, the API key must exist somewhere in your JavaScript bundle — visible to anyone who opens the Network tab or views your source.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">In code</div>
+  <div class="code-block"><span class="cm">// ✗ DON'T — key is exposed in the browser bundle</span>
+<span class="ck">const</span> res = <span class="ck">await</span> <span class="cf">fetch</span>(
+  <span class="cs">`https://api.nps.gov/api/v1/parks?q=${query}&api_key=ABC123SECRET`</span>
+);
+
+<span class="cm">// ✓ DO — browser only talks to your server</span>
+<span class="ck">const</span> res = <span class="ck">await</span> <span class="cf">fetch</span>(<span class="cs">`/api/parks?q=${query}`</span>);
+
+<span class="cm">// On your Express server — key is safe here</span>
+app.<span class="cf">get</span>(<span class="cs">'/api/parks'</span>, <span class="ck">async</span> (req, res) => {
+  <span class="ck">const</span> npsRes = <span class="ck">await</span> <span class="cf">fetch</span>(
+    <span class="cs">`https://api.nps.gov/api/v1/parks?q=${req.query.q}&api_key=${process.env.NPS_API_KEY}`</span>
+  );
+  <span class="ck">const</span> data = <span class="ck">await</span> npsRes.<span class="cf">json</span>();
+  res.<span class="cf">json</span>(data);
+});</div>
+  <div class="code-caption">The proxy in Express — key never leaves the server</div>
+</div>
+
+<div class="section">
+  <div class="section-title">Bonus benefits of the proxy</div>
+  <div class="also-good-box">
+    <h3>Security isn't the only reason to use this pattern</h3>
+    <p>Once your server sits in the middle, you get several things for free:</p>
+    <ul>
+      <li><strong>Caching</strong> — your server can cache NPS responses so you're not hitting their API on every keystroke. Saves on rate limits and speeds up the app.</li>
+      <li><strong>Transformation</strong> — you can reshape the NPS response before sending it to the client. Strip fields you don't need, rename keys, merge data from multiple sources.</li>
+      <li><strong>Rate limiting</strong> — you control how often clients can hit your endpoints, protecting both your server and the upstream API.</li>
+      <li><strong>Error handling</strong> — if the NPS API is down, your server can return a graceful fallback instead of letting a raw error hit the browser.</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  <span>The proxy pattern · Backend fundamentals</span>
+  <span>Reference — not exhaustive</span>
+</footer>
+
+</body>
+</html>

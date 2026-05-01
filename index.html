@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backend Fundamentals — Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0d12;
+    --surface: #13161e;
+    --surface2: #1a1e2a;
+    --border: #242836;
+    --ink: #eef0f8;
+    --muted: #6b7290;
+    --sans: 'Outfit', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    min-height: 100vh;
+    padding: 0 0 64px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 64px 40px 48px;
+    max-width: 960px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 1.5px;
+    background: var(--muted);
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+  .hero h1 .dim { color: var(--muted); font-weight: 300; }
+  .hero-desc {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .meta-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .progress-bar {
+    flex: 1;
+    max-width: 200px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 40%;
+    background: linear-gradient(90deg, #6c8ef5, #a78bfa);
+    border-radius: 2px;
+  }
+  .progress-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    max-width: 960px;
+    margin: 0 auto 48px;
+  }
+
+  /* ── GRID ── */
+  .grid-section {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+  .grid-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .grid-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 24px 20px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: pointer;
+  }
+  .card:hover {
+    border-color: var(--card-accent, #3a4060);
+    transform: translateY(-2px);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--border));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card:hover::before { opacity: 1; }
+
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--card-accent, var(--muted));
+    margin-bottom: 10px;
+  }
+  .card-title {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 16px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+  .card-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .topic-pill {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .card-arrow {
+    font-size: 18px;
+    color: var(--muted);
+    transition: color 0.15s, transform 0.15s;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .card:hover .card-arrow {
+    color: var(--card-accent, var(--ink));
+    transform: translateX(3px);
+  }
+
+  /* card colors */
+  .card-teal   { --card-accent: #2dd4bf; }
+  .card-blue   { --card-accent: #6c8ef5; }
+  .card-purple { --card-accent: #a78bfa; }
+  .card-orange { --card-accent: #fb923c; }
+  .card-green  { --card-accent: #4ade80; }
+
+  /* ── COMING SOON ── */
+  .card-soon {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+  .soon-badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+
+  /* ── FOOTER ── */
+  .page-footer {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 24px 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .page-footer span {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #2a3044;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Backend fundamentals</div>
+  <h1>Study guide<br><span class="dim">for the parks app &amp;<br>interview prep</span></h1>
+  <p class="hero-desc">Reference docs built session by session. Each card covers a concept we've discussed — open it when you need a refresher.</p>
+  <div class="hero-meta">
+    <div class="meta-pill">Node.js · Express · System design</div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-label">4 topics covered</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="grid-section">
+
+  <div class="grid-label">Core concepts — completed</div>
+  <div class="cards">
+
+    <a class="card card-teal" href="node-express-onepager.html">
+      <div class="card-tag">Runtime &amp; library</div>
+      <div class="card-title">Node.js &amp; Express — one pager</div>
+      <div class="card-desc">What Node.js actually is, what Express adds on top of it, and how a request flows through both. Includes a side-by-side code comparison with and without Express.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">runtime</span>
+          <span class="topic-pill">http module</span>
+          <span class="topic-pill">middleware</span>
+          <span class="topic-pill">routing</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card card-blue" href="node-internals-deepdive.html">
+      <div class="card-tag">Node.js internals</div>
+      <div class="card-title">Under the hood: V8, event loop &amp; built-ins</div>
+      <div class="card-desc">The three things Node.js actually does: V8 compiles your JavaScript, libuv and the event loop handle async I/O without blocking, and built-in modules give you OS-level access.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">V8</span>
+          <span class="topic-pill">event loop</span>
+          <span class="topic-pill">libuv</span>
+          <span class="topic-pill">built-ins</span>
+          <span class="topic-pill">non-blocking I/O</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card card-purple" href="proxy-pattern.html">
+      <div class="card-tag">Backend pattern · Security</div>
+      <div class="card-title">The proxy pattern</div>
+      <div class="card-desc">Why your frontend should never call a third-party API directly, how a backend proxy keeps API keys secret, and the bonus benefits you get once the server sits in the middle.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">API keys</span>
+          <span class="topic-pill">security</span>
+          <span class="topic-pill">request lifecycle</span>
+          <span class="topic-pill">caching</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <a class="card card-orange" href="frontend-terminology.html">
+      <div class="card-tag">Vocabulary · Frontend</div>
+      <div class="card-title">Frontend terminology, plain English</div>
+      <div class="card-desc">Libraries vs frameworks, meta-frameworks vs build tools, CSR vs SSR vs SSG — what they all mean, how they relate, and which ones matter for the parks app.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">React</span>
+          <span class="topic-pill">Next.js</span>
+          <span class="topic-pill">Vite</span>
+          <span class="topic-pill">SSR</span>
+          <span class="topic-pill">CSR</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="grid-label">Coming up — in progress</div>
+  <div class="cards">
+
+    <div class="card card-green card-soon">
+      <div class="soon-badge">coming soon</div>
+      <div class="card-tag">Data &amp; storage</div>
+      <div class="card-title">Databases: MongoDB vs SQL &amp; when to use each</div>
+      <div class="card-desc">Document vs relational models, ORMs, when schemaless hurts you, and how to think about data shape before choosing a database.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">MongoDB</span>
+          <span class="topic-pill">SQL</span>
+          <span class="topic-pill">ORM</span>
+          <span class="topic-pill">schema design</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="card card-blue card-soon">
+      <div class="soon-badge">coming soon</div>
+      <div class="card-tag">Auth</div>
+      <div class="card-title">Authentication: sessions, JWTs &amp; OAuth</div>
+      <div class="card-desc">How auth actually works under the hood, why JWTs are everywhere, what OAuth delegates to Google/GitHub, and how to implement it in Express.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">JWT</span>
+          <span class="topic-pill">OAuth</span>
+          <span class="topic-pill">sessions</span>
+          <span class="topic-pill">cookies</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="card card-teal card-soon">
+      <div class="soon-badge">coming soon</div>
+      <div class="card-tag">Offline &amp; PWA</div>
+      <div class="card-title">Offline-first: service workers, IndexedDB &amp; caching</div>
+      <div class="card-desc">How to make the parks app work without signal — service workers, the Cache API, IndexedDB via Dexie, and the difference between caching app data vs map tiles.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">PWA</span>
+          <span class="topic-pill">service workers</span>
+          <span class="topic-pill">IndexedDB</span>
+          <span class="topic-pill">Dexie</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+
+    <div class="card card-purple card-soon">
+      <div class="soon-badge">coming soon</div>
+      <div class="card-tag">System design</div>
+      <div class="card-title">System design: the full parks app architecture</div>
+      <div class="card-desc">Putting it all together — a complete diagram of every layer, every service, and every decision made during the design session. The kind of thing you'd whiteboard in an interview.</div>
+      <div class="card-footer">
+        <div class="card-topics">
+          <span class="topic-pill">architecture</span>
+          <span class="topic-pill">trade-offs</span>
+          <span class="topic-pill">diagrams</span>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>Backend fundamentals · Parks app study guide</span>
+  <span>Built session by session</span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Node.js Internals — V8, Event Loop & Built-ins</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Cabinet+Grotesk:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1f2937;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --v8: #f78166;
+    --loop: #79c0ff;
+    --mods: #56d364;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Cabinet Grotesk', system-ui, sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 48px 32px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 48px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 14px;
+  }
+
+  h1 span.v8c { color: var(--v8); }
+  h1 span.lpc { color: var(--loop); }
+  h1 span.mdc { color: var(--mods); }
+
+  .intro {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 640px;
+    line-height: 1.7;
+    border-left: 2px solid var(--border);
+    padding-left: 16px;
+  }
+
+  .section {
+    margin-bottom: 44px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .num-v8 { background: #f7816622; color: var(--v8); border: 1px solid #f7816644; }
+  .num-loop { background: #79c0ff22; color: var(--loop); border: 1px solid #79c0ff44; }
+  .num-mods { background: #56d36422; color: var(--mods); border: 1px solid #56d36444; }
+
+  .section-header h2 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .section-header .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: auto;
+  }
+
+  .tag-v8 { background: #f7816615; color: var(--v8); }
+  .tag-loop { background: #79c0ff15; color: var(--loop); }
+  .tag-mods { background: #56d36415; color: var(--mods); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+  }
+
+  .info-card .card-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .info-card p {
+    font-size: 13.5px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    white-space: pre;
+    overflow-x: auto;
+    margin-bottom: 16px;
+  }
+
+  .code-caption {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: -10px;
+    margin-bottom: 16px;
+    padding-left: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .cm { color: #8b949e; }
+  .ck { color: #ff7b72; }
+  .cs { color: #a5d6ff; }
+  .cv { color: #ffa657; }
+  .cf { color: #d2a8ff; }
+  .cn { color: #79c0ff; }
+
+  .event-loop-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .el-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+
+  .el-box {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 400;
+  }
+
+  .el-box .el-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .el-box.highlight {
+    border-color: #79c0ff44;
+    background: #79c0ff0d;
+  }
+
+  .el-arrow {
+    font-size: 18px;
+    color: var(--border);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+
+  .waiter-analogy {
+    background: var(--surface2);
+    border-left: 3px solid var(--loop);
+    border-radius: 0 6px 6px 0;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .waiter-analogy strong {
+    color: var(--loop);
+    font-style: normal;
+    font-weight: 500;
+  }
+
+  .warning-box {
+    background: #f7816608;
+    border: 1px solid #f7816633;
+    border-radius: 6px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    font-weight: 300;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .warning-box .icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .module-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+
+  .module-pill .mp-name {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--mods);
+    margin-bottom: 4px;
+  }
+
+  .module-pill .mp-desc {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+
+  .summary-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .summary-card {
+    border-radius: 6px;
+    padding: 18px;
+    border: 1px solid;
+  }
+
+  .summary-card.v8 { border-color: #f7816644; background: #f7816608; }
+  .summary-card.loop { border-color: #79c0ff44; background: #79c0ff08; }
+  .summary-card.mods { border-color: #56d36444; background: #56d36408; }
+
+  .summary-card .sc-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .sc-title.v8 { color: var(--v8); }
+  .sc-title.loop { color: var(--loop); }
+  .sc-title.mods { color: var(--mods); }
+
+  .summary-card p {
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Node.js internals · Deep dive</div>
+  <h1>Under the hood:<br><span class="v8c">V8</span>, the <span class="lpc">event loop</span>,<br>and <span class="mdc">built-in modules</span></h1>
+  <p class="intro">Node.js isn't just "JavaScript outside the browser." It's a runtime built from three distinct layers — each doing a very different job. Here's what each one actually does.</p>
+</header>
+
+
+<!-- V8 -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num num-v8">1</div>
+    <h2>V8 — the JavaScript engine</h2>
+    <div class="tag tag-v8">from Google / Chrome</div>
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <div class="card-label">What it is</div>
+      <p>V8 is Google's open-source JavaScript engine, written in C++. It was built for Chrome and is also used in Node.js. V8 is the thing that actually <em>runs</em> your code.</p>
+    </div>
+    <div class="info-card">
+      <div class="card-label">What it does</div>
+      <p>Parses your JavaScript, compiles it to machine code your CPU can execute, manages memory allocation, and runs the garbage collector to clean up unused objects.</p>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="cm">// You write this JavaScript</span>
+<span class="ck">const</span> <span class="cv">add</span> = (<span class="cv">a</span>, <span class="cv">b</span>) => a + b;
+<span class="cf">console</span>.<span class="cf">log</span>(<span class="cf">add</span>(<span class="cn">2</span>, <span class="cn">3</span>)); <span class="cm">// → 5</span>
+
+<span class="cm">// V8 does this (simplified):
+// 1. Parses the source → Abstract Syntax Tree (AST)
+// 2. Ignition (interpreter) converts AST → bytecode, runs it immediately
+// 3. TurboFan (JIT compiler) watches for "hot" code (run many times)
+// 4. Hot functions get compiled to optimized machine code
+// 5. Future calls hit the machine code directly — much faster</span></div>
+  <div class="code-caption">V8's pipeline: parse → interpret → JIT compile hot paths</div>
+
+  <div class="info-card" style="margin-bottom:0">
+    <div class="card-label">The key insight</div>
+    <p>JavaScript is not interpreted line-by-line like old scripting languages. V8 uses <strong>JIT (Just-In-Time) compilation</strong> — it compiles frequently-run code to native machine instructions on the fly. This is why modern JavaScript can be fast enough to run servers handling thousands of requests per second.</p>
+  </div>
+</div>
+
+
+<!-- Event Loop -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num num-loop">2</div>
+    <h2>libuv &amp; the event loop</h2>
+    <div class="tag tag-loop">Node's superpower</div>
+  </div>
+
+  <div class="waiter-analogy">
+    <strong>The restaurant analogy:</strong> Imagine a single waiter at a busy restaurant. Instead of standing at each table waiting for the kitchen to finish cooking, the waiter takes the order, submits it, and immediately moves to the next table. When the kitchen calls "order up," the waiter delivers it. One waiter. Many tables. Nothing blocks.
+  </div>
+
+  <div class="two-col">
+    <div class="info-card">
+      <div class="card-label">libuv</div>
+      <p>A C library that handles all async I/O operations — file reads, network requests, timers, DNS lookups. It talks to the operating system's async APIs and manages a thread pool for operations that can't be done asynchronously at the OS level.</p>
+    </div>
+    <div class="info-card">
+      <div class="card-label">The event loop</div>
+      <p>A scheduler loop that coordinates between your JavaScript code and libuv. When async work finishes (e.g. a DB query returns), libuv notifies the event loop, which queues the callback and runs it when the call stack is empty.</p>
+    </div>
+  </div>
+
+  <div class="event-loop-diagram">
+    <div class="el-row">
+      <div class="el-box">
+        <div class="el-label">Your JS code</div>
+        app.get('/parks', cb)
+      </div>
+      <div class="el-arrow">→</div>
+      <div class="el-box">
+        <div class="el-label">Async call</div>
+        db.find({})
+      </div>
+      <div class="el-arrow">→</div>
+      <div class="el-box">
+        <div class="el-label">libuv</div>
+        hands off to OS / thread pool
+      </div>
+    </div>
+    <div style="text-align:center;font-size:22px;color:var(--border);margin:4px 0">⋮</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">JS call stack is free — other requests handled here</div>
+    <div style="text-align:center;font-size:22px;color:var(--border);margin:4px 0">⋮</div>
+    <div class="el-row">
+      <div class="el-box">
+        <div class="el-label">OS signals done</div>
+        data returned
+      </div>
+      <div class="el-arrow">→</div>
+      <div class="el-box highlight">
+        <div class="el-label">Event loop</div>
+        queues callback
+      </div>
+      <div class="el-arrow">→</div>
+      <div class="el-box">
+        <div class="el-label">V8 runs callback</div>
+        res.json(parks)
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="cm">// This is NON-BLOCKING — Node doesn't wait here</span>
+<span class="cv">db</span>.<span class="cf">find</span>({}).<span class="cf">then</span>(<span class="cv">parks</span> => {
+  <span class="cm">// This callback runs when the DB responds</span>
+  <span class="cv">res</span>.<span class="cf">json</span>(<span class="cv">parks</span>);
+});
+<span class="cm">// Node moves on immediately — handles other requests</span>
+
+<span class="cm">// Compare: a blocking language (PHP, Python default)</span>
+<span class="cm">// $parks = $db->find([]);  ← execution STOPS here until DB responds</span>
+<span class="cm">// echo json_encode($parks); ← nothing else can happen during that wait</span></div>
+  <div class="code-caption">Non-blocking I/O vs blocking — the core difference</div>
+
+  <div class="warning-box">
+    <div class="icon">⚠</div>
+    <div>
+      <strong style="display:block;margin-bottom:4px;color:var(--v8)">When the analogy breaks down</strong>
+      The single waiter is great for taking orders and delivering food. But if the waiter had to <em>cook</em> the meal themselves, everything stops. CPU-heavy work — image processing, encryption, heavy math loops — blocks the event loop and stalls every other request. This is why Node is excellent for I/O-heavy workloads (APIs, databases, file serving) but not the default choice for CPU-intensive computation.
+    </div>
+  </div>
+</div>
+
+
+<!-- Built-in modules -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num num-mods">3</div>
+    <h2>Built-in modules</h2>
+    <div class="tag tag-mods">batteries included</div>
+  </div>
+
+  <div class="info-card" style="margin-bottom:16px">
+    <div class="card-label">What they are</div>
+    <p>Node ships with a standard library of modules — available without installing anything. They give your JS code access to OS-level capabilities that browsers intentionally block for security reasons. You access them via <code style="font-family:var(--mono);font-size:11px;background:#0d1117;padding:1px 5px;border-radius:3px">require('module-name')</code> or <code style="font-family:var(--mono);font-size:11px;background:#0d1117;padding:1px 5px;border-radius:3px">import ... from 'node:module-name'</code>.</p>
+  </div>
+
+  <div class="modules-grid">
+    <div class="module-pill">
+      <div class="mp-name">http / https</div>
+      <div class="mp-desc">Create servers, make requests. The foundation Express is built on.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">fs</div>
+      <div class="mp-desc">Read, write, delete, and watch files and directories on disk.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">path</div>
+      <div class="mp-desc">Join, resolve, and normalize file paths safely across OS types.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">crypto</div>
+      <div class="mp-desc">Hashing, encryption, secure random numbers, HMAC signatures.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">stream</div>
+      <div class="mp-desc">Process data in chunks — files, HTTP bodies — without loading everything into memory.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">events</div>
+      <div class="mp-desc">The EventEmitter pattern. The backbone of Node's async model.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">os</div>
+      <div class="mp-desc">CPU count, memory info, hostname, platform — useful for scaling decisions.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">child_process</div>
+      <div class="mp-desc">Spawn system commands or other processes. Used for running ffmpeg, git, etc.</div>
+    </div>
+    <div class="module-pill">
+      <div class="mp-name">url / querystring</div>
+      <div class="mp-desc">Parse and construct URLs and query parameters reliably.</div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="cm">// Example: reading a file with the fs module</span>
+<span class="ck">import</span> { <span class="cv">readFile</span> } <span class="ck">from</span> <span class="cs">'node:fs/promises'</span>;
+
+<span class="ck">const</span> <span class="cv">data</span> = <span class="ck">await</span> <span class="cf">readFile</span>(<span class="cs">'./parks.json'</span>, <span class="cs">'utf-8'</span>);
+<span class="ck">const</span> <span class="cv">parks</span> = <span class="cn">JSON</span>.<span class="cf">parse</span>(<span class="cv">data</span>);
+<span class="cm">// Your JS just read from the filesystem — impossible in a browser</span>
+
+<span class="cm">// Example: hashing a password with crypto</span>
+<span class="ck">import</span> { <span class="cv">createHash</span> } <span class="ck">from</span> <span class="cs">'node:crypto'</span>;
+<span class="ck">const</span> <span class="cv">hash</span> = <span class="cf">createHash</span>(<span class="cs">'sha256'</span>).<span class="cf">update</span>(<span class="cv">password</span>).<span class="cf">digest</span>(<span class="cs">'hex'</span>);</div>
+  <div class="code-caption">Built-in modules give you OS access the browser never could</div>
+</div>
+
+
+<!-- Summary -->
+<div class="summary-row">
+  <div class="summary-card v8">
+    <div class="sc-title v8">V8</div>
+    <p>Compiles and runs your JavaScript. JIT compilation makes it fast. Also manages memory and garbage collection.</p>
+  </div>
+  <div class="summary-card loop">
+    <div class="sc-title loop">Event loop + libuv</div>
+    <p>Handles async I/O without blocking. One thread, non-blocking. Great for APIs and databases. Not for heavy computation.</p>
+  </div>
+  <div class="summary-card mods">
+    <div class="sc-title mods">Built-in modules</div>
+    <p>Standard library giving JS access to files, networking, crypto, and OS capabilities — no npm install required.</p>
+  </div>
+</div>
+
+<footer>
+  <span>Node.js internals · Deep dive</span>
+  <span>Reference — not exhaustive</span>
+</footer>
+
+</body>
+</html>

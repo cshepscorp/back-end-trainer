@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontend Terminology — Plain English</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --surface: #181c26;
+    --surface2: #1e2433;
+    --border: #2a3044;
+    --ink: #eef0f6;
+    --muted: #7c849c;
+    --accent: #6c8ef5;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --coral: #f87171;
+    --sans: 'Outfit', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    padding: 48px 32px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .back-link {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 32px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--ink); }
+  .page-header {
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .intro {
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 300;
+    max-width: 580px;
+    line-height: 1.7;
+  }
+
+  /* ── GROUP ── */
+  .term-group { margin-bottom: 44px; }
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .group-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .group-line { flex: 1; height: 1px; background: var(--border); }
+  .group-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .tag-blue   { color: var(--accent); border-color: #6c8ef540; background: #6c8ef510; }
+  .tag-green  { color: var(--green);  border-color: #4ade8040; background: #4ade8010; }
+  .tag-amber  { color: var(--amber);  border-color: #fbbf2440; background: #fbbf2410; }
+
+  /* ── TERM CARDS ── */
+  .term-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .term-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 18px 16px;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .term-card:hover { border-color: #3a4060; }
+  .term-card.featured { border-color: #6c8ef555; }
+  .featured-badge {
+    position: absolute;
+    top: -1px; right: 14px;
+    font-family: var(--mono);
+    font-size: 9px;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 0 0 6px 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .term-name {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 3px;
+    letter-spacing: -0.3px;
+  }
+  .term-aka {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .term-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: #9aa0b8;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .term-desc em { color: var(--amber); font-style: normal; font-weight: 400; }
+  .term-examples { display: flex; flex-wrap: wrap; gap: 5px; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 9px;
+    color: var(--muted);
+  }
+  .pill.blue   { background: #6c8ef515; border-color: #6c8ef540; color: var(--accent); }
+  .pill.green  { background: #4ade8015; border-color: #4ade8040; color: var(--green); }
+  .pill.amber  { background: #fbbf2415; border-color: #fbbf2440; color: var(--amber); }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section { margin-bottom: 44px; }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .compare-table th {
+    background: var(--surface2);
+    padding: 12px 16px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: #9aa0b8;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .compare-table td.rec {
+    color: var(--green);
+    font-weight: 400;
+  }
+
+  /* ── DECISION BOX ── */
+  .decision-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 14px;
+  }
+  .decision-box .db-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .decision-box h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+  .decision-box p {
+    font-size: 13.5px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 620px;
+  }
+  .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+  .option-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .option-card.rec { border-color: #4ade8044; background: #4ade8008; }
+  .option-name { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+  .option-name.rec { color: var(--green); }
+  .option-desc { font-size: 12px; font-weight: 300; color: var(--muted); line-height: 1.5; }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #3a4060;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← back to topics</a>
+
+<div class="page-header">
+  <div class="eyebrow">Frontend vocabulary · Reference</div>
+  <h1>Frontend terminology,<br>plain English</h1>
+  <p class="intro">Libraries, frameworks, meta-frameworks, build tools, rendering strategies — here's what they actually mean and how they relate to each other.</p>
+</div>
+
+
+<!-- GROUP 1: Libraries vs Frameworks -->
+<div class="term-group">
+  <div class="group-header">
+    <div class="group-label">UI libraries &amp; frameworks</div>
+    <div class="group-line"></div>
+    <div class="group-tag tag-blue">what you build components with</div>
+  </div>
+  <div class="term-cards">
+    <div class="term-card">
+      <div class="term-name">UI library</div>
+      <div class="term-aka">aka "frontend library"</div>
+      <div class="term-desc">A collection of tools for building user interfaces. Handles how components render, update, and react to data changes. Does <em>not</em> decide routing, data fetching, or project structure — you wire those up yourself.</div>
+      <div class="term-examples">
+        <span class="pill blue">React</span>
+        <span class="pill">Solid</span>
+        <span class="pill">Preact</span>
+      </div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">UI framework</div>
+      <div class="term-aka">aka "frontend framework"</div>
+      <div class="term-desc">Like a library but more opinionated. Comes with built-in conventions for routing, state management, and project structure. <em>More decisions made for you</em> — less flexibility, faster initial setup.</div>
+      <div class="term-examples">
+        <span class="pill">Vue</span>
+        <span class="pill">Angular</span>
+        <span class="pill">Svelte</span>
+      </div>
+    </div>
+    <div class="term-card featured">
+      <div class="featured-badge">you use this</div>
+      <div class="term-name">React</div>
+      <div class="term-aka">library, not a framework — despite the name</div>
+      <div class="term-desc">React only handles the UI layer. You choose your own router, data fetching strategy, state management, etc. This is why meta-frameworks exist <em>on top of it</em>. Most widely used — ~40% of developers.</div>
+      <div class="term-examples">
+        <span class="pill blue">most widely used</span>
+        <span class="pill blue">library only</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- GROUP 2: Meta-frameworks & Build Tools -->
+<div class="term-group">
+  <div class="group-header">
+    <div class="group-label">Meta-frameworks &amp; build tools</div>
+    <div class="group-line"></div>
+    <div class="group-tag tag-green">what you use to structure a full app</div>
+  </div>
+  <div class="term-cards">
+    <div class="term-card">
+      <div class="term-name">Meta-framework</div>
+      <div class="term-aka">aka "app framework" or "full-stack framework"</div>
+      <div class="term-desc">Sits on top of a UI library and adds everything it's missing: file-based routing, server-side rendering, API routes, build optimization, and deployment config. Turns a library into a <em>complete application structure</em>.</div>
+      <div class="term-examples">
+        <span class="pill">Next.js</span>
+        <span class="pill">Remix</span>
+        <span class="pill">Nuxt</span>
+        <span class="pill">SvelteKit</span>
+      </div>
+    </div>
+    <div class="term-card featured">
+      <div class="featured-badge">you've used this</div>
+      <div class="term-name">Next.js</div>
+      <div class="term-aka">React meta-framework — built by Vercel</div>
+      <div class="term-desc">The most popular meta-framework for React. Adds file-based routing, server-side rendering, image optimization, and API routes. With Next.js you can write both your frontend and a lightweight backend <em>in one project</em>.</div>
+      <div class="term-examples">
+        <span class="pill green">React + routing + SSR</span>
+        <span class="pill green">API routes built in</span>
+      </div>
+    </div>
+    <div class="term-card featured">
+      <div class="featured-badge">you've used this</div>
+      <div class="term-name">Vite</div>
+      <div class="term-aka">build tool — not a framework</div>
+      <div class="term-desc">A fast build tool and local dev server. It compiles, bundles, and hot-reloads your code. It is <em>not</em> a meta-framework — no opinions about routing or rendering. Think of it as the engine room powering the project, not the project itself.</div>
+      <div class="term-examples">
+        <span class="pill amber">build tool only</span>
+        <span class="pill">replaces webpack</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- GROUP 3: Rendering Strategies -->
+<div class="term-group">
+  <div class="group-header">
+    <div class="group-label">Rendering strategies</div>
+    <div class="group-line"></div>
+    <div class="group-tag tag-amber">how &amp; where your HTML gets generated</div>
+  </div>
+  <div class="term-cards">
+    <div class="term-card">
+      <div class="term-name">CSR</div>
+      <div class="term-aka">Client-side rendering</div>
+      <div class="term-desc">The server sends a nearly empty HTML shell. The browser downloads your JS bundle, runs it, and builds the entire UI in the browser. <em>Fast after initial load, slower first paint.</em> What plain React + Vite does by default.</div>
+      <div class="term-examples">
+        <span class="pill">Vite + React</span>
+        <span class="pill">Create React App</span>
+      </div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">SSR</div>
+      <div class="term-aka">Server-side rendering</div>
+      <div class="term-desc">The server generates full HTML on each request and sends it to the browser. <em>Faster first paint, better SEO.</em> The browser then "hydrates" the static HTML with React so it becomes interactive. Good for dynamic, user-specific pages.</div>
+      <div class="term-examples">
+        <span class="pill">Next.js</span>
+        <span class="pill">Remix</span>
+      </div>
+    </div>
+    <div class="term-card">
+      <div class="term-name">SSG</div>
+      <div class="term-aka">Static site generation</div>
+      <div class="term-desc">HTML is generated <em>once at build time</em>, not per request. Blazing fast, great for content that doesn't change often like blog posts or docs. <em>Not</em> suitable for dynamic, user-specific data like saved trips or auth.</div>
+      <div class="term-examples">
+        <span class="pill">Astro</span>
+        <span class="pill">Gatsby</span>
+        <span class="pill">Next.js (static mode)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- COMPARISON TABLE -->
+<div class="compare-section">
+  <div class="section-title">How they compare — at a glance</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Tool / concept</th>
+        <th>Category</th>
+        <th>Handles routing?</th>
+        <th>Handles rendering?</th>
+        <th>Needs a runtime?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>React</td>
+        <td>UI library</td>
+        <td>No — you add React Router</td>
+        <td>CSR only by default</td>
+        <td>Node.js (for build)</td>
+      </tr>
+      <tr>
+        <td>Vue / Angular</td>
+        <td>UI framework</td>
+        <td>Yes — built in</td>
+        <td>CSR by default</td>
+        <td>Node.js (for build)</td>
+      </tr>
+      <tr>
+        <td>Vite</td>
+        <td>Build tool</td>
+        <td>No</td>
+        <td>No</td>
+        <td>Node.js</td>
+      </tr>
+      <tr>
+        <td>Next.js</td>
+        <td>Meta-framework</td>
+        <td class="rec">Yes — file-based</td>
+        <td class="rec">CSR, SSR, SSG — your choice</td>
+        <td>Node.js server</td>
+      </tr>
+      <tr>
+        <td>Remix</td>
+        <td>Meta-framework</td>
+        <td class="rec">Yes — nested routes</td>
+        <td class="rec">SSR focused</td>
+        <td>Node.js server</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- DECISION FOR PARKS APP -->
+<div class="section-title">What this means for the parks app</div>
+<div class="decision-box">
+  <div class="db-label">The decision</div>
+  <h3>Which setup makes sense here?</h3>
+  <p>The parks app is dynamic and user-specific — saved trips, auth, real-time search. SSG is out. The real choice is how much structure you want up front and how much you want to learn by wiring things yourself.</p>
+  <div class="option-grid">
+    <div class="option-card">
+      <div class="option-name">React + Vite + Express</div>
+      <div class="option-desc">Two separate projects. You wire up every layer yourself — routing, API calls, proxy. More to configure, but you understand every seam. Best for interview prep.</div>
+    </div>
+    <div class="option-card rec">
+      <div class="option-name rec">Next.js ★</div>
+      <div class="option-desc">One project. File-based routing, API routes built in, SSR out of the box. Faster to ship, closer to real-world usage. The proxy can live as a Next.js API route.</div>
+    </div>
+    <div class="option-card">
+      <div class="option-name">React + separate Express</div>
+      <div class="option-desc">React frontend, Express backend, clearly separated. Good middle ground — you learn the layers but don't have to set up a full build pipeline yourself.</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Frontend terminology · Reference</span>
+  <span>Not exhaustive — focused on parks app context</span>
+</footer>
+
+</body>
+</html>
