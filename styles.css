@@ -1,0 +1,241 @@
+/* ============================================================
+   STUDY GUIDE — SHARED STYLES
+   All pages link to this file. Page-specific styles stay
+   in each file's own <style> tag.
+   ============================================================ */
+
+/* ── GOOGLE FONTS ── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── DESIGN TOKENS ── */
+:root {
+  /* backgrounds */
+  --bg:       #0b0d12;
+  --surface:  #13161e;
+  --surface2: #1a1e2a;
+
+  /* borders & dividers */
+  --border:   #242836;
+  --border2:  #2e3448;
+
+  /* text */
+  --ink:      #eef0f8;
+  --muted:    #6b7290;
+  --subtle:   #9aa0b8;
+
+  /* accent palette — used by individual pages */
+  --teal:     #2dd4bf;
+  --blue:     #6c8ef5;
+  --purple:   #a78bfa;
+  --orange:   #fb923c;
+  --green:    #4ade80;
+  --amber:    #fbbf24;
+  --coral:    #f87171;
+
+  /* typography */
+  --sans: 'Outfit', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  /* spacing */
+  --page-max:  960px;
+  --page-pad:  40px;
+}
+
+/* ── RESET ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── BASE ── */
+html { -webkit-font-smoothing: antialiased; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+  padding: 0 0 64px;
+}
+
+/* content pages get some top breathing room */
+body.content-page {
+  padding-top: 48px;
+}
+
+/* ── PAGE WRAPPER ── */
+.page-wrap {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--page-pad);
+}
+
+/* ── BACK LINK ── */
+.back-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 32px;
+  transition: color 0.15s;
+}
+.back-link:hover { color: var(--ink); }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  margin-bottom: 44px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.page-header h1 {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.page-header .intro {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 580px;
+  line-height: 1.7;
+}
+
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto 48px;
+}
+
+/* ── CARDS — generic surface card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 18px 16px;
+}
+
+/* ── CODE BLOCKS ── */
+.code-block {
+  background: #0d1017;
+  border: 1px solid var(--border);
+  color: #e6edf3;
+  border-radius: 8px;
+  padding: 20px 22px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.75;
+  white-space: pre;
+  overflow-x: auto;
+  margin-bottom: 8px;
+}
+
+.code-caption {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 20px;
+  padding-left: 2px;
+}
+
+/* syntax highlight helpers */
+.cm { color: #8b949e; } /* comment */
+.ck { color: #ff7b72; } /* keyword */
+.cs { color: #a5d6ff; } /* string */
+.cv { color: #ffa657; } /* variable */
+.cf { color: #d2a8ff; } /* function */
+.cn { color: #79c0ff; } /* number / name */
+
+/* ── PILLS ── */
+.pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 9px;
+  color: var(--muted);
+  display: inline-block;
+}
+.pill.blue   { background: #6c8ef515; border-color: #6c8ef540; color: var(--blue); }
+.pill.green  { background: #4ade8015; border-color: #4ade8040; color: var(--green); }
+.pill.amber  { background: #fbbf2415; border-color: #fbbf2440; color: var(--amber); }
+.pill.teal   { background: #2dd4bf15; border-color: #2dd4bf40; color: var(--teal); }
+.pill.purple { background: #a78bfa15; border-color: #a78bfa40; color: var(--purple); }
+.pill.orange { background: #fb923c15; border-color: #fb923c40; color: var(--orange); }
+
+/* ── TWO-COL GRID ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+/* ── PAGE FOOTER ── */
+.page-footer {
+  max-width: var(--page-max);
+  margin: 40px auto 0;
+  padding: 20px var(--page-pad) 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.page-footer span {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #2a3044;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── UTILITY ── */
+.text-muted  { color: var(--muted); }
+.text-subtle { color: var(--subtle); }
+.font-mono   { font-family: var(--mono); }
+.weight-300  { font-weight: 300; }

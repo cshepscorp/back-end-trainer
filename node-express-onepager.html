@@ -4,374 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Node.js & Express — One Pager</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { padding-top: 48px; }
 
-  :root {
-    --ink: #0f0e0c;
-    --paper: #f5f2eb;
-    --accent: #c8440f;
-    --teal: #0e6b5e;
-    --purple: #4a3080;
-    --rule: #d4cfc4;
-    --code-bg: #eae6dc;
-    --mono: 'DM Mono', monospace;
-    --serif: 'Fraunces', Georgia, serif;
-  }
-
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--serif);
-    font-size: 15px;
-    line-height: 1.65;
-    padding: 48px 32px;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-
-  header {
-    border-top: 3px solid var(--ink);
-    border-bottom: 1px solid var(--rule);
-    padding: 20px 0 16px;
-    margin-bottom: 36px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  h1 {
-    font-family: var(--serif);
-    font-size: 32px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.1;
-  }
-
-  .subtitle {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    white-space: nowrap;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    margin-bottom: 28px;
-  }
-
-  .card {
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    padding: 22px 20px 20px;
-    position: relative;
-  }
-
-  .card-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    color: #888;
-    margin-bottom: 8px;
-  }
-
-  .card h2 {
-    font-family: var(--serif);
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-
-  .card p {
-    font-size: 14px;
-    line-height: 1.6;
-    font-weight: 300;
-  }
-
-  .accent-bar {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 3px;
-    border-radius: 4px 4px 0 0;
-  }
-
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+  .info-card p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.6; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
   .node .accent-bar { background: var(--teal); }
   .express .accent-bar { background: var(--purple); }
 
   .analogy-box {
-    background: var(--ink);
-    color: var(--paper);
-    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
     padding: 20px 24px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
     gap: 24px;
   }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .analogy-box .text { font-size: 15px; font-weight: 300; color: var(--subtle); }
+  .analogy-box .text strong { font-weight: 700; color: var(--amber); font-style: normal; }
+  .divider-char { font-family: var(--mono); font-size: 22px; color: var(--border); flex-shrink: 0; }
 
-  .analogy-box .label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: #aaa;
-    margin-bottom: 6px;
-  }
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
 
-  .analogy-box .text {
-    font-size: 16px;
-    font-weight: 300;
-    font-style: italic;
-  }
-
-  .analogy-box .text strong {
-    font-weight: 700;
-    font-style: normal;
-    color: #f5c07a;
-  }
-
-  .divider {
-    font-family: var(--mono);
-    font-size: 22px;
-    color: #555;
-    flex-shrink: 0;
-  }
-
-  .code-section {
-    margin-bottom: 28px;
-  }
-
-  .code-section h3 {
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #888;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .code-section h3::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--rule);
-  }
-
-  .code-cols {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-
-  .code-block {
-    background: var(--code-bg);
-    border-radius: 4px;
-    padding: 16px 18px;
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.7;
-    white-space: pre;
-    overflow-x: auto;
-    border-left: 3px solid var(--rule);
-  }
-
-  .code-block.bad { border-left-color: #c84a0f88; }
-  .code-block.good { border-left-color: var(--teal); }
-
-  .code-caption {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: #888;
-    margin-top: 6px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .flow {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    margin-bottom: 28px;
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .flow-step {
-    flex: 1;
-    padding: 14px 16px;
-    font-size: 13px;
-    border-right: 1px solid var(--rule);
-    position: relative;
-  }
-
+  .flow { display: flex; align-items: stretch; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+  .flow-step { flex: 1; padding: 14px 14px; background: var(--surface); border-right: 1px solid var(--border); }
   .flow-step:last-child { border-right: none; }
+  .flow-step .num { font-family: var(--mono); font-size: 10px; color: var(--blue); margin-bottom: 4px; }
+  .flow-step .step-title { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .flow-step .step-desc { font-size: 12px; font-weight: 300; color: var(--muted); line-height: 1.4; }
 
-  .flow-step .num {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-
-  .flow-step .step-title {
-    font-weight: 700;
-    font-size: 13px;
-    margin-bottom: 3px;
-  }
-
-  .flow-step .step-desc {
-    font-size: 12px;
-    font-weight: 300;
-    color: #555;
-    line-height: 1.4;
-  }
-
-  .arrow-between {
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-    color: var(--rule);
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  .key-points {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 28px;
-  }
-
-  .kp {
-    border-top: 2px solid var(--ink);
-    padding-top: 10px;
-  }
-
-  .kp .kp-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #888;
-    margin-bottom: 5px;
-  }
-
-  .kp p {
-    font-size: 13px;
-    font-weight: 300;
-    line-height: 1.5;
-  }
-
-  footer {
-    border-top: 1px solid var(--rule);
-    padding-top: 12px;
-    font-family: var(--mono);
-    font-size: 10px;
-    color: #aaa;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-  }
+  .key-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+  .kp { border-top: 2px solid var(--border2); padding-top: 12px; }
+  .kp .kp-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
+  .kp p { font-size: 13px; font-weight: 300; color: var(--subtle); line-height: 1.5; }
+  code { font-family: var(--mono); font-size: 11px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Node.js &amp; Express</h1>
-  <div class="subtitle">Backend fundamentals · Reference sheet</div>
-</header>
+<div class="page-wrap">
+  <a class="back-link" href="index.html">← back to topics</a>
 
-<div class="grid">
-  <div class="card node">
-    <div class="accent-bar"></div>
-    <div class="card-label">The runtime</div>
-    <h2>Node.js</h2>
-    <p>A JavaScript runtime built on Chrome's V8 engine. It lets you run JavaScript <em>outside</em> the browser — on a server, your local machine, or anywhere with an OS. It bundles V8, an event loop, and system-level modules (file system, networking, crypto) into one package.</p>
+  <div class="page-header">
+    <div class="eyebrow">Runtime &amp; library · Reference</div>
+    <h1>Node.js &amp; Express</h1>
+    <p class="intro">What Node.js actually is, what Express adds on top of it, and how a request moves through both — with code.</p>
   </div>
-  <div class="card express">
-    <div class="accent-bar"></div>
-    <div class="card-label">The library</div>
-    <h2>Express</h2>
-    <p>A lightweight npm library that runs <em>inside</em> Node.js. It wraps Node's raw <code style="font-family:var(--mono);font-size:12px;background:var(--code-bg);padding:1px 4px;border-radius:2px">http</code> module with a friendlier API: clean routing, middleware chaining, and response helpers. Express cannot run without Node.js — it is not a runtime.</p>
-  </div>
-</div>
 
-<div class="analogy-box">
-  <div>
-    <div class="label">The analogy</div>
-    <div class="text"><strong>Node.js is the engine.</strong> Express is the frame, steering wheel, and dashboard.</div>
+  <div class="section-title">What each one is</div>
+  <div class="info-grid">
+    <div class="info-card node">
+      <div class="accent-bar"></div>
+      <div class="card-label">The runtime</div>
+      <h2>Node.js</h2>
+      <p>A JavaScript runtime built on Chrome's V8 engine. Lets you run JavaScript outside the browser — on a server or local machine. Bundles V8, an event loop, and system-level modules (file system, networking, crypto).</p>
+    </div>
+    <div class="info-card express">
+      <div class="accent-bar"></div>
+      <div class="card-label">The library</div>
+      <h2>Express</h2>
+      <p>A lightweight npm library that runs inside Node.js. Wraps Node's raw <code>http</code> module with a friendlier API: routing, middleware chaining, and response helpers. Cannot run without Node.js — it is not a runtime.</p>
+    </div>
   </div>
-  <div class="divider">→</div>
-  <div>
-    <div class="label">What that means</div>
-    <div class="text" style="font-style:normal;font-size:14px">You <em>could</em> drive the engine directly. But you'd be building the car as you go. Express gives you the scaffolding so you can focus on where you're driving.</div>
-  </div>
-</div>
 
-<div class="code-section">
-  <h3>The same server — with and without Express</h3>
+  <div class="analogy-box">
+    <div>
+      <div class="label">The analogy</div>
+      <div class="text"><strong>Node.js is the engine.</strong> Express is the frame, steering wheel, and dashboard.</div>
+    </div>
+    <div class="divider-char">→</div>
+    <div>
+      <div class="label">What that means</div>
+      <div class="text">You could drive the engine directly — but you'd be building the car as you go. Express gives you the scaffolding so you focus on where you're going.</div>
+    </div>
+  </div>
+
+  <div class="section-title">The same server — with and without Express</div>
   <div class="code-cols">
     <div>
-      <div class="code-block bad">// Raw Node.js http module
-const http = require('http');
+      <div class="code-block dim-left"><span class="cm">// Raw Node.js — verbose, manual</span>
+<span class="ck">const</span> http = <span class="cf">require</span>(<span class="cs">'http'</span>);
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/parks'
-      && req.method === 'GET') {
-    res.writeHead(200, {
-      'Content-Type': 'application/json'
+<span class="ck">const</span> server = http.<span class="cf">createServer</span>((req, res) => {
+  <span class="ck">if</span> (req.url === <span class="cs">'/parks'</span>
+      && req.method === <span class="cs">'GET'</span>) {
+    res.<span class="cf">writeHead</span>(<span class="cn">200</span>, {
+      <span class="cs">'Content-Type'</span>: <span class="cs">'application/json'</span>
     });
-    res.end(JSON.stringify({ parks: [] }));
+    res.<span class="cf">end</span>(<span class="cn">JSON</span>.<span class="cf">stringify</span>({ parks: [] }));
   }
-  // manual routing, body parsing,
-  // error handling... all yours to write
+  <span class="cm">// manual routing, body parsing,</span>
+  <span class="cm">// error handling... all yours</span>
 });
 
-server.listen(3000);</div>
-      <div class="code-caption">Without Express — verbose, manual</div>
+server.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
+      <div class="code-caption">Without Express — everything is manual</div>
     </div>
     <div>
-      <div class="code-block good">// With Express
-const express = require('express');
-const app = express();
+      <div class="code-block dim-right"><span class="cm">// With Express — clean and concise</span>
+<span class="ck">const</span> express = <span class="cf">require</span>(<span class="cs">'express'</span>);
+<span class="ck">const</span> app = <span class="cf">express</span>();
 
-app.use(express.json()); // body parsing
+app.<span class="cf">use</span>(express.<span class="cf">json</span>()); <span class="cm">// body parsing</span>
 
-app.get('/parks', (req, res) => {
-  res.json({ parks: [] });
+app.<span class="cf">get</span>(<span class="cs">'/parks'</span>, (req, res) => {
+  res.<span class="cf">json</span>({ parks: [] });
 });
 
-app.post('/parks', (req, res) => {
-  // req.body already parsed
-  const park = req.body;
-  res.status(201).json(park);
+app.<span class="cf">post</span>(<span class="cs">'/parks'</span>, (req, res) => {
+  <span class="cm">// req.body already parsed</span>
+  <span class="ck">const</span> park = req.body;
+  res.<span class="cf">status</span>(<span class="cn">201</span>).<span class="cf">json</span>(park);
 });
 
-app.listen(3000);</div>
-      <div class="code-caption">With Express — routing, parsing handled</div>
+app.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
+      <div class="code-caption">With Express — routing and parsing handled</div>
     </div>
   </div>
-</div>
 
-<div class="code-section">
-  <h3>A request's journey through Express</h3>
+  <div class="section-title">A request's journey through Express</div>
   <div class="flow">
     <div class="flow-step">
       <div class="num">01</div>
       <div class="step-title">HTTP request arrives</div>
-      <div class="step-desc">A client sends GET /parks to your server on port 3000</div>
+      <div class="step-desc">Client sends GET /parks to your server on port 3000</div>
     </div>
     <div class="flow-step">
       <div class="num">02</div>
@@ -386,35 +153,36 @@ app.listen(3000);</div>
     <div class="flow-step">
       <div class="num">04</div>
       <div class="step-title">Route handler</div>
-      <div class="step-desc">Express matches the path + method and runs your handler function</div>
+      <div class="step-desc">Express matches path + method and calls your handler function</div>
     </div>
     <div class="flow-step">
       <div class="num">05</div>
       <div class="step-title">Response sent</div>
-      <div class="step-desc">res.json() serializes data and Node writes bytes back to the client</div>
+      <div class="step-desc">res.json() serializes data, Node writes bytes back to the client</div>
+    </div>
+  </div>
+
+  <div class="section-title">Key questions answered</div>
+  <div class="key-points">
+    <div class="kp">
+      <div class="kp-label">Does Express work without Node?</div>
+      <p>No. Express is a Node.js library — it uses Node's <code>http</code> module internally and has no runtime of its own.</p>
+    </div>
+    <div class="kp">
+      <div class="kp-label">Could you use something other than Express?</div>
+      <p>Yes. Fastify, Koa, and Hono are popular alternatives — all Node.js libraries with different trade-offs in speed and API style.</p>
+    </div>
+    <div class="kp">
+      <div class="kp-label">What does middleware actually do?</div>
+      <p>Functions that run between the request arriving and your handler executing. Each can read, modify, or short-circuit the request. They chain in order of <code>app.use()</code> calls.</p>
     </div>
   </div>
 </div>
 
-<div class="key-points">
-  <div class="kp">
-    <div class="kp-label">Does Express work without Node?</div>
-    <p>No. Express is a Node.js library. It uses Node's <code style="font-family:var(--mono);font-size:11px">http</code> module internally and has no runtime of its own.</p>
-  </div>
-  <div class="kp">
-    <div class="kp-label">Could you use something other than Express?</div>
-    <p>Yes. Fastify, Koa, and Hono are popular alternatives — all Node.js libraries with different trade-offs in speed, API style, and TypeScript support.</p>
-  </div>
-  <div class="kp">
-    <div class="kp-label">What does middleware actually do?</div>
-    <p>Functions that run between the request arriving and your handler executing. Each one can read, modify, or short-circuit the request. They chain in order of <code style="font-family:var(--mono);font-size:11px">app.use()</code> calls.</p>
-  </div>
-</div>
-
-<footer>
+<div class="page-footer">
   <span>Node.js &amp; Express · Backend fundamentals</span>
   <span>Reference — not exhaustive</span>
-</footer>
+</div>
 
 </body>
 </html>
