@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Apply saved theme before paint to avoid flash -->
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Node.js Internals — V8, Event Loop & Built-ins</title>
 <link rel="stylesheet" href="styles.css">
@@ -112,7 +116,13 @@
 <body>
 
 <div class="page-wrap">
+  <nav class="page-nav">
   <a class="back-link" href="index.html">← back to topics</a>
+  <button class="theme-toggle" aria-label="Switch to light mode">
+    <span class="toggle-icon">☀︎</span>
+    <span class="toggle-label">Light</span>
+  </button>
+</nav>
 
   <div class="page-header">
     <div class="eyebrow">Node.js internals · Deep dive</div>
@@ -267,5 +277,6 @@ db.<span class="cf">find</span>({}).<span class="cf">then</span>(parks => {
   <span>Reference — not exhaustive</span>
 </div>
 
+<script src="theme.js"></script>
 </body>
 </html>

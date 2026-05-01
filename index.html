@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Apply saved theme before paint to avoid flash -->
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
 <title>Backend Fundamentals — Study Guide</title>
 <link rel="stylesheet" href="styles.css">
 <style>
@@ -120,7 +124,13 @@
 <body>
 
 <div class="hero">
-  <div class="hero-eyebrow">Backend fundamentals</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+    <div class="hero-eyebrow" style="margin-bottom:0">Backend fundamentals</div>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </div>
   <h1>Study guide<br><span class="dim">for the parks app &amp;<br>interview prep</span></h1>
   <p class="hero-desc">Reference docs built session by session. Each card covers a concept we've discussed — open it when you need a refresher.</p>
   <div class="hero-meta">
@@ -223,5 +233,6 @@
   <span>Built session by session</span>
 </div>
 
+<script src="theme.js"></script>
 </body>
 </html>

@@ -7,14 +7,14 @@
 /* ── GOOGLE FONTS ── */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── DESIGN TOKENS ── */
+/* ── DESIGN TOKENS — DARK (default) ── */
 :root {
   /* backgrounds */
   --bg:       #0b0d12;
   --surface:  #13161e;
   --surface2: #1a1e2a;
 
-  /* borders & dividers */
+  /* borders */
   --border:   #242836;
   --border2:  #2e3448;
 
@@ -23,22 +23,69 @@
   --muted:    #6b7290;
   --subtle:   #9aa0b8;
 
-  /* accent palette — used by individual pages */
-  --teal:     #2dd4bf;
-  --blue:     #6c8ef5;
-  --purple:   #a78bfa;
-  --orange:   #fb923c;
-  --green:    #4ade80;
-  --amber:    #fbbf24;
-  --coral:    #f87171;
+  /* footer text */
+  --footer-text: #2a3044;
+
+  /* code block bg */
+  --code-bg: #0d1017;
+
+  /* accent palette */
+  --teal:   #2dd4bf;
+  --blue:   #6c8ef5;
+  --purple: #a78bfa;
+  --orange: #fb923c;
+  --green:  #4ade80;
+  --amber:  #fbbf24;
+  --coral:  #f87171;
+
+  /* toggle button */
+  --toggle-bg:     #1a1e2a;
+  --toggle-border: #2e3448;
+  --toggle-ink:    #6b7290;
+  --toggle-hover:  #eef0f8;
 
   /* typography */
   --sans: 'Outfit', system-ui, sans-serif;
   --mono: 'JetBrains Mono', monospace;
 
-  /* spacing */
-  --page-max:  960px;
-  --page-pad:  40px;
+  /* layout */
+  --page-max: 960px;
+  --page-pad: 40px;
+
+  /* transitions */
+  --theme-transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ── DESIGN TOKENS — LIGHT ── */
+[data-theme="light"] {
+  --bg:       #f5f4f0;
+  --surface:  #ffffff;
+  --surface2: #eceae4;
+
+  --border:   #ddd9d0;
+  --border2:  #c8c3b8;
+
+  --ink:      #1a1917;
+  --muted:    #6b6860;
+  --subtle:   #4a4845;
+
+  --footer-text: #b0aca4;
+
+  --code-bg: #1a1917;
+
+  /* accents stay the same but slightly richer for light bg */
+  --teal:   #0d9488;
+  --blue:   #4f6ef0;
+  --purple: #7c3aed;
+  --orange: #ea6c0a;
+  --green:  #16a34a;
+  --amber:  #d97706;
+  --coral:  #dc2626;
+
+  --toggle-bg:     #eceae4;
+  --toggle-border: #ddd9d0;
+  --toggle-ink:    #6b6860;
+  --toggle-hover:  #1a1917;
 }
 
 /* ── RESET ── */
@@ -49,7 +96,9 @@
 }
 
 /* ── BASE ── */
-html { -webkit-font-smoothing: antialiased; }
+html {
+  -webkit-font-smoothing: antialiased;
+}
 
 body {
   background: var(--bg);
@@ -59,9 +108,9 @@ body {
   line-height: 1.65;
   min-height: 100vh;
   padding: 0 0 64px;
+  transition: var(--theme-transition);
 }
 
-/* content pages get some top breathing room */
 body.content-page {
   padding-top: 48px;
 }
@@ -71,6 +120,33 @@ body.content-page {
   max-width: var(--page-max);
   margin: 0 auto;
   padding: 0 var(--page-pad);
+}
+
+/* ── THEME TOGGLE BUTTON ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--toggle-bg);
+  border: 1px solid var(--toggle-border);
+  border-radius: 20px;
+  padding: 5px 12px 5px 10px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--toggle-ink);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  color: var(--toggle-hover);
+  border-color: var(--border2);
+}
+.toggle-icon {
+  font-size: 13px;
+  line-height: 1;
 }
 
 /* ── BACK LINK ── */
@@ -88,6 +164,17 @@ body.content-page {
   transition: color 0.15s;
 }
 .back-link:hover { color: var(--ink); }
+
+/* top bar on content pages: back link left, toggle right */
+.page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.page-nav .back-link {
+  margin-bottom: 0;
+}
 
 /* ── PAGE HEADER ── */
 .page-header {
@@ -147,17 +234,18 @@ body.content-page {
   margin: 0 auto 48px;
 }
 
-/* ── CARDS — generic surface card ── */
+/* ── CARDS — generic surface ── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 20px 18px 16px;
+  transition: var(--theme-transition);
 }
 
 /* ── CODE BLOCKS ── */
 .code-block {
-  background: #0d1017;
+  background: var(--code-bg);
   border: 1px solid var(--border);
   color: #e6edf3;
   border-radius: 8px;
@@ -170,6 +258,11 @@ body.content-page {
   margin-bottom: 8px;
 }
 
+/* code block stays dark in both themes — light on dark is easier to read */
+[data-theme="light"] .code-block {
+  border-color: #2e3448;
+}
+
 .code-caption {
   font-family: var(--mono);
   font-size: 10px;
@@ -180,13 +273,13 @@ body.content-page {
   padding-left: 2px;
 }
 
-/* syntax highlight helpers */
-.cm { color: #8b949e; } /* comment */
-.ck { color: #ff7b72; } /* keyword */
-.cs { color: #a5d6ff; } /* string */
-.cv { color: #ffa657; } /* variable */
-.cf { color: #d2a8ff; } /* function */
-.cn { color: #79c0ff; } /* number / name */
+/* syntax highlight helpers — always on dark code bg */
+.cm { color: #8b949e; }
+.ck { color: #ff7b72; }
+.cs { color: #a5d6ff; }
+.cv { color: #ffa657; }
+.cf { color: #d2a8ff; }
+.cn { color: #79c0ff; }
 
 /* ── PILLS ── */
 .pill {
@@ -199,12 +292,12 @@ body.content-page {
   color: var(--muted);
   display: inline-block;
 }
-.pill.blue   { background: #6c8ef515; border-color: #6c8ef540; color: var(--blue); }
-.pill.green  { background: #4ade8015; border-color: #4ade8040; color: var(--green); }
-.pill.amber  { background: #fbbf2415; border-color: #fbbf2440; color: var(--amber); }
-.pill.teal   { background: #2dd4bf15; border-color: #2dd4bf40; color: var(--teal); }
-.pill.purple { background: #a78bfa15; border-color: #a78bfa40; color: var(--purple); }
-.pill.orange { background: #fb923c15; border-color: #fb923c40; color: var(--orange); }
+.pill.blue   { background: #6c8ef518; border-color: #6c8ef545; color: var(--blue); }
+.pill.green  { background: #4ade8018; border-color: #4ade8045; color: var(--green); }
+.pill.amber  { background: #fbbf2418; border-color: #fbbf2445; color: var(--amber); }
+.pill.teal   { background: #2dd4bf18; border-color: #2dd4bf45; color: var(--teal); }
+.pill.purple { background: #a78bfa18; border-color: #a78bfa45; color: var(--purple); }
+.pill.orange { background: #fb923c18; border-color: #fb923c45; color: var(--orange); }
 
 /* ── TWO-COL GRID ── */
 .two-col {
@@ -229,7 +322,7 @@ body.content-page {
 .page-footer span {
   font-family: var(--mono);
   font-size: 10px;
-  color: #2a3044;
+  color: var(--footer-text);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
