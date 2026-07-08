@@ -1,6 +1,6 @@
 # Daily Backend Quiz (Amplify)
 
-Cloud-hosted companion to `../quiz.html` — a scheduled Lambda picks a
+Cloud-hosted companion to `../docs/quiz.html` — a scheduled Lambda picks a
 not-yet-complete topic/difficulty each morning, emails you, and a small
 React app (this project) lets you take it and track progress separately
 from the self-guided quiz's localStorage.
