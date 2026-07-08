@@ -13,6 +13,14 @@ const difficulties = difficultiesData as DifficultyMeta[];
 
 const AUTO_COMPLETE_THRESHOLD = 80;
 
+// The static study guide (index.html, quiz.html, all topic pages) is hosted
+// separately via GitHub Pages, decoupled from this app's own Amplify
+// deploy — see infra-as-code.html on the guide itself for why that split
+// is deliberate. Each question's `source` is a relative path + anchor
+// (e.g. "node-express-onepager.html#info-express") that just gets appended
+// to this base to link straight to the exact spot the question came from.
+const GUIDE_BASE_URL = 'https://cshepscorp.github.io/back-end-trainer/';
+
 type DailyQuizRecord = Schema['DailyQuiz']['type'];
 type ProgressRecord = Schema['Progress']['type'];
 
@@ -278,7 +286,19 @@ export default function App() {
                       )}
                     </>
                   )}
-                  {q.source.length > 0 && <p className="source-note">Source: {q.source.join(', ')}</p>}
+                  {q.source.length > 0 && (
+                    <p className="source-note">
+                      Source:{' '}
+                      {q.source.map((src, idx) => (
+                        <span key={src}>
+                          <a href={`${GUIDE_BASE_URL}${src}`} target="_blank" rel="noopener noreferrer">
+                            {src}
+                          </a>
+                          {idx < q.source.length - 1 ? ', ' : ''}
+                        </span>
+                      ))}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

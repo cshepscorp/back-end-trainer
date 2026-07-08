@@ -33,3 +33,41 @@
     });
   });
 })();
+
+/* ============================================================
+   EMBEDDED-VIEW ADJUSTMENT
+   quiz.html can open any topic page inside a modal iframe (see the
+   "View in guide" source links) so looking something up mid-quiz doesn't
+   lose your place. But that page's own "← back to topics" link still
+   just navigates the iframe to index.html, which is a dead end inside a
+   modal — there's no path back to the quiz from there. If this page
+   detects it's embedded, repurpose that link into a close control for
+   the modal instead of a navigation link.
+   ============================================================ */
+(function () {
+  const isEmbedded = window.self !== window.top;
+  if (!isEmbedded) return;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    const backLink = document.querySelector('.back-link');
+    if (!backLink) return;
+
+    backLink.textContent = '✕ Close';
+    backLink.href = '#';
+    backLink.setAttribute('title', 'Close this preview and return to the quiz');
+    backLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      try {
+        // Same-origin (both served from the guide's own domain), so this
+        // reaches straight into quiz.html's own modal-close function.
+        // Wrapped in try/catch in case this page is ever embedded
+        // somewhere else entirely, where parent access would throw.
+        if (window.parent && typeof window.parent.closeSourceModal === 'function') {
+          window.parent.closeSourceModal();
+        }
+      } catch (err) {
+        // Cross-origin or otherwise inaccessible parent — nothing to do.
+      }
+    });
+  });
+})();

@@ -178,6 +178,14 @@
   color: #6d6d78;
   font-family: monospace;
 }
+.source-note a {
+  color: #8a8aff;
+  text-decoration: underline dashed;
+  text-underline-offset: 2px;
+}
+.source-note a:hover {
+  color: #b0b0ff;
+}
 
 .submit-btn {
   width: 100%;
