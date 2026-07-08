@@ -31,6 +31,17 @@ type Theme = 'dark' | 'light';
 type DailyQuizRecord = Schema['DailyQuiz']['type'];
 type ProgressRecord = Schema['Progress']['type'];
 
+// What actually got answered for one question in a session — enough to
+// reconstruct a full review later (question content itself is looked up by
+// questionId from the same local question bank, not duplicated here).
+type StoredAnswer = {
+  questionId: string;
+  type: 'mc' | 'flip';
+  chosenIndex?: number;
+  draftAnswer?: string;
+  selfGrade?: 'right' | 'wrong';
+};
+
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -61,6 +72,80 @@ function computeStreak(allDailyQuizzes: DailyQuizRecord[]): number {
     cursor.setUTCDate(cursor.getUTCDate() - 1);
   }
   return streakCount;
+}
+
+// One completed session, flattened out of a DailyQuiz row's am or pm side —
+// same reason SessionRecord exists below, so the history UI doesn't need to
+// know about am/pm field naming either.
+type HistoryEntry = {
+  date: string;
+  slot: 'am' | 'pm';
+  topic: string;
+  difficulty: string;
+  questionIds: (string | null)[];
+  answeredCount?: number | null;
+  correctCount?: number | null;
+  answers: StoredAnswer[];
+};
+
+// AppSync's AWSJSON scalar is a string on the wire — the Data client doesn't
+// stringify a.json() values for you on the way in (see
+// https://github.com/aws-amplify/amplify-js/issues/13298), so submitSession
+// below stores this field as a JSON string, not a raw array. Reading it back
+// means undoing that: handles a plain string (the normal case), an
+// already-parsed array (in case a future client version starts doing this
+// automatically), or anything else/malformed by just returning [].
+function parseStoredAnswers(raw: unknown): StoredAnswer[] {
+  if (Array.isArray(raw)) return raw as StoredAnswer[];
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as StoredAnswer[]) : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+// Newest-first: by date descending, and PM before AM within the same date
+// since it happened later in the day. Only includes slots that were
+// actually completed — an in-progress or never-touched slot has nothing to
+// review yet.
+function buildHistoryEntries(records: DailyQuizRecord[]): HistoryEntry[] {
+  const entries: HistoryEntry[] = [];
+  for (const r of records) {
+    if (r.completed && r.topic) {
+      entries.push({
+        date: r.date,
+        slot: 'am',
+        topic: r.topic,
+        difficulty: r.difficulty,
+        questionIds: r.questionIds,
+        answeredCount: r.answeredCount,
+        correctCount: r.correctCount,
+        answers: parseStoredAnswers(r.answers),
+      });
+    }
+    if (r.pmCompleted && r.pmTopic) {
+      entries.push({
+        date: r.date,
+        slot: 'pm',
+        topic: r.pmTopic,
+        difficulty: r.pmDifficulty ?? '',
+        questionIds: r.pmQuestionIds ?? [],
+        answeredCount: r.pmAnsweredCount,
+        correctCount: r.pmCorrectCount,
+        answers: parseStoredAnswers(r.pmAnswers),
+      });
+    }
+  }
+  entries.sort((a, b) => {
+    if (a.date !== b.date) return b.date.localeCompare(a.date);
+    if (a.slot === b.slot) return 0;
+    return a.slot === 'pm' ? -1 : 1;
+  });
+  return entries;
 }
 
 // One slot's worth of a DailyQuiz row — either the morning fields as-is, or
@@ -94,8 +179,13 @@ function QuizSession({
   // null if the save itself failed) — the card only locks when `done` is
   // true, rather than unconditionally locking on any submit regardless of
   // score, which used to leave a below-threshold attempt stuck read-only
-  // even though Progress still showed it as "in-progress."
-  onSubmit: (result: { total: number; correct: number }) => Promise<{ done: boolean } | null>;
+  // even though Progress still showed it as "in-progress." `answers` is what
+  // actually gets persisted for later review in the History section.
+  onSubmit: (result: {
+    total: number;
+    correct: number;
+    answers: StoredAnswer[];
+  }) => Promise<{ done: boolean } | null>;
   // Direct escape hatch from a locked card, independent of the Progress
   // table's Reopen/Mark complete toggle — that toggle can't help here since
   // it only flips between those two states and has nothing to offer when
@@ -150,15 +240,23 @@ function QuizSession({
 
   async function handleSubmit() {
     let correct = 0;
+    const storedAnswers: StoredAnswer[] = [];
     for (const q of sessionQuestions) {
       if (q.type === 'mc') {
         if (answers[q.questionId] === q.correctIndex) correct++;
+        storedAnswers.push({ questionId: q.questionId, type: 'mc', chosenIndex: answers[q.questionId] });
       } else {
         if (flipSelfGrade[q.questionId] === 'right') correct++;
+        storedAnswers.push({
+          questionId: q.questionId,
+          type: 'flip',
+          draftAnswer: flipDrafts[q.questionId]?.trim() || undefined,
+          selfGrade: flipSelfGrade[q.questionId],
+        });
       }
     }
     const total = sessionQuestions.length;
-    const outcome = await onSubmit({ total, correct });
+    const outcome = await onSubmit({ total, correct, answers: storedAnswers });
     if (!outcome) return; // save failed — error banner already shown up top; leave this attempt untouched so nothing typed is lost
     // Always show the graded feedback (score, correct/incorrect highlighting,
     // explanations) regardless of whether this attempt cleared the
@@ -345,6 +443,108 @@ function QuizSession({
   );
 }
 
+// One past completed session (morning or afternoon), collapsed to a summary
+// row by default — expanding it re-renders every question read-only with the
+// same visual language QuizSession uses for a just-submitted card (option-btn
+// correct/wrong highlighting, .explain, .flip-back), so a past session and a
+// freshly-graded one look and read the same way.
+function HistoryCard({ entry }: { entry: HistoryEntry }) {
+  const [expanded, setExpanded] = useState(false);
+  const total = entry.answeredCount ?? entry.answers.length;
+  const correct = entry.correctCount ?? 0;
+  const pct = total ? Math.round((100 * correct) / total) : 0;
+  const answersById = useMemo(() => new Map(entry.answers.map((a) => [a.questionId, a])), [entry.answers]);
+  const sessionQuestions = useMemo(() => {
+    const byId = new Map(questions.map((q) => [q.questionId, q]));
+    return entry.questionIds
+      .filter((id): id is string => !!id)
+      .map((id) => byId.get(id))
+      .filter((q): q is QuestionContent => !!q);
+  }, [entry.questionIds]);
+  const sessionLabel = entry.slot === 'am' ? 'Morning' : 'Afternoon';
+
+  return (
+    <div className="history-card">
+      <div className="card-header collapsible" onClick={() => setExpanded((e) => !e)}>
+        <h3>
+          {entry.date} — {sessionLabel}
+        </h3>
+        <div className="card-header-right">
+          <span className="pill">{topicLabel(entry.topic)}</span>
+          <span className="pill pill-muted">{difficultyLabel(entry.difficulty)}</span>
+          <span className={'pill' + (pct >= AUTO_COMPLETE_THRESHOLD ? '' : ' pill-muted')}>{pct}%</span>
+          <button
+            type="button"
+            className="collapse-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded((x) => !x);
+            }}
+          >
+            {expanded ? 'Hide ▴' : 'Review ▾'}
+          </button>
+        </div>
+      </div>
+      {expanded && (
+        <div className="questions">
+          {sessionQuestions.map((q, i) => {
+            const a = answersById.get(q.questionId);
+            return (
+              <div key={q.questionId} className="question-card">
+                <div className="q-index">Q{i + 1}</div>
+                {q.type === 'mc' ? (
+                  <>
+                    <p className="q-prompt">{q.prompt}</p>
+                    <div className="options">
+                      {(q.options ?? []).map((opt, idx) => {
+                        const isCorrect = idx === q.correctIndex;
+                        const isWrongSelected = a?.chosenIndex === idx && idx !== q.correctIndex;
+                        return (
+                          <button
+                            key={idx}
+                            className={
+                              'option-btn' +
+                              (a?.chosenIndex === idx ? ' selected' : '') +
+                              (isCorrect ? ' correct' : '') +
+                              (isWrongSelected ? ' wrong' : '')
+                            }
+                            disabled
+                          >
+                            {opt}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {q.explain && <p className="explain">{q.explain}</p>}
+                  </>
+                ) : (
+                  <>
+                    <p className="q-prompt">{q.front}</p>
+                    {a?.draftAnswer && (
+                      <p className="explain">
+                        <strong>Your answer:</strong> {a.draftAnswer}
+                      </p>
+                    )}
+                    <p className="flip-back">{q.back}</p>
+                    {a?.selfGrade && (
+                      <p className={'self-grade-label' + (a.selfGrade === 'wrong' ? ' wrong' : '')}>
+                        {a.selfGrade === 'right' ? 'You marked this: right' : 'You marked this: missed'}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+          {sessionQuestions.length === 0 && (
+            <p className="muted">No per-question detail was saved for this session.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -366,6 +566,13 @@ export default function App() {
   // just-answered/correct highlighting for a moment.
   const [amResetToken, setAmResetToken] = useState(0);
   const [pmResetToken, setPmResetToken] = useState(0);
+  // Every DailyQuiz row (not just today's) — kept around so History can be
+  // built without a second round-trip; loadEverything already fetches this
+  // full list for computeStreak, it just used to throw the rest away.
+  const [allDailyQuizzes, setAllDailyQuizzes] = useState<DailyQuizRecord[]>([]);
+  // How many history entries to show — "Load more" bumps this by 10 rather
+  // than paginating server-side, since the whole list is already in memory.
+  const [historyVisible, setHistoryVisible] = useState(10);
 
   useEffect(() => {
     void loadEverything();
@@ -426,6 +633,7 @@ export default function App() {
       setDailyQuiz(dq.data ?? null);
       setProgressList(progressPage.data);
       setStreak(computeStreak(allQuizzesPage.data));
+      setAllDailyQuizzes(allQuizzesPage.data);
       setPausedUntil(settings.data?.pausedUntil ?? null);
     } catch (e) {
       setError(
@@ -463,6 +671,8 @@ export default function App() {
         }
       : null;
 
+  const historyEntries = useMemo(() => buildHistoryEntries(allDailyQuizzes), [allDailyQuizzes]);
+
   // This client returns { data, errors } rather than throwing on a failed
   // mutation (confirmed by scripts/seed-questions.ts's own error-checking
   // pattern) — none of the calls below used to check that, so a failed
@@ -476,7 +686,7 @@ export default function App() {
 
   async function submitSession(
     slot: 'am' | 'pm',
-    result: { total: number; correct: number },
+    result: { total: number; correct: number; answers: StoredAnswer[] },
   ): Promise<{ done: boolean } | null> {
     if (!dailyQuiz) return null;
     const topic = slot === 'am' ? dailyQuiz.topic : dailyQuiz.pmTopic;
@@ -503,6 +713,14 @@ export default function App() {
           : 'in-progress';
     const isDone = nextStatus === 'complete';
 
+    // AppSync's AWSJSON scalar is a string on the wire — the Data client
+    // doesn't stringify a.json() values for you (confirmed against a real
+    // "Variable 'answers' has an invalid value" failure while testing this;
+    // see https://github.com/aws-amplify/amplify-js/issues/13298), so this
+    // has to be JSON.stringify'd before the mutation, and parsed back on the
+    // way out (parseStoredAnswers, used by buildHistoryEntries above).
+    const serializedAnswers = JSON.stringify(result.answers);
+
     const dqResult =
       slot === 'am'
         ? await client.models.DailyQuiz.update({
@@ -510,12 +728,14 @@ export default function App() {
             answeredCount: result.total,
             correctCount: result.correct,
             completed: isDone,
+            answers: serializedAnswers,
           })
         : await client.models.DailyQuiz.update({
             date: dailyQuiz.date,
             pmAnsweredCount: result.total,
             pmCorrectCount: result.correct,
             pmCompleted: isDone,
+            pmAnswers: serializedAnswers,
           });
     if (dqResult.errors) {
       setError(`Couldn't save your score: ${describeErrors(dqResult.errors)}`);
@@ -576,9 +796,18 @@ export default function App() {
       setError(`Couldn't reset that session: ${describeErrors(result.errors)}`);
       return;
     }
+    // Refetch BEFORE bumping the reset token — the token bump forces
+    // QuizSession to remount immediately (it's part of the `key`), and that
+    // remount reads `dailyQuiz`/amRecord|pmRecord to seed its initial
+    // submitted/collapsed state. Bumping the token first (the old order)
+    // remounted against the still-stale pre-reset `dailyQuiz` — completed
+    // was still true for a moment — so the "reset" card came back already
+    // marked submitted and collapsed, i.e. still locked. Awaiting here
+    // means `dailyQuiz` (and the derived record) reflect the reset by the
+    // time the remount actually happens.
+    await loadEverything({ silent: true });
     if (slot === 'am') setAmResetToken((n) => n + 1);
     else setPmResetToken((n) => n + 1);
-    void loadEverything({ silent: true });
   }
 
   // No separate "resume" mutation needed elsewhere — the scheduled function
@@ -615,6 +844,8 @@ export default function App() {
     // session, actually reset that slot so the card becomes retakeable, and
     // bump its reset token so QuizSession remounts fresh instead of holding
     // onto stale "already submitted" local state.
+    let amNeedsRemount = false;
+    let pmNeedsRemount = false;
     if (!goingComplete && dailyQuiz) {
       if (dailyQuiz.topic === p.topic && dailyQuiz.difficulty === p.difficulty) {
         const resetResult = await client.models.DailyQuiz.update({
@@ -626,7 +857,7 @@ export default function App() {
         if (resetResult.errors) {
           setError(`Reopened, but resetting today's card failed: ${describeErrors(resetResult.errors)}`);
         }
-        setAmResetToken((n) => n + 1);
+        amNeedsRemount = true;
       }
       if (dailyQuiz.pmTopic === p.topic && dailyQuiz.pmDifficulty === p.difficulty) {
         const resetResult = await client.models.DailyQuiz.update({
@@ -638,11 +869,17 @@ export default function App() {
         if (resetResult.errors) {
           setError(`Reopened, but resetting today's card failed: ${describeErrors(resetResult.errors)}`);
         }
-        setPmResetToken((n) => n + 1);
+        pmNeedsRemount = true;
       }
     }
 
-    void loadEverything({ silent: true });
+    // Same fix as retakeSession: refetch first so `dailyQuiz` reflects the
+    // reset writes above, THEN bump the reset token(s) — bumping first would
+    // remount QuizSession against the still-stale (pre-reset) `dailyQuiz`,
+    // leaving the "reopened" card looking submitted/collapsed anyway.
+    await loadEverything({ silent: true });
+    if (amNeedsRemount) setAmResetToken((n) => n + 1);
+    if (pmNeedsRemount) setPmResetToken((n) => n + 1);
   }
 
   if (loading) return <div className="wrap"><p>Loading...</p></div>;
@@ -753,7 +990,7 @@ export default function App() {
                   <td>{p.streak ?? 0}</td>
                   <td>
                     <button className="link-btn" onClick={() => toggleManualComplete(p)}>
-                      {p.status === 'complete' ? 'Reopen' : 'Mark complete'}
+                      {p.status === 'complete' ? 'Take again' : 'Mark complete'}
                     </button>
                   </td>
                 </tr>
@@ -767,6 +1004,19 @@ export default function App() {
             )}
           </tbody>
         </table>
+      </section>
+
+      <section className="card">
+        <h2>History</h2>
+        {historyEntries.length === 0 && <p className="muted">No completed sessions yet.</p>}
+        {historyEntries.slice(0, historyVisible).map((entry) => (
+          <HistoryCard key={`${entry.date}-${entry.slot}`} entry={entry} />
+        ))}
+        {historyVisible < historyEntries.length && (
+          <button type="button" className="link-btn" onClick={() => setHistoryVisible((v) => v + 10)}>
+            Load more
+          </button>
+        )}
       </section>
 
       {previewUrl && (

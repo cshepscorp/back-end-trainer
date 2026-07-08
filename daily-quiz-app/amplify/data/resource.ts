@@ -70,6 +70,14 @@ const schema = a.schema({
       correctCount: a.integer().default(0),
       completed: a.boolean().default(false),
       emailSent: a.boolean().default(false),
+      // Per-question responses for review later — array of
+      // { questionId, type, chosenIndex?, draftAnswer?, selfGrade? }.
+      // Previously nothing captured what you actually answered, only the
+      // aggregate answeredCount/correctCount, so there was nothing to
+      // review beyond a bare score. json() rather than a nested model
+      // since this is only ever read back as a whole for its own session,
+      // never queried into individually.
+      answers: a.json(),
       // Afternoon session — optional/nullable since past dates (and any day
       // where the PM run hasn't fired yet) simply won't have these set.
       pmTopic: a.string(),
@@ -79,6 +87,7 @@ const schema = a.schema({
       pmCorrectCount: a.integer().default(0),
       pmCompleted: a.boolean().default(false),
       pmEmailSent: a.boolean().default(false),
+      pmAnswers: a.json(),
     })
     .identifier(['date'])
     .authorization((allow) => [allow.publicApiKey()]),
