@@ -85,6 +85,10 @@ type HistoryEntry = {
   questionIds: (string | null)[];
   answeredCount?: number | null;
   correctCount?: number | null;
+  // Cleared the 80% auto-complete bar, or got marked complete manually —
+  // distinct from just "was attempted," which is what actually gets this
+  // entry included in History at all (see buildHistoryEntries below).
+  completed: boolean;
   answers: StoredAnswer[];
 };
 
@@ -109,13 +113,19 @@ function parseStoredAnswers(raw: unknown): StoredAnswer[] {
 }
 
 // Newest-first: by date descending, and PM before AM within the same date
-// since it happened later in the day. Only includes slots that were
-// actually completed — an in-progress or never-touched slot has nothing to
-// review yet.
+// since it happened later in the day. Includes any slot that was actually
+// submitted at least once (answeredCount/pmAnsweredCount > 0) — NOT just
+// ones that hit the 80% auto-complete bar or got marked complete manually.
+// Those are two different questions: "did this clear the bar" (completed)
+// vs. "is there something here worth reviewing" (was it attempted at all).
+// Gating on `completed` used to mean a below-80% attempt that never got
+// manually marked complete would just vanish once its date stopped being
+// "today" — still sitten in DynamoDB, still fully answered, but with
+// nowhere in the UI left to see it.
 function buildHistoryEntries(records: DailyQuizRecord[]): HistoryEntry[] {
   const entries: HistoryEntry[] = [];
   for (const r of records) {
-    if (r.completed && r.topic) {
+    if (r.topic && (r.answeredCount ?? 0) > 0) {
       entries.push({
         date: r.date,
         slot: 'am',
@@ -124,10 +134,11 @@ function buildHistoryEntries(records: DailyQuizRecord[]): HistoryEntry[] {
         questionIds: r.questionIds,
         answeredCount: r.answeredCount,
         correctCount: r.correctCount,
+        completed: !!r.completed,
         answers: parseStoredAnswers(r.answers),
       });
     }
-    if (r.pmCompleted && r.pmTopic) {
+    if (r.pmTopic && (r.pmAnsweredCount ?? 0) > 0) {
       entries.push({
         date: r.date,
         slot: 'pm',
@@ -136,6 +147,7 @@ function buildHistoryEntries(records: DailyQuizRecord[]): HistoryEntry[] {
         questionIds: r.pmQuestionIds ?? [],
         answeredCount: r.pmAnsweredCount,
         correctCount: r.pmCorrectCount,
+        completed: !!r.pmCompleted,
         answers: parseStoredAnswers(r.pmAnswers),
       });
     }
@@ -473,6 +485,10 @@ function HistoryCard({ entry }: { entry: HistoryEntry }) {
           <span className="pill">{topicLabel(entry.topic)}</span>
           <span className="pill pill-muted">{difficultyLabel(entry.difficulty)}</span>
           <span className={'pill' + (pct >= AUTO_COMPLETE_THRESHOLD ? '' : ' pill-muted')}>{pct}%</span>
+          {/* An attempt that's in History but didn't clear the bar and
+              wasn't manually marked complete — flagging that distinction so
+              it doesn't read identically to one that did. */}
+          {!entry.completed && <span className="pill pill-muted">not marked complete</span>}
           <button
             type="button"
             className="collapse-btn"
