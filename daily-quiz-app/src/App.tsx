@@ -98,7 +98,10 @@ export default function App() {
   const todaysQuestions = useMemo(() => {
     if (!dailyQuiz) return [];
     const byId = new Map(questions.map((q) => [q.questionId, q]));
-    return dailyQuiz.questionIds.map((id) => byId.get(id)).filter((q): q is QuestionContent => !!q);
+    return dailyQuiz.questionIds
+      .filter((id): id is string => !!id)
+      .map((id) => byId.get(id))
+      .filter((q): q is QuestionContent => !!q);
   }, [dailyQuiz]);
 
   function selectMcAnswer(questionId: string, idx: number) {

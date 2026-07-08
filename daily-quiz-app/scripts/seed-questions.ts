@@ -14,7 +14,8 @@
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
-// @ts-expect-error - generated at deploy time, won't exist until you've run `ampx sandbox` once
+// @ts-ignore - generated at deploy time; ts-ignore (not ts-expect-error) so this
+// doesn't itself become an error once the file exists
 import outputs from '../amplify_outputs.json';
 import questions from '../src/data/questions.json';
 
