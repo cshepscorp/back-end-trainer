@@ -1,29 +1,170 @@
+/* ============================================================
+   THEME TOKENS
+   Same dark/light pattern as the static guide (docs/styles.css),
+   its own palette though — this app's colors were never identical to
+   the guide's, so tokens are named for what they mean here rather than
+   copied wholesale. Applied via a data-theme attribute on <html>,
+   toggled + persisted to localStorage from App.tsx (this app doesn't
+   use theme.js — it's a single React tree, not many static pages, so
+   the toggle logic just lives directly in the component).
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  --bg: #0d0d11;
+
+  --ink:    #e8e8ec;
+  --ink2:   #d8d8e0;
+  --ink3:   #c8c8d4;
+  --subtle: #9a9aa5;
+  --muted:  #85858f;
+  --faint:  #6d6d78;
+  --sep:    #4a4a54;
+
+  --surface:  #17171c;
+  --surface2: #1d1d24;
+  --surface3: #232329;
+  --surface4: #1a1a20;
+  --surface-selected: #202037;
+  --pill-bg: #232336;
+
+  --border:  #2a2a33;
+  --border2: #33333d;
+  --border3: #4a4a5a;
+
+  --green:        #7ee2a0;
+  --green-border: #3fae6a;
+  --green-bg:     #16261c;
+  --green-border2:#2d4a37;
+  --green-bg2:    #1c2b22;
+
+  --red:         #e2a3a3;
+  --red-border:  #b0463f;
+  --red-bg:      #2a1717;
+  --red-border2: #4a2d2d;
+
+  --amber:    #e2c17e;
+  --amber-bg: #26221c;
+
+  --accent:        #4a4aff;
+  --accent-hover:  #5c5cff;
+  --accent2:       #6d6dff;
+  --accent3:       #8a8aff;
+  --accent3-hover: #b0b0ff;
+  --pill-text:     #b3b3ff;
+
+  --overlay:      rgba(0, 0, 0, 0.65);
+  --modal-shadow: rgba(0, 0, 0, 0.5);
+  --iframe-bg:    #0d0d10;
+
+  --theme-transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f5f4f0;
+
+  --ink:    #1a1917;
+  --ink2:   #2a2925;
+  --ink3:   #3a3833;
+  --subtle: #4a4845;
+  --muted:  #6b6860;
+  --faint:  #8a8780;
+  --sep:    #c8c3b8;
+
+  --surface:  #ffffff;
+  --surface2: #f7f6f2;
+  --surface3: #eceae4;
+  --surface4: #f0efe9;
+  --surface-selected: #e4e2ff;
+  --pill-bg: #e8e7ff;
+
+  --border:  #ddd9d0;
+  --border2: #c8c3b8;
+  --border3: #a8a297;
+
+  --green:        #16a34a;
+  --green-border: #4ade8090;
+  --green-bg:     #eafaf0;
+  --green-border2:#bbead0;
+  --green-bg2:    #eafaf0;
+
+  --red:         #dc2626;
+  --red-border:  #f8717190;
+  --red-bg:      #fdecec;
+  --red-border2: #f3caca;
+
+  --amber:    #b45309;
+  --amber-bg: #fdf3e0;
+
+  --accent:        #4f6ef0;
+  --accent-hover:  #3a5adf;
+  --accent2:       #4f6ef0;
+  --accent3:       #4f6ef0;
+  --accent3-hover: #2f4ecf;
+  --pill-text:     #4f6ef0;
+
+  --overlay:      rgba(0, 0, 0, 0.4);
+  --modal-shadow: rgba(0, 0, 0, 0.2);
+  --iframe-bg:    #ffffff;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 12px 5px 10px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--border3);
+}
+.toggle-icon { font-size: 13px; line-height: 1; }
+
 .wrap {
   max-width: 760px;
   margin: 0 auto;
   padding: 40px 24px 80px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #e8e8ec;
+  color: var(--ink);
+  transition: var(--theme-transition);
 }
 
 .header {
   margin-bottom: 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
+.header-text { flex: 1; min-width: 0; }
 .header h1 {
   font-size: 26px;
   font-weight: 700;
   margin: 0 0 6px;
 }
 .subtitle {
-  color: #9a9aa5;
+  color: var(--subtle);
   font-size: 13.5px;
   margin: 0 0 12px;
 }
 .streak-badge {
   display: inline-block;
-  background: #1c2b22;
-  color: #7ee2a0;
-  border: 1px solid #2d4a37;
+  background: var(--green-bg2);
+  color: var(--green);
+  border: 1px solid var(--green-border2);
   border-radius: 999px;
   padding: 4px 12px;
   font-size: 12.5px;
@@ -31,29 +172,30 @@
 }
 
 .card {
-  background: #17171c;
-  border: 1px solid #2a2a33;
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 24px;
   margin-bottom: 20px;
+  transition: var(--theme-transition);
 }
 .card h2 {
   font-size: 17px;
   margin: 0 0 14px;
 }
 .muted {
-  color: #85858f;
+  color: var(--muted);
   font-size: 13.5px;
   line-height: 1.6;
 }
 
 .error-card {
-  background: #2a1717;
-  border: 1px solid #4a2d2d;
+  background: var(--red-bg);
+  border: 1px solid var(--red-border2);
   border-radius: 10px;
   padding: 16px 20px;
   margin-bottom: 20px;
-  color: #e2a3a3;
+  color: var(--red);
   font-size: 13.5px;
 }
 
@@ -62,8 +204,8 @@
 }
 .pill {
   display: inline-block;
-  background: #232336;
-  color: #b3b3ff;
+  background: var(--pill-bg);
+  color: var(--pill-text);
   border-radius: 6px;
   padding: 3px 10px;
   font-size: 11.5px;
@@ -73,8 +215,8 @@
   margin-right: 8px;
 }
 .pill-muted {
-  background: #23232a;
-  color: #9a9aa5;
+  background: var(--surface3);
+  color: var(--subtle);
 }
 
 .questions {
@@ -84,15 +226,16 @@
   margin-bottom: 20px;
 }
 .question-card {
-  background: #1d1d24;
-  border: 1px solid #2a2a33;
+  background: var(--surface2);
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 16px 18px;
+  transition: var(--theme-transition);
 }
 .q-index {
   font-family: monospace;
   font-size: 10.5px;
-  color: #6d6d78;
+  color: var(--faint);
   text-transform: uppercase;
   letter-spacing: 1.2px;
   margin-bottom: 6px;
@@ -109,32 +252,32 @@
 }
 .option-btn {
   text-align: left;
-  background: #232329;
-  border: 1px solid #33333d;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
   border-radius: 6px;
   padding: 10px 14px;
-  color: #d8d8e0;
+  color: var(--ink2);
   font-size: 13.5px;
   cursor: pointer;
 }
 .option-btn:hover:not(:disabled) {
-  border-color: #4a4a5a;
+  border-color: var(--border3);
 }
 .option-btn.selected {
-  border-color: #6d6dff;
+  border-color: var(--accent2);
 }
 .option-btn.selected:hover:not(:disabled) {
-  border-color: #6d6dff;
+  border-color: var(--accent2);
 }
 .option-btn.correct {
-  border-color: #3fae6a;
-  background: #16261c;
-  color: #7ee2a0;
+  border-color: var(--green-border);
+  background: var(--green-bg);
+  color: var(--green);
 }
 .option-btn.wrong {
-  border-color: #b0463f;
-  background: #2a1717;
-  color: #e2a3a3;
+  border-color: var(--red-border);
+  background: var(--red-bg);
+  color: var(--red);
 }
 .option-btn:disabled {
   cursor: default;
@@ -142,14 +285,14 @@
 .explain {
   margin-top: 10px;
   font-size: 13px;
-  color: #9a9aa5;
+  color: var(--subtle);
   line-height: 1.55;
 }
 .flip-back {
   font-size: 13.5px;
-  color: #c8c8d4;
+  color: var(--ink3);
   line-height: 1.6;
-  background: #1a1a20;
+  background: var(--surface4);
   border-radius: 6px;
   padding: 12px 14px;
   margin: 8px 0;
@@ -160,36 +303,115 @@
 }
 .grade-btn {
   flex: 1;
-  background: #232329;
-  border: 1px solid #33333d;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
   border-radius: 6px;
   padding: 8px 12px;
-  color: #d8d8e0;
+  color: var(--ink2);
   font-size: 12.5px;
   cursor: pointer;
 }
 .grade-btn.selected {
-  border-color: #6d6dff;
-  background: #202037;
+  border-color: var(--accent2);
+  background: var(--surface-selected);
 }
 .source-note {
   margin: 10px 0 0;
   font-size: 11px;
-  color: #6d6d78;
+  color: var(--faint);
   font-family: monospace;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
-.source-note a {
-  color: #8a8aff;
+.source-label { color: var(--faint); }
+.source-item { display: inline-flex; align-items: center; gap: 6px; }
+.source-path { color: var(--subtle); }
+.source-sep { color: var(--sep); margin-left: 2px; }
+.source-action {
+  font-family: monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent3);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
   text-decoration: underline dashed;
   text-underline-offset: 2px;
 }
-.source-note a:hover {
-  color: #b0b0ff;
+.source-action:hover { color: var(--accent3-hover); }
+
+/* ── SOURCE PREVIEW MODAL ──
+   Same open-in-place-instead-of-losing-your-quiz pattern as quiz.html's
+   own modal, adapted to this app's theme. "Preview" opens this;
+   "New tab" (rendered right beside it) just does a plain target=_blank
+   link instead — side-by-side viewing without the modal at all. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: min(920px, 100%);
+  height: min(740px, 90vh);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px var(--modal-shadow);
+}
+.modal-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  flex-shrink: 0;
+}
+.modal-bar-label {
+  font-family: monospace;
+  font-size: 10.5px;
+  color: var(--subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.modal-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.modal-btn {
+  font-family: monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border2);
+  background: var(--surface3);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.modal-btn:hover { border-color: var(--border3); }
+.modal-iframe { flex: 1; width: 100%; border: none; background: var(--iframe-bg); }
+@media (max-width: 640px) {
+  .modal-overlay { padding: 0; }
+  .modal-box { width: 100%; height: 100%; border-radius: 0; }
 }
 
 .submit-btn {
   width: 100%;
-  background: #4a4aff;
+  background: var(--accent);
   border: none;
   border-radius: 8px;
   padding: 12px;
@@ -199,12 +421,12 @@
   cursor: pointer;
 }
 .submit-btn:hover {
-  background: #5c5cff;
+  background: var(--accent-hover);
 }
 .result-banner {
-  background: #16261c;
-  border: 1px solid #2d4a37;
-  color: #7ee2a0;
+  background: var(--green-bg2);
+  border: 1px solid var(--green-border2);
+  color: var(--green);
   border-radius: 8px;
   padding: 12px 16px;
   font-size: 13.5px;
@@ -218,16 +440,16 @@
 }
 .progress-table th {
   text-align: left;
-  color: #85858f;
+  color: var(--muted);
   font-size: 10.5px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   padding: 8px 10px;
-  border-bottom: 1px solid #2a2a33;
+  border-bottom: 1px solid var(--border);
 }
 .progress-table td {
   padding: 10px;
-  border-bottom: 1px solid #232329;
+  border-bottom: 1px solid var(--surface3);
 }
 .status-pill {
   display: inline-block;
@@ -237,21 +459,21 @@
   font-weight: 600;
 }
 .status-complete {
-  background: #16261c;
-  color: #7ee2a0;
+  background: var(--green-bg2);
+  color: var(--green);
 }
 .status-in-progress {
-  background: #26221c;
-  color: #e2c17e;
+  background: var(--amber-bg);
+  color: var(--amber);
 }
 .status-not-started {
-  background: #232329;
-  color: #85858f;
+  background: var(--surface3);
+  color: var(--muted);
 }
 .link-btn {
   background: none;
   border: none;
-  color: #8a8aff;
+  color: var(--accent3);
   font-size: 12.5px;
   cursor: pointer;
   padding: 0;

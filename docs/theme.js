@@ -36,13 +36,21 @@
 
 /* ============================================================
    EMBEDDED-VIEW ADJUSTMENT
-   quiz.html can open any topic page inside a modal iframe (see the
-   "View in guide" source links) so looking something up mid-quiz doesn't
-   lose your place. But that page's own "← back to topics" link still
-   just navigates the iframe to index.html, which is a dead end inside a
-   modal — there's no path back to the quiz from there. If this page
-   detects it's embedded, repurpose that link into a close control for
-   the modal instead of a navigation link.
+   Any page in this guide can be opened inside a modal iframe — by
+   quiz.html's own "View in guide" links (same origin, github.io), and
+   now also by the separate daily-quiz-app ("Preview" links, a different
+   origin entirely — main.<id>.amplifyapp.com). That page's own
+   "← back to topics" link still just navigates the iframe to
+   index.html, which is a dead end inside a modal. If this page detects
+   it's embedded, repurpose that link into a close control instead.
+
+   Uses postMessage rather than reaching into window.parent directly —
+   a direct call (window.parent.closeSourceModal()) only works when
+   embedder and embedded page share an origin. postMessage works
+   identically same-origin or cross-origin, so one mechanism covers
+   both quiz.html and daily-quiz-app without the embedded page needing
+   to know or care which one is hosting it. targetOrigin is '*' since
+   the message carries no sensitive data — just a "close me" signal.
    ============================================================ */
 (function () {
   const isEmbedded = window.self !== window.top;
@@ -54,19 +62,13 @@
 
     backLink.textContent = '✕ Close';
     backLink.href = '#';
-    backLink.setAttribute('title', 'Close this preview and return to the quiz');
+    backLink.setAttribute('title', 'Close this preview');
     backLink.addEventListener('click', function (e) {
       e.preventDefault();
       try {
-        // Same-origin (both served from the guide's own domain), so this
-        // reaches straight into quiz.html's own modal-close function.
-        // Wrapped in try/catch in case this page is ever embedded
-        // somewhere else entirely, where parent access would throw.
-        if (window.parent && typeof window.parent.closeSourceModal === 'function') {
-          window.parent.closeSourceModal();
-        }
+        window.parent.postMessage({ type: 'close-source-preview' }, '*');
       } catch (err) {
-        // Cross-origin or otherwise inaccessible parent — nothing to do.
+        // Nothing reasonable to do if even postMessage fails here.
       }
     });
   });

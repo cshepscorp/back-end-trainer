@@ -333,10 +333,6 @@
 <div class="page-wrap">
   <div class="page-nav">
     <a class="back-link" href="index.html">&larr; back to topics</a>
-    <button class="theme-toggle" aria-label="Switch to light mode">
-      <span class="toggle-icon">&#9728;&#xFE0E;</span>
-      <span class="toggle-label">Light</span>
-    </button>
   </div>
 
   <div class="page-header">
@@ -1284,6 +1280,14 @@ document.getElementById('sourceModalOverlay').addEventListener('click', (e) => {
 });
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeSourceModal();
+});
+// The embedded guide page's own "back to topics" link (repurposed into a
+// close control by theme.js) signals back via postMessage rather than
+// calling a function on window directly — same mechanism daily-quiz-app
+// uses for its own preview modal, since postMessage works whether or not
+// the embedder and the embedded page share an origin.
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'close-source-preview') closeSourceModal();
 });
 
 function renderQuestion() {

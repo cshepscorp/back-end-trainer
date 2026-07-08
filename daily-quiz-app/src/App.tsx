@@ -21,6 +21,13 @@ const AUTO_COMPLETE_THRESHOLD = 80;
 // to this base to link straight to the exact spot the question came from.
 const GUIDE_BASE_URL = 'https://cshepscorp.github.io/back-end-trainer/';
 
+// Separate localStorage key from the guide's own ('sg-theme') — this app
+// runs on a different origin (Amplify vs GitHub Pages), so localStorage
+// can't be shared between them anyway; each site remembers its own
+// preference independently, same pattern, no actual cross-site sync.
+const THEME_STORAGE_KEY = 'daily-quiz-theme';
+type Theme = 'dark' | 'light';
+
 type DailyQuizRecord = Schema['DailyQuiz']['type'];
 type ProgressRecord = Schema['Progress']['type'];
 
@@ -68,10 +75,47 @@ export default function App() {
   const [flipSelfGrade, setFlipSelfGrade] = useState<Record<string, 'right' | 'wrong'>>({});
   const [submitted, setSubmitted] = useState(false);
   const [scorePct, setScorePct] = useState<number | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem(THEME_STORAGE_KEY) as Theme | null) ?? 'dark',
+  );
 
   useEffect(() => {
     void loadEverything();
   }, []);
+
+  // Applied to <html> (not just this component's root) so the toggle
+  // affects body background etc. too, same as the guide's data-theme
+  // approach — kept in sync with localStorage on every change.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  function toggleTheme() {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }
+
+  // The guide's own "← back to topics" link, repurposed by its theme.js
+  // into a close control when it detects it's embedded, signals back via
+  // postMessage — not a direct window.parent call, since this app and the
+  // guide are on different origins (this app on Amplify, the guide on
+  // GitHub Pages) and a direct cross-origin call would just throw.
+  useEffect(() => {
+    if (!previewUrl) return;
+    function handleMessage(e: MessageEvent) {
+      if (e.data && e.data.type === 'close-source-preview') setPreviewUrl(null);
+    }
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setPreviewUrl(null);
+    }
+    window.addEventListener('message', handleMessage);
+    window.addEventListener('keydown', handleKeydown);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener('keydown', handleKeydown);
+    };
+  }, [previewUrl]);
 
   async function loadEverything() {
     setLoading(true);
@@ -199,9 +243,19 @@ export default function App() {
   return (
     <div className="wrap">
       <header className="header">
-        <h1>Daily Backend Quiz</h1>
-        <p className="subtitle">Automated morning practice — separate progress from the self-guided quiz.html</p>
-        {streak > 0 && <div className="streak-badge">Streak: {streak} day{streak === 1 ? '' : 's'}</div>}
+        <div className="header-text">
+          <h1>Daily Backend Quiz</h1>
+          <p className="subtitle">Automated morning practice — separate progress from the self-guided quiz.html</p>
+          {streak > 0 && <div className="streak-badge">Streak: {streak} day{streak === 1 ? '' : 's'}</div>}
+        </div>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          <span className="toggle-icon">{theme === 'dark' ? '☀︎' : '☽'}</span>
+          <span className="toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+        </button>
       </header>
 
       {error && (
@@ -287,17 +341,33 @@ export default function App() {
                     </>
                   )}
                   {q.source.length > 0 && (
-                    <p className="source-note">
-                      Source:{' '}
-                      {q.source.map((src, idx) => (
-                        <span key={src}>
-                          <a href={`${GUIDE_BASE_URL}${src}`} target="_blank" rel="noopener noreferrer">
-                            {src}
-                          </a>
-                          {idx < q.source.length - 1 ? ', ' : ''}
-                        </span>
-                      ))}
-                    </p>
+                    <div className="source-note">
+                      <span className="source-label">Source:</span>
+                      {q.source.map((src, idx) => {
+                        const fullUrl = `${GUIDE_BASE_URL}${src}`;
+                        return (
+                          <span className="source-item" key={src}>
+                            <span className="source-path">{src}</span>
+                            <button
+                              type="button"
+                              className="source-action"
+                              onClick={() => setPreviewUrl(fullUrl)}
+                            >
+                              Preview
+                            </button>
+                            <a
+                              className="source-action"
+                              href={fullUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              New tab ↗
+                            </a>
+                            {idx < q.source.length - 1 ? <span className="source-sep">&middot;</span> : null}
+                          </span>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               ))}
@@ -360,6 +430,29 @@ export default function App() {
           </tbody>
         </table>
       </section>
+
+      {previewUrl && (
+        <div className="modal-overlay open" onClick={(e) => { if (e.target === e.currentTarget) setPreviewUrl(null); }}>
+          <div className="modal-box">
+            <div className="modal-bar">
+              <span className="modal-bar-label">{previewUrl}</span>
+              <div className="modal-bar-actions">
+                <a className="modal-btn" href={previewUrl} target="_blank" rel="noopener noreferrer">
+                  Open in new tab &#8599;
+                </a>
+                <button type="button" className="modal-btn" onClick={() => setPreviewUrl(null)}>
+                  Close &#10005;
+                </button>
+              </div>
+            </div>
+            {/* key={previewUrl} forces React to remount a fresh iframe on
+                every new preview target, so the anchor scroll always fires
+                — same reasoning as quiz.html's own about:blank-then-reload
+                trick, just done the React way. */}
+            <iframe key={previewUrl} className="modal-iframe" src={previewUrl} title="Guide reference" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
