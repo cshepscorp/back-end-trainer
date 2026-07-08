@@ -19,6 +19,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 const env = process.env as NodeJS.ProcessEnv & {
   NOTIFY_EMAIL: string;
   AUTO_COMPLETE_THRESHOLD_PCT: string;
+  APP_URL: string;
 };
 
 // Stable ordering so the rotation is deterministic and easy to reason about —
@@ -187,7 +188,7 @@ async function sendEmail(
 
   const body = noBankSeeded
     ? `The daily quiz function ran, but found no questions in the Question table yet. Run the seed script (scripts/seed-questions.ts) once, then this'll pick up on the next scheduled run.`
-    : `Today's section: ${topic} — ${difficulty} (${questionCount} questions).\n\nOpen the app to take it. Score 80%+ and it auto-marks the section complete; you can also mark it complete or reopen it manually any time from the app.`;
+    : `Today's section: ${topic} — ${difficulty} (${questionCount} questions).\n\n${env.APP_URL}\n\nScore 80%+ and it auto-marks the section complete; you can also mark it complete or reopen it manually any time from the app.`;
 
   // SES sandbox mode is fine here since sender and recipient are the same
   // verified address — no need to request production access for personal use.

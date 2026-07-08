@@ -26,5 +26,8 @@ export const dailyQuizGenerator = defineFunction({
     NOTIFY_EMAIL: 'sheppard.christy@gmail.com',
     // 80%+ on a section auto-marks it complete (per your "auto + manual" choice).
     AUTO_COMPLETE_THRESHOLD_PCT: '80',
+    // The deployed frontend's URL, so the email can actually link somewhere.
+    // Update this if you add a custom domain later.
+    APP_URL: 'https://main.d561oj08e0okr.amplifyapp.com',
   },
 });
