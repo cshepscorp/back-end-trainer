@@ -2,15 +2,24 @@ import type { Schema } from '../../data/resource';
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/data';
 import { getAmplifyDataClientConfig } from '@aws-amplify/backend/function/runtime';
-// This virtual module only gets generated for functions the schema
-// explicitly grants access to via `allow.resource(dailyQuizGenerator)` in
-// amplify/data/resource.ts. It wasn't resolving before because that grant
-// was missing (I'd granted IAM access directly in backend.ts instead, which
-// gives the same permissions but skips this wiring). Confirmed against
-// AWS's own docs: "Grant Lambda function access to API and Data" at
-// docs.amplify.aws/react/build-a-backend/data/customize-authz/grant-lambda-function-access-to-api/
-import { env } from '$amplify/env/daily-quiz-generator';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+
+// Reading process.env directly instead of importing the generated
+// `$amplify/env/<function-name>` module. That module's only real job is
+// giving TypeScript types; the actual values (including the SSM-resolved
+// ones getAmplifyDataClientConfig needs) land in process.env at runtime via
+// a banner script Amplify injects into the bundle automatically — visible
+// in a CDK build log as `internalAmplifyFunctionResolveSsmParams`. That
+// injection is triggered by the schema-level `allow.resource(dailyQuizGenerator)`
+// grant in amplify/data/resource.ts, not by this import. The import itself
+// resolved fine locally under `npx ampx sandbox` but failed to resolve
+// during Amplify Hosting's CI bundling step (`ampx pipeline-deploy`) —
+// apparently a different bundler code path. Using process.env sidesteps
+// needing esbuild to resolve that virtual module at all.
+const env = process.env as NodeJS.ProcessEnv & {
+  NOTIFY_EMAIL: string;
+  AUTO_COMPLETE_THRESHOLD_PCT: string;
+};
 
 // Stable ordering so the rotation is deterministic and easy to reason about —
 // walk topics in this order, and within each topic, easy -> advanced.
