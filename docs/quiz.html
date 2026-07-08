@@ -273,6 +273,22 @@
   }
   .btn-text:hover { color: var(--coral); }
 
+  .claude-review-row { flex-basis: 100%; display: flex; align-items: center; gap: 16px; margin-bottom: 2px; }
+  .claude-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    padding: 2px 0;
+    text-decoration: none;
+    border-bottom: 1px dashed currentColor;
+  }
+  .claude-btn:hover { color: var(--card-accent, var(--blue)); }
+
   .mc-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
   .mc-option {
     text-align: left;
@@ -338,7 +354,7 @@
   <div class="page-header">
     <div class="eyebrow">Self-test &middot; All topics &middot; 4 difficulty levels</div>
     <h1>Quiz yourself</h1>
-    <p class="intro">161 questions pulled from every page in this guide, from easy recall up through advanced whiteboard-style scenarios that combine multiple topics — including database performance, testing, security, system design, production ops, JavaScript fundamentals, AI/LLM fundamentals, and infrastructure as code. Filter by topic, difficulty, or both. Every question links back to the exact spot it came from.</p>
+    <p class="intro">163 questions pulled from every page in this guide, from easy recall up through advanced whiteboard-style scenarios that combine multiple topics — including database performance, testing, security, system design, production ops, JavaScript fundamentals, AI/LLM fundamentals, and infrastructure as code. Filter by topic, difficulty, or both. Every question links back to the exact spot it came from.</p>
   </div>
 
   <div class="filter-row">
@@ -367,7 +383,7 @@
 
   <div class="page-footer">
     <span>Backend fundamentals &middot; Quiz</span>
-    <span>161 questions &middot; 15 topics + cross-topic synthesis</span>
+    <span>163 questions &middot; 15 topics + cross-topic synthesis</span>
   </div>
 </div>
 
@@ -468,6 +484,14 @@ const QUESTIONS = [
   { id:'ne10', topic:'node-express', difficulty:'hard', type:'flip', source:'node-express-onepager.html#kp-middleware',
     front:'You register your error-handling middleware (the one with 4 arguments: err, req, res, next) at the very top of your Express app, before any routes. What breaks, and why?',
     back:'Middleware and routes run in registration order. If error-handling middleware is registered before your routes, it\'s already been skipped by the time an error occurs further down the chain — Express won\'t loop back to it. Error-handling middleware has to be registered after all your routes so it\'s the last thing in the chain, ready to catch whatever falls through.' },
+  { id:'ne11', topic:'node-express', difficulty:'moderate', type:'mc', source:'node-express-onepager.html#kp-middleware',
+    q:'A middleware function receives (req, res, next) but never calls next() and never sends a response. What happens to that request?',
+    options:['Express automatically calls next() for you after a short timeout','The request hangs indefinitely — nothing ever advances the chain or sends a response','Express throws a compile-time error','The next middleware in line runs anyway after a few seconds'],
+    correct:1,
+    explain:'Middleware only advances because each function explicitly calls next() (or ends the response itself). Skip both, and the chain just stops there — no timeout, no fallback. The client waits until its own client-side timeout kicks in, if it has one. This is the single most common beginner middleware bug.' },
+  { id:'ne12', topic:'node-express', difficulty:'hard', type:'flip', source:'node-express-onepager.html#kp-middleware',
+    front:'Middleware is often described as running "before" your route handler. What does that framing leave out, and what\'s the "onion" model capturing instead?',
+    back:'Middleware isn\'t purely one-directional — think of it as an onion. A request travels inward through each middleware layer to the route handler at the center, then travels back outward through those same layers in reverse. Any code you write after your next() call gets to run again on the way back out (e.g. logging how long the response took). One Express-specific catch: that "after next()" code only fires when control synchronously returns up the call stack — if the downstream handler is async, next() returns immediately and your after-code can run before the real work finishes. For genuinely after-the-response logic in Express, hook res.on(\'finish\', ...) instead.' },
 
   // ================= NODE INTERNALS =================
   { id:'ni1', topic:'node-internals', difficulty:'easy', type:'mc', source:'node-internals-deepdive.html#layers-overview',
@@ -1242,6 +1266,66 @@ function wireSourceLinks(root) {
 }
 
 /* ============================================================
+   CLAUDE REVIEW — "double-check this with Claude"
+   Builds a plain-text summary of a question + your answer + the
+   explanation given, so you can sanity-check accuracy in a real chat
+   rather than trusting the canned explanation blindly. Two ways to get
+   it there: copy to clipboard (works anywhere), or a claude:// deep
+   link that opens Claude Desktop with the text prefilled (Desktop
+   only, and you still have to hit send yourself — see
+   https://support.claude.com/en/articles/14729294-open-claude-desktop-with-a-link).
+   ============================================================ */
+function buildReviewPrompt(q, ctx) {
+  const lines = [
+    "I'm reviewing a self-quiz question on backend fundamentals — can you check the answer/explanation below for accuracy and completeness?",
+    ''
+  ];
+  if (q.type === 'mc') {
+    lines.push(`Question: ${q.q}`);
+    lines.push(`Options: ${ctx.options.join(' | ')}`);
+    lines.push(`My answer: ${ctx.chosen}`);
+    lines.push(`Marked correct: ${ctx.correctText}`);
+    lines.push(`Given explanation: ${q.explain}`);
+  } else {
+    lines.push(`Prompt: ${q.front}`);
+    lines.push(`My answer: ${ctx.myAnswer && ctx.myAnswer.trim() ? ctx.myAnswer.trim() : '(no answer typed in before revealing)'}`);
+    lines.push(`Reference answer: ${q.back}`);
+  }
+  lines.push('');
+  lines.push("Is this right? Anything you'd correct, add, or phrase differently?");
+  return lines.join('\n');
+}
+
+function claudeReviewHtml() {
+  return `
+    <div class="claude-review-row">
+      <button type="button" class="claude-btn" id="claudeCopyBtn">Copy for Claude</button>
+      <a class="claude-btn" id="claudeDesktopLink" href="#" title="Opens Claude Desktop with this prefilled — review and hit send yourself">Open in Claude Desktop &#8599;</a>
+    </div>
+  `;
+}
+
+function wireClaudeReview(q, ctx) {
+  const text = buildReviewPrompt(q, ctx);
+  const copyBtn = document.getElementById('claudeCopyBtn');
+  const deskLink = document.getElementById('claudeDesktopLink');
+  if (copyBtn) {
+    const originalLabel = copyBtn.textContent;
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(() => { copyBtn.textContent = originalLabel; }, 1500);
+      }).catch(() => {
+        copyBtn.textContent = 'Copy failed — select text manually';
+      });
+    });
+  }
+  if (deskLink) {
+    deskLink.href = `claude://claude.ai/new?q=${encodeURIComponent(text)}`;
+  }
+}
+
+/* ============================================================
    SOURCE MODAL
    Opens the linked guide page (with its #anchor) inside an iframe
    instead of a new tab, so looking something up mid-quiz doesn't
@@ -1406,11 +1490,17 @@ function handleSkip(q) {
 
 function handleMcAnswer(q, chosenIdx, optionButtons) {
   const correct = chosenIdx === q.correct;
+  const allOptions = [];
+  let chosenText = '', correctText = '';
   optionButtons.forEach((btn) => {
     const btnIdx = parseInt(btn.getAttribute('data-idx'), 10);
     btn.disabled = true;
-    if (btnIdx === q.correct) btn.classList.add('correct');
-    else if (btnIdx === chosenIdx) btn.classList.add('incorrect');
+    allOptions.push(btn.textContent);
+    if (btnIdx === q.correct) { btn.classList.add('correct'); correctText = btn.textContent; }
+    if (btnIdx === chosenIdx) {
+      chosenText = btn.textContent;
+      if (btnIdx !== q.correct) btn.classList.add('incorrect');
+    }
   });
 
   progress[q.id] = correct ? 'known' : 'review';
@@ -1419,8 +1509,12 @@ function handleMcAnswer(q, chosenIdx, optionButtons) {
   if (correct) sessionCorrect++;
 
   document.getElementById('explainSlot').innerHTML = `<div class="explain-box">${q.explain}</div>`;
-  document.getElementById('footerActions').innerHTML = `<button class="btn btn-primary" id="nextBtn">Next &rarr;</button>`;
+  document.getElementById('footerActions').innerHTML = `
+    ${claudeReviewHtml()}
+    <button class="btn btn-primary" id="nextBtn">Next &rarr;</button>
+  `;
   document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+  wireClaudeReview(q, { options: allOptions, chosen: chosenText, correctText });
 
   renderStats();
 }
@@ -1428,11 +1522,13 @@ function handleMcAnswer(q, chosenIdx, optionButtons) {
 function showFlipAnswer(q) {
   document.getElementById('flipSlot').innerHTML = `<div class="flip-back">${q.back}</div>`;
   document.getElementById('footerActions').innerHTML = `
+    ${claudeReviewHtml()}
     <button class="btn btn-good" id="knewItBtn">I knew it</button>
     <button class="btn btn-bad" id="reviewBtn">Needs review</button>
   `;
   document.getElementById('knewItBtn').addEventListener('click', () => handleFlipGrade(q, true));
   document.getElementById('reviewBtn').addEventListener('click', () => handleFlipGrade(q, false));
+  wireClaudeReview(q, { myAnswer: myAnswers[q.id] || '' });
 }
 
 function handleFlipGrade(q, knew) {

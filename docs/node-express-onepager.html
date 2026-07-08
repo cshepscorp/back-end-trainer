@@ -174,7 +174,8 @@ app.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
     </div>
     <div class="kp" id="kp-middleware">
       <div class="kp-label">What does middleware actually do?</div>
-      <p>Functions that run between the request arriving and your handler executing. Each can read, modify, or short-circuit the request. They chain in order of <code>app.use()</code> calls.</p>
+      <p>Functions that receive <code>(req, res, next)</code> and can read/modify the request, short-circuit by sending a response, or call <code>next()</code> to pass control onward. Think of it as an onion: the request travels inward through each layer to your handler, then back out — any code after your <code>next()</code> call runs again on the way back out.</p>
+      <p>Execution order follows registration order (<code>app.use</code>, <code>app.get</code>, <code>router.use</code>, etc.), but only among middleware whose path actually matches. The chain only advances because each function calls <code>next()</code> — skip that (and skip sending a response) and the request just hangs, with no timeout or fallback. Error-handling middleware <code>(err, req, res, next)</code> is the one exception: it's reached only via <code>next(err)</code>, which is why it's registered last.</p>
     </div>
   </div>
 </div>
