@@ -1,17 +1,24 @@
 import { defineFunction, secret } from '@aws-amplify/backend';
 
 /*
-  Runs on a schedule (EventBridge, managed by Amplify — nothing for you to
-  provision). Each morning it:
-    1. Looks at Progress to find the next (topic, difficulty) combo that
-       isn't marked complete yet.
+  Runs twice a day (EventBridge, managed by Amplify — nothing for you to
+  provision) — a morning session and an afternoon session, each covering a
+  different (topic, difficulty) combo so a day's practice covers two
+  sections instead of one. Each run:
+    1. Looks at Progress (and, for the afternoon run, whatever the morning
+       run already picked today) to find the next combo that isn't marked
+       complete yet and wasn't already used today.
     2. Picks a handful of questions from Question for that combo.
-    3. Writes a DailyQuiz record for today's date.
+    3. Writes that session's fields onto today's DailyQuiz record (the
+       handler tells AM and PM apart by which cron entry's hour it's
+       closest to — see AM_HOUR_UTC/PM_HOUR_UTC in handler.ts).
     4. Emails you via SES so you know it's ready.
 
-  Cron is UTC. '0 11 * * ? *' = 11:00 UTC = 7am ET during EDT (6am during
-  EST) — adjust the hour to taste, and note it'll drift an hour across the
-  DST changeover twice a year unless you update it.
+  Cron is UTC, array = multiple schedules. '0 11 * * ? *' = 11:00 UTC = 7am
+  ET during EDT (6am during EST). '0 16 * * ? *' = 16:00 UTC = noon ET
+  during EDT (11am during EST). Both drift an hour across the DST
+  changeover twice a year unless you update them — same caveat as before,
+  now doubled.
 
   NOTE: Amplify's scheduling syntax has shifted slightly across backend-cli
   versions. If `npx ampx sandbox` complains about this `schedule` field,
@@ -20,7 +27,7 @@ import { defineFunction, secret } from '@aws-amplify/backend';
 export const dailyQuizGenerator = defineFunction({
   name: 'daily-quiz-generator',
   entry: './handler.ts',
-  schedule: '0 11 * * ? *',
+  schedule: ['0 11 * * ? *', '0 16 * * ? *'],
   timeoutSeconds: 30,
   environment: {
     // secret() pulls this from Amplify's secret store (backed by SSM

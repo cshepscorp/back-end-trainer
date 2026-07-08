@@ -1180,12 +1180,18 @@ function shuffle(arr) {
   return a;
 }
 
+// Flagged/"needs review" items are shuffled in ahead of everything else, so
+// opening the quiz (or changing filters, or hitting Restart) always leads
+// with what you actually got wrong instead of burying it behind fresh
+// questions you'd answer correctly anyway.
 function buildQueue() {
   const pool = QUESTIONS.filter(q =>
     (activeTopic === 'all' || q.topic === activeTopic) &&
     (activeDifficulty === 'all' || q.difficulty === activeDifficulty)
   );
-  queue = shuffle(pool);
+  const flagged = shuffle(pool.filter(q => progress[q.id] === 'review'));
+  const rest = shuffle(pool.filter(q => progress[q.id] !== 'review'));
+  queue = [...flagged, ...rest];
   queueIndex = 0;
   sessionAnswered = 0;
   sessionCorrect = 0;

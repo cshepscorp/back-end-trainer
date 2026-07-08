@@ -8,8 +8,18 @@ import { dailyQuizGenerator } from '../functions/daily-quiz-generator/resource';
     which is exported from the same content as the self-guided quiz.html).
   - Progress: one record per (topic, difficulty) combo — tracks whether you've
     marked it complete, your best score, and a streak count.
-  - DailyQuiz: one record per calendar date — the specific set of questions the
-    scheduled function picked for that morning, plus how you did on it.
+  - DailyQuiz: one record per calendar date. The original `topic`/`difficulty`/
+    `questionIds`/`answeredCount`/`correctCount`/`completed`/`emailSent` fields
+    represent the morning session, unchanged since this ran once a day. The
+    `pm*` fields are additive (added when a second, afternoon run was
+    introduced) rather than a new identifier/key shape — changing the
+    identifier would force DynamoDB to replace the table and lose every past
+    day's history, so a same-day second session is modeled as more columns on
+    the same row instead of a second row.
+  - QuizSettings: a single row (fixed id 'global') holding user-controlled
+    toggles. Right now that's just `pausedUntil` — set it from the app before
+    a trip and the scheduled function silently skips generating/emailing
+    until that date passes, no separate "resume" step needed.
 
   Auth: publicApiKey for everything. This is a single-user app with no login
   screen (matches "skip auth for now"), so API-key auth is the simplest mode —
@@ -52,6 +62,7 @@ const schema = a.schema({
   DailyQuiz: a
     .model({
       date: a.string().required(), // YYYY-MM-DD, also the identifier
+      // Morning session — unchanged shape/meaning from before the PM session existed.
       topic: a.string().required(),
       difficulty: a.string().required(),
       questionIds: a.string().array().required(),
@@ -59,8 +70,25 @@ const schema = a.schema({
       correctCount: a.integer().default(0),
       completed: a.boolean().default(false),
       emailSent: a.boolean().default(false),
+      // Afternoon session — optional/nullable since past dates (and any day
+      // where the PM run hasn't fired yet) simply won't have these set.
+      pmTopic: a.string(),
+      pmDifficulty: a.string(),
+      pmQuestionIds: a.string().array(),
+      pmAnsweredCount: a.integer().default(0),
+      pmCorrectCount: a.integer().default(0),
+      pmCompleted: a.boolean().default(false),
+      pmEmailSent: a.boolean().default(false),
     })
     .identifier(['date'])
+    .authorization((allow) => [allow.publicApiKey()]),
+
+  QuizSettings: a
+    .model({
+      id: a.string().required(), // always 'global' — single-user app, one settings row
+      pausedUntil: a.string(), // YYYY-MM-DD, inclusive — quizzes resume the day after this
+    })
+    .identifier(['id'])
     .authorization((allow) => [allow.publicApiKey()]),
 })
   // Schema-level grant (this is the piece that actually wires up the
