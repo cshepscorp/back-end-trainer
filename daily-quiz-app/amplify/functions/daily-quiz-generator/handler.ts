@@ -61,7 +61,13 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export const handler = async () => {
-  const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env);
+  // process.env genuinely has AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY /
+  // AWS_SESSION_TOKEN / AWS_REGION / AMPLIFY_DATA_DEFAULT_NAME at runtime —
+  // Lambda always injects the first four, and the schema-level grant sets
+  // the last one. TypeScript just can't see that from NodeJS.ProcessEnv's
+  // type (everything's optional there), so this cast bypasses that
+  // mismatch rather than hand-rolling the exact DataClientEnv shape.
+  const { resourceConfig, libraryOptions } = await getAmplifyDataClientConfig(env as any);
   Amplify.configure(resourceConfig, libraryOptions);
   const client = generateClient<Schema>();
 
