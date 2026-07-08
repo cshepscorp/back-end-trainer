@@ -11,33 +11,12 @@
 <style>
   body { padding-top: 48px; }
 
-  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
-  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
-  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
-  .info-card p + p { margin-top: 8px; }
-  .info-card strong { color: var(--ink); font-weight: 600; }
   .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
 
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
   .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
-  .content-section { margin-bottom: 40px; }
   code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
 
   /* ── ANALOGY BOX ── */
-  .analogy-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--blue);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    transition: var(--theme-transition);
-  }
-  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
-  .analogy-box p + p { margin-top: 8px; }
-  .analogy-box strong { color: var(--ink); font-weight: 600; }
 
   /* ── CHEAT SHEET TABLE ── */
   .cheat-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; transition: var(--theme-transition); }
@@ -100,7 +79,6 @@
     <p class="intro">What the terminal actually is, how the shell works, what PATH means, and the commands you'll use every day as a backend developer.</p>
   </div>
 
-
   <!-- TERMINAL VS SHELL -->
   <div class="content-section">
     <div class="section-title">Terminal vs shell — not the same thing</div>
@@ -131,7 +109,6 @@
       <p>You'll also hear the term <strong>CLI</strong> — it just means any tool you interact with by typing commands instead of clicking a GUI. The terminal is a CLI. <code>psql</code> is a CLI. <code>npm</code> is a CLI. When someone says "run this in the CLI" they mean "type this in your terminal."</p>
     </div>
   </div>
-
 
   <!-- PATH -->
   <div class="content-section" id="path-explainer">
@@ -178,7 +155,6 @@
       <p>The file <code>~/.zprofile</code> runs every time you open a new terminal window. It's where you put things you always want set up — like PATH additions. The <code>~</code> is shorthand for your home directory (<code>/Users/christysheppard</code>). The dot prefix means it's a hidden file — Finder won't show it by default but the terminal can see it.</p>
     </div>
   </div>
-
 
   <!-- EVERYDAY COMMANDS -->
   <div class="content-section">
@@ -310,7 +286,6 @@
     </table>
   </div>
 
-
   <!-- PSQL META-COMMANDS -->
   <div class="content-section">
     <div class="section-title">psql meta-commands — the backslash commands</div>
@@ -368,7 +343,6 @@
     </table>
   </div>
 
-
   <!-- NPM -->
   <div class="content-section">
     <div class="section-title">npm — Node Package Manager</div>
@@ -402,7 +376,6 @@
         <div class="npm-desc">Remove a package and update package.json. Also removes it from node_modules.</div>
       </div>
     </div>
-
 
     <!-- PACKAGE JSON EXPLAINER -->
     <div class="section-title">What package.json actually contains</div>

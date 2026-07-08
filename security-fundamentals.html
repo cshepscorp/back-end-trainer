@@ -11,46 +11,15 @@
 <style>
   body { padding-top: 48px; }
 
-  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
-  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
-  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
-  .info-card p + p { margin-top: 8px; }
-  .info-card strong { color: var(--ink); font-weight: 600; }
   .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
 
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
-  .content-section { margin-bottom: 40px; }
   code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
-
-  .analogy-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--blue);
-    border-radius: 8px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    transition: var(--theme-transition);
-  }
-  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
-  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
-  .analogy-box strong { color: var(--ink); font-weight: 600; }
-
-  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .code-block.dim-left { border-left: 3px solid var(--coral); }
-  .code-block.dim-right { border-left: 3px solid var(--teal); }
 
   .vuln-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
   .vuln-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; transition: var(--theme-transition); }
   .vuln-card .vuln-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--coral); }
   .vuln-card p { font-size: 12.5px; font-weight: 300; color: var(--subtle); line-height: 1.55; }
 
-  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
-  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
-  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
-  .decision-box ul { padding-left: 18px; }
-  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
-  .decision-box li strong { color: var(--ink); font-weight: 600; }
 </style>
 </head>
 <body>
