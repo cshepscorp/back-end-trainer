@@ -61,7 +61,7 @@
     letter-spacing: 1px;
   }
   .progress-bar { flex: 1; max-width: 200px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .progress-fill { height: 100%; width: 40%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 2px; }
+  .progress-fill { height: 100%; width: 60%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 2px; }
   .progress-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
 
   .grid-section { max-width: var(--page-max); margin: 0 auto; padding: 0 var(--page-pad); }
@@ -116,6 +116,15 @@
   .card-purple { --card-accent: var(--purple); }
   .card-orange { --card-accent: var(--orange); }
   .card-green  { --card-accent: var(--green); }
+  .card-cyan   { --card-accent: #22d3ee; }
+  .card-lime   { --card-accent: #a3e635; }
+  .card-rose   { --card-accent: #fb7185; }
+  .card-indigo { --card-accent: #818cf8; }
+  .card-slate  { --card-accent: #94a3b8; }
+  .card-amber  { --card-accent: var(--amber); }
+  .card-gold   { --card-accent: #eab308; }
+  .card-violet { --card-accent: #8b5cf6; }
+  .card-sky    { --card-accent: #38bdf8; }
 
   .card-soon { opacity: 0.45; pointer-events: none; }
   .soon-badge { position: absolute; top: 14px; right: 14px; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 2px 8px; border-radius: 20px; }
@@ -135,14 +144,36 @@
   <p class="hero-desc">Reference docs built session by session. Each card covers a concept we've discussed — open it when you need a refresher.</p>
   <div class="hero-meta">
     <div class="meta-pill">Node.js · Express · System design</div>
-    <div class="progress-bar"><div class="progress-fill"></div></div>
-    <div class="progress-label">4 topics covered</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:85%"></div></div>
+    <div class="progress-label">15 topics covered</div>
   </div>
 </div>
 
 <div class="divider" style="max-width:var(--page-max);margin-bottom:48px"></div>
 
 <div class="grid-section">
+  <div class="grid-label">Self-test</div>
+  <div class="cards" style="margin-bottom: 40px;">
+    <a class="card card-blue" href="quiz.html">
+      <div class="card-tag">Interview prep · All topics</div>
+      <div class="card-title">Quiz yourself — 161 questions</div>
+      <div class="card-desc">Easy through advanced, including cross-topic whiteboard scenarios. Filter by topic and difficulty, track your score, and retry whatever you flag for review.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">4 difficulty levels</span><span class="topic-pill">flip cards</span><span class="topic-pill">topic filters</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-orange" href="notes.html">
+      <div class="card-tag">Your running list</div>
+      <div class="card-title">My notes</div>
+      <div class="card-desc">Everything you've flagged as unclear while going through the guide or quiz. Click the pencil button on any page to add one — review them all here.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">saved locally</span><span class="topic-pill">quick add anywhere</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+  </div>
+
   <div class="grid-label">Core concepts — completed</div>
   <div class="cards">
     <a class="card card-teal" href="node-express-onepager.html">
@@ -181,30 +212,130 @@
         <div class="card-arrow">→</div>
       </div>
     </a>
+    <a class="card card-green" href="databases-and-orms.html">
+      <div class="card-tag">Data &amp; storage</div>
+      <div class="card-title">Databases &amp; ORMs: choosing the right tool</div>
+      <div class="card-desc">Why the parks app uses PostgreSQL over MongoDB, how relational data actually works, relationship types, and what an ORM does for you.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">PostgreSQL</span><span class="topic-pill">MongoDB</span><span class="topic-pill">ORM</span><span class="topic-pill">Prisma</span><span class="topic-pill">join tables</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-blue" href="auth.html">
+      <div class="card-tag">Auth · Security</div>
+      <div class="card-title">Authentication: sessions, JWTs &amp; OAuth</div>
+      <div class="card-desc">How identity works on the web, sessions vs JWTs, why HttpOnly cookies beat localStorage, and the full OAuth flow with Google and Passport.js.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">JWT</span><span class="topic-pill">OAuth</span><span class="topic-pill">sessions</span><span class="topic-pill">HttpOnly</span><span class="topic-pill">Passport.js</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="grid-label">Interview essentials — beyond the parks app</div>
+  <div class="cards">
+    <a class="card card-cyan" href="db-performance.html">
+      <div class="card-tag">Data &amp; storage · Performance</div>
+      <div class="card-title">Database performance &amp; query optimization</div>
+      <div class="card-desc">The N+1 query problem, when indexes help vs. hurt, and transactions &amp; ACID — the follow-up questions after "why Postgres."</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">N+1</span><span class="topic-pill">indexes</span><span class="topic-pill">transactions</span><span class="topic-pill">ACID</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-lime" href="testing.html">
+      <div class="card-tag">Quality &amp; process</div>
+      <div class="card-title">Testing backend code</div>
+      <div class="card-desc">Unit vs integration vs end-to-end, what mocking actually buys you, and how to answer "how would you test this?" in an interview.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">unit tests</span><span class="topic-pill">mocking</span><span class="topic-pill">TDD</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-rose" href="security-fundamentals.html">
+      <div class="card-tag">Security · Beyond auth</div>
+      <div class="card-title">Security fundamentals, beyond auth</div>
+      <div class="card-desc">Input validation, SQL injection, CSRF vs XSS, rate limiting, and security headers — the rest of the standard checklist.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">SQL injection</span><span class="topic-pill">CSRF</span><span class="topic-pill">validation</span><span class="topic-pill">helmet.js</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-indigo" href="system-design-basics.html">
+      <div class="card-tag">Architecture</div>
+      <div class="card-title">System design basics</div>
+      <div class="card-desc">Caching, load balancing, message queues, CAP theorem, and monolith vs. microservices — where "how does it work" becomes "how would it scale."</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">caching</span><span class="topic-pill">scaling</span><span class="topic-pill">queues</span><span class="topic-pill">CAP theorem</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-slate" href="production-ops.html">
+      <div class="card-tag">Operations</div>
+      <div class="card-title">Production &amp; operations basics</div>
+      <div class="card-desc">Structured logging, error handling patterns, graceful shutdown, environment configs, and health checks — what changes once real users depend on uptime.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">logging</span><span class="topic-pill">graceful shutdown</span><span class="topic-pill">env config</span><span class="topic-pill">health checks</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-gold" href="javascript-fundamentals.html">
+      <div class="card-tag">Language fundamentals</div>
+      <div class="card-title">JavaScript fundamentals</div>
+      <div class="card-desc">Closures, what actually determines `this`, the microtask/macrotask split, prototypes, and the array methods that come up in every whiteboard exercise.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">closures</span><span class="topic-pill">this</span><span class="topic-pill">event loop</span><span class="topic-pill">prototypes</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-violet" href="ai-llm-fundamentals.html">
+      <div class="card-tag">AI &amp; LLMs</div>
+      <div class="card-title">AI / LLM fundamentals</div>
+      <div class="card-desc">What an LLM actually does, context windows, prompting vs. fine-tuning, RAG &amp; embeddings, hallucination, agents/tool use, and evals.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">RAG</span><span class="topic-pill">embeddings</span><span class="topic-pill">hallucination</span><span class="topic-pill">agents</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-sky" href="infra-as-code.html">
+      <div class="card-tag">Deployment &amp; infrastructure</div>
+      <div class="card-title">Infrastructure as code &amp; deployment basics</div>
+      <div class="card-desc">Declarative vs. imperative infra, what an IaC tool does with a dependency graph, serverless vs. always-on trade-offs, IAM as the permission layer, and environments/rollback.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">IaC</span><span class="topic-pill">serverless</span><span class="topic-pill">IAM</span><span class="topic-pill">environments</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="grid-label">Case study — from this project</div>
+  <div class="cards" style="margin-bottom:48px">
+    <a class="card card-amber" href="deploying-with-amplify.html">
+      <div class="card-tag">Cloud · AWS Amplify</div>
+      <div class="card-title">Deploying to the cloud, start to finish</div>
+      <div class="card-desc">The real sequence from this project's own deploy: infrastructure as code, what a Lambda actually is, a schema-vs-IAM permissions bug and how it got diagnosed, a credentials near-miss, and the npm ci gotcha that failed the first CI build.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">IaC</span><span class="topic-pill">Lambda</span><span class="topic-pill">debugging story</span><span class="topic-pill">CI/CD</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="grid-label">Foundations — tools &amp; environment</div>
+  <div class="cards" style="margin-bottom:48px">
+    <a class="card card-teal" href="terminal-and-shell-basics.html">
+      <div class="card-tag">CLI · Environment</div>
+      <div class="card-title">Terminal, shell &amp; CLI basics</div>
+      <div class="card-desc">What the terminal actually is, how the shell interprets commands, what PATH means, and a cheat sheet of the commands you'll use every day as a backend developer.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">terminal</span><span class="topic-pill">shell</span><span class="topic-pill">PATH</span><span class="topic-pill">npm</span><span class="topic-pill">psql</span><span class="topic-pill">package.json</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
   </div>
 
   <div class="grid-label">Coming up — in progress</div>
   <div class="cards">
-    <div class="card card-green card-soon">
-      <div class="soon-badge">coming soon</div>
-      <div class="card-tag">Data &amp; storage</div>
-      <div class="card-title">Databases: MongoDB vs SQL &amp; when to use each</div>
-      <div class="card-desc">Document vs relational models, ORMs, when schemaless hurts you, and how to think about data shape before choosing a database.</div>
-      <div class="card-footer">
-        <div class="card-topics"><span class="topic-pill">MongoDB</span><span class="topic-pill">SQL</span><span class="topic-pill">ORM</span><span class="topic-pill">schema design</span></div>
-        <div class="card-arrow">→</div>
-      </div>
-    </div>
-    <div class="card card-blue card-soon">
-      <div class="soon-badge">coming soon</div>
-      <div class="card-tag">Auth</div>
-      <div class="card-title">Authentication: sessions, JWTs &amp; OAuth</div>
-      <div class="card-desc">How auth works under the hood, why JWTs are everywhere, what OAuth delegates to Google/GitHub, and how to implement it in Express.</div>
-      <div class="card-footer">
-        <div class="card-topics"><span class="topic-pill">JWT</span><span class="topic-pill">OAuth</span><span class="topic-pill">sessions</span><span class="topic-pill">cookies</span></div>
-        <div class="card-arrow">→</div>
-      </div>
-    </div>
     <div class="card card-teal card-soon">
       <div class="soon-badge">coming soon</div>
       <div class="card-tag">Offline &amp; PWA</div>
@@ -234,5 +365,6 @@
 </div>
 
 <script src="theme.js"></script>
+<script src="notes.js"></script>
 </body>
 </html>

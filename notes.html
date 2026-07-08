@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>My Notes — Backend Fundamentals</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body.content-page { padding-top: 48px; }
+
+  .notes-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .notes-count-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .btn {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .btn:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .btn-danger:hover { border-color: var(--coral); color: var(--coral); }
+
+  .note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    transition: var(--theme-transition);
+  }
+  .note-text {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--ink);
+    white-space: pre-wrap;
+    margin-bottom: 12px;
+  }
+  .note-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .note-source {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--blue);
+    text-decoration: none;
+    border-bottom: 1px dashed currentColor;
+    padding-bottom: 1px;
+  }
+  .note-source:hover { opacity: 0.75; }
+  .note-time { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .note-delete {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .note-delete:hover { color: var(--coral); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body class="content-page">
+
+<div class="page-wrap">
+  <div class="page-nav">
+    <a class="back-link" href="index.html">&larr; back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">&#9728;&#xFE0E;</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </div>
+
+  <div class="page-header">
+    <div class="eyebrow">My notes</div>
+    <h1>Things to come back to</h1>
+    <p class="intro">Everything you've flagged as unclear while going through the guide or quiz, newest first. Saved in your browser — click the pencil button on any page to add another.</p>
+  </div>
+
+  <div class="notes-toolbar">
+    <span class="notes-count-label" id="notesCountLabel"></span>
+    <button class="btn btn-danger" id="clearAllBtn">Clear all notes</button>
+  </div>
+
+  <div id="notesList"></div>
+
+  <div class="page-footer">
+    <span>Backend fundamentals &middot; My notes</span>
+    <span>Saved locally in this browser</span>
+  </div>
+</div>
+
+<script src="theme.js"></script>
+<script>
+const NOTES_KEY = 'sg-notes';
+
+function getNotes() {
+  try {
+    return JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+}
+function saveNotes(notes) {
+  localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
+}
+
+function timeAgo(iso) {
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diffSec = Math.floor((now - then) / 1000);
+  if (diffSec < 60) return 'just now';
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return diffMin + (diffMin === 1 ? ' minute ago' : ' minutes ago');
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return diffHr + (diffHr === 1 ? ' hour ago' : ' hours ago');
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return diffDay + (diffDay === 1 ? ' day ago' : ' days ago');
+  return new Date(iso).toLocaleDateString();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function render() {
+  const notes = getNotes().slice().sort((a, b) => new Date(b.ts) - new Date(a.ts));
+  const list = document.getElementById('notesList');
+  const countLabel = document.getElementById('notesCountLabel');
+  countLabel.textContent = notes.length === 0 ? 'No notes yet' : notes.length + (notes.length === 1 ? ' note' : ' notes');
+
+  if (notes.length === 0) {
+    list.innerHTML = '<div class="empty-state">No notes yet. Click the pencil button in the bottom-right corner of any page to jot one down as you go.</div>';
+    return;
+  }
+
+  list.innerHTML = notes.map(n => `
+    <div class="note-card" data-id="${n.id}">
+      <div class="note-text">${escapeHtml(n.text)}</div>
+      <div class="note-meta">
+        <a class="note-source" href="${n.page}">${escapeHtml(n.title || n.page)} &rarr;</a>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span class="note-time">${timeAgo(n.ts)}</span>
+          <button class="note-delete" data-id="${n.id}">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.note-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      const notes = getNotes().filter(n => n.id !== id);
+      saveNotes(notes);
+      render();
+    });
+  });
+}
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (getNotes().length === 0) return;
+  if (confirm('Clear all saved notes? This can\'t be undone.')) {
+    saveNotes([]);
+    render();
+  }
+});
+
+render();
+</script>
+<script src="notes.js"></script>
+</body>
+</html>

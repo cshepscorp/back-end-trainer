@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Deploying to the Cloud: a Case Study</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+
+  .timeline { border-left: 2px solid var(--border); padding-left: 20px; margin-bottom: 20px; }
+  .timeline-item { position: relative; padding-bottom: 20px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--amber);
+  }
+  .timeline-item .t-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--amber); margin-bottom: 4px; }
+  .timeline-item p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.6; }
+  .timeline-item strong { color: var(--ink); font-weight: 600; }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Case study · Cloud deployment</div>
+    <h1>Deploying to the cloud, start to finish</h1>
+    <p class="intro">A record of actually standing up a serverless app on AWS — not the theory, the real sequence of decisions, the bugs, and how each one got diagnosed. This is the "tell me about a time you debugged a production issue" story, already written down.</p>
+  </div>
+
+  <!-- WHAT WE BUILT -->
+  <div class="content-section" id="what-we-built">
+    <div class="section-title">What we were building</div>
+    <div class="info-card">
+      <p>A daily automated quiz companion to <code>quiz.html</code>: a scheduled job picks a not-yet-mastered topic every morning, emails a notification, and a small web app lets you take that quiz and track progress — completely separate from the self-guided quiz's local browser storage. The point of building it wasn't just the quiz itself; it was going through a real, small, end-to-end cloud deployment, which is exactly the kind of practical experience that's easy to talk around in an interview and much stronger to have actually done once.</p>
+    </div>
+  </div>
+
+  <!-- IAC -->
+  <div class="content-section" id="infra-as-code">
+    <div class="section-title">Infrastructure as code, in practice</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>Writing the backend in code is handing an architect's blueprint to a contractor, instead of building the house yourself brick by brick.</strong> AWS Amplify (built on AWS CDK) took our TypeScript resource definitions — a data schema, a function, a schedule — and figured out the actual build order itself: what needs to exist before what, what permissions to wire up, what to tear down if something's removed. We never ran a single manual "create this table" or "attach this permission" command.</p>
+    </div>
+    <div class="info-card">
+      <p>Concretely, one <code>npx ampx sandbox</code> deploy created: three <strong>DynamoDB tables</strong> (Question, Progress, DailyQuiz), an <strong>AppSync GraphQL API</strong> in front of them with auto-generated resolvers, an <strong>IAM role</strong> scoping exactly what the function could touch, the <strong>Lambda function</strong> itself, an <strong>EventBridge Scheduler</strong> rule to trigger it every morning, and an <strong>API key</strong> for the frontend to authenticate with. Standing up the AppSync layer plus tables is usually the single slowest part of a first deploy — often several minutes — even though every deploy after that is much faster, since the tool only touches what actually changed.</p>
+    </div>
+  </div>
+
+  <!-- WHAT IS A LAMBDA -->
+  <div class="content-section" id="what-is-a-lambda">
+    <div class="section-title">What a Lambda actually is</div>
+    <div class="analogy-box" style="border-left-color:var(--purple)">
+      <div class="label">The analogy</div>
+      <p><strong>A normal event handler runs inside a process you're already keeping alive — your Node server, the browser.</strong> A Lambda has no persistent process at all. AWS spins up a temporary execution environment only at the moment it's triggered, runs the handler code in it, and tears it back down afterward. You're billed for the milliseconds it actually executed, not for a server idling the rest of the day waiting. That's exactly why it fit "email me once every morning" — rather than running a whole server 24/7 to fire one job a day, EventBridge's schedule invokes the function once, it runs for a couple of seconds, and then nothing exists again until tomorrow.</p>
+    </div>
+  </div>
+
+  <!-- THE REAL BUG -->
+  <div class="content-section" id="the-schema-grant-bug">
+    <div class="section-title">The bug: two ways to grant access, only one wires up the client</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>The function needed to read and write the Data models. There are two ways to grant a function that kind of access in Amplify Gen 2, and they look almost interchangeable — but only one of them actually works with the documented Data-client pattern.</p>
+    </div>
+    <div class="code-cols">
+      <div>
+        <div class="code-block dim-left"><span class="cm">// ✗ backend.ts — manual IAM grant</span>
+<span class="cm">// Gives the Lambda IAM permission to call</span>
+<span class="cm">// AppSync directly, but doesn't register the</span>
+<span class="cm">// function as a "data-access" function —</span>
+<span class="cm">// so $amplify/env/&lt;name&gt; never gets generated.</span>
+backend.data.resources.graphqlApi
+  .<span class="cf">grantQuery</span>(fn.resources.lambda);
+backend.data.resources.graphqlApi
+  .<span class="cf">grantMutation</span>(fn.resources.lambda);</div>
+        <div class="code-caption">Correct permissions, wrong mechanism</div>
+      </div>
+      <div>
+        <div class="code-block dim-right"><span class="cm">// ✓ data/resource.ts — schema-level grant</span>
+<span class="ck">const</span> schema = a.<span class="cf">schema</span>({ <span class="cm">/* models */</span> })
+  .<span class="cf">authorization</span>(allow => [
+    allow.<span class="cf">resource</span>(dailyQuizGenerator)
+  ]);
+<span class="cm">// This is what triggers Amplify's build</span>
+<span class="cm">// tooling to generate the env module AND</span>
+<span class="cm">// wire up getAmplifyDataClientConfig() correctly.</span></div>
+        <div class="code-caption">Same permissions, plus the generated wiring</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="t-label">Symptom 1</div>
+        <p>Deploy failed with <strong>"Could not resolve $amplify/env/daily-quiz-generator"</strong> — an esbuild error while bundling the function.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">Workaround (wrong turn)</div>
+        <p>Swapped the generated <code>env</code> import for plain <code>process.env</code>, since the values are real Lambda environment variables either way. Deploy succeeded.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">Symptom 2</div>
+        <p>Running the function threw <strong>"The data environment variables are malformed"</strong> from inside <code>getAmplifyDataClientConfig()</code> — <code>AMPLIFY_SSM_ENV_CONFIG</code> in the dumped environment was just <code>{}</code>.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">Root cause, found via AWS's own docs</div>
+        <p>Amplify's official "Grant Lambda function access to API and Data" page showed the missing piece: <strong>function access has to be declared on the schema object itself</strong> via <code>allow.resource()</code> — that's what actually triggers the generated env module and the S3-bucket-backed schema config the client reads at runtime. The manual <code>grantQuery</code>/<code>grantMutation</code> calls gave equivalent IAM permissions but skipped that registration step entirely.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="t-label">Fix</div>
+        <p>Moved the grant to the schema (left code block above), removed the manual IAM grant, restored the generated <code>env</code> import. Deploy and function both succeeded on the next try.</p>
+      </div>
+    </div>
+    <div class="info-card">
+      <p>The lesson generalizes past Amplify: <strong>two APIs that produce the same permissions aren't necessarily the same mechanism.</strong> One was a low-level IAM primitive; the other was a framework-level convention with side effects (code generation) the low-level version doesn't know to trigger. When a "should be equivalent" swap breaks something unrelated, the framework's own docs for the exact feature — not Stack Overflow, not GitHub issue threads — is usually where the actual contract is spelled out.</p>
+    </div>
+  </div>
+
+  <!-- CREDENTIALS -->
+  <div class="content-section" id="credentials-and-hygiene">
+    <div class="section-title">AWS credentials &amp; a near-miss</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">Access keys vs. SSO</div>
+        <p>AWS pushes you toward IAM Identity Center (SSO) with a warning banner every time you create an access key. For a solo developer deploying from their own machine, a long-lived access key is still the standard, simplest path — SSO requires organization-level setup that's real overhead for a personal project. The warning is generic, not a signal something's wrong with this use case specifically.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label">The near-miss</div>
+        <p>The CSV file AWS lets you download when you create an access key — containing the actual secret in plain text — ended up sitting untracked in the project folder. Had it been swept up by a broad <code>git add .</code> and pushed, that would have published a live AWS secret to GitHub. Caught before it happened by reviewing <code>git status</code> before staging, rather than staging everything reflexively.</p>
+      </div>
+    </div>
+    <div class="info-card">
+      <p><strong>The habit worth keeping:</strong> stage deliberately (<code>git add &lt;specific paths&gt;</code>, not <code>git add -A</code>) on any repo that isn't brand new, and add a <code>.gitignore</code> entry for credential file patterns (<code>*accessKeys*.csv</code>, <code>.env</code>) before you ever need it — not after.</p>
+    </div>
+  </div>
+
+  <!-- SES SANDBOX -->
+  <div class="content-section" id="ses-and-spam">
+    <div class="section-title">Email delivery: SES sandbox mode &amp; the spam folder</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Amazon SES starts every new account in "sandbox mode" — it can only send to and from addresses you've explicitly verified, until you request production access. Since this notification only ever sends to the same address it sends from, sandbox mode was actually sufficient forever — no need to leave it for a single-recipient use case.</p>
+    </div>
+    <div class="info-card">
+      <p><strong>The first email landed in spam</strong> — not an SES misconfiguration, but Gmail flagging a structural mismatch: a message claiming to be "from" your own address that actually arrived via a third party's mail servers instead of Google's. That pattern (nobody normally emails themselves through an external relay) is a classic spam signal regardless of content. Marking it "Not spam" once trains the filter for that sender going forward.</p>
+    </div>
+  </div>
+
+  <!-- HOSTING & MONOREPO -->
+  <div class="content-section" id="hosting-and-monorepo">
+    <div class="section-title">From personal sandbox to a real deployment</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>npx ampx sandbox</code> is a real, deployed AWS environment — but it's tied to a developer's own machine and credentials, and meant to be torn down when you're not actively iterating. It's the wrong thing to leave running unattended as the actual production version. The persistent version comes from connecting the git repo to <strong>Amplify Hosting</strong>, which deploys from CI on every push, independent of anyone's laptop being on.</p>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">Monorepo app root</div>
+        <p>The Amplify project lived in a subfolder of a larger repo (alongside this static site), not at the repo root. Amplify Hosting's monorepo setting tells the build which subfolder is the actual app — otherwise it can't find the backend definition or run the right build commands.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label"><code>npm ci</code> vs. <code>npm install</code></div>
+        <p>CI environments use <code>npm ci</code>, which requires <code>package.json</code> and <code>package-lock.json</code> to match exactly — unlike <code>npm install</code>, it won't quietly resolve small drift between them. A lock file that had gotten slightly out of sync (from installing dependencies in stages locally) failed the very first CI build until <code>npm install</code> was re-run locally and the refreshed lock file was committed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>"Tell me about a time you debugged something in production" / "Walk me through deploying a service"</h3>
+    <ul>
+      <li><strong>Name the actual symptom before the fix</strong> — "the deploy failed with an unresolvable module error, then the function itself threw a malformed-config error" reads as someone who watched the failure closely, not someone reciting a solution.</li>
+      <li><strong>Two APIs granting the same permission aren't always the same mechanism</strong> — the manual IAM grant and the schema-level grant produced identical access but only one triggered required code generation. Worth having as a go-to example of "looked equivalent, wasn't."</li>
+      <li><strong>When docs and community threads disagree, the framework's own current docs for that exact feature win</strong> — GitHub issues are often outdated or describe a different version's behavior.</li>
+      <li><strong>Security hygiene is a habit, not a one-time check</strong> — reviewing <code>git status</code> before staging is what caught a live credential before it reached a remote repo, not a special audit step.</li>
+      <li><strong>"Deployed" has degrees</strong> — a personal sandbox, a CI-deployed branch, and a production environment with monitoring are three different levels of "done," and knowing which one you're actually at matters.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Cloud deployment · Case study</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

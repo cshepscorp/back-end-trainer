@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>JavaScript Fundamentals</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--subtle);
+    overflow-x: auto;
+    margin-bottom: 16px;
+    white-space: pre;
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .str { color: var(--green); }
+  .code-block .cm { color: var(--muted); font-style: italic; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+  @media (max-width: 720px) { .code-cols { grid-template-columns: 1fr; } }
+
+  .compare-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .compare-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 300; line-height: 1.5; color: var(--subtle); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">JavaScript · Interview essentials</div>
+    <h1>JavaScript fundamentals</h1>
+    <p class="intro">The language-level questions that show up regardless of framework — closures, <code>this</code>, the event loop's microtask/macrotask split, prototypes, and the array/object methods that come up constantly in whiteboard exercises.</p>
+  </div>
+
+  <!-- CLOSURES -->
+  <div class="content-section" id="closures">
+    <div class="section-title">Closures</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>A closure is a backpack of variables a function carries with it wherever it goes.</strong> When a function is defined inside another function, it keeps a reference to the variables from that outer scope — even after the outer function has already finished running and would otherwise have its variables cleaned up. The inner function packed them in its backpack on the way out.</p>
+    </div>
+    <div class="code-block">function makeCounter() {
+  <span class="kw">let</span> count = 0;
+  <span class="cm">// this returned function "closes over" count</span>
+  <span class="kw">return</span> function() {
+    count++;
+    <span class="kw">return</span> count;
+  };
+}
+<span class="kw">const</span> counter = makeCounter();
+counter(); <span class="cm">// 1</span>
+counter(); <span class="cm">// 2 — count persisted between calls</span></div>
+    <div class="info-card">
+      <p>This is exactly how the module pattern and private state in JavaScript work before classes had private fields — <code>count</code> is only reachable through the returned function, not from outside <code>makeCounter</code> at all. It's also the source of the classic loop bug: a <code>var</code> inside a <code>for</code> loop is shared across every iteration's callback (one shared backpack), while <code>let</code> creates a fresh binding per iteration (a new backpack each time) — which is why <code>let</code> fixed a whole category of "why did every callback log the same last value" bugs.</p>
+    </div>
+  </div>
+
+  <!-- THIS -->
+  <div class="content-section" id="this-keyword">
+    <div class="section-title">"this" — determined by how a function is called, not where it's defined</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Unlike most variables, <code>this</code> isn't fixed by where a function is written — it's set fresh depending on how the function is <strong>called</strong>. Call it as <code>obj.method()</code> and <code>this</code> is <code>obj</code>. Call that same function detached, as a bare reference, and <code>this</code> is <code>undefined</code> (in strict mode/modules) or the global object. This is why passing <code>obj.method</code> directly as a callback — to <code>setTimeout</code>, an event listener, an array method — silently loses its <code>this</code> binding.</p>
+    </div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// breaks — this is lost</span>
+<span class="kw">class</span> Timer {
+  constructor() { this.count = 0; }
+  tick() { this.count++; }
+}
+<span class="kw">const</span> t = <span class="kw">new</span> Timer();
+setTimeout(t.tick, 1000);
+<span class="cm">// this.count throws — this is undefined</span></div>
+      <div class="code-block dim-right"><span class="cm">// fixed — arrow function captures this</span>
+<span class="kw">class</span> Timer {
+  constructor() { this.count = 0; }
+  tick = () => { this.count++; };
+}
+<span class="kw">const</span> t = <span class="kw">new</span> Timer();
+setTimeout(t.tick, 1000);
+<span class="cm">// works — arrow fn has no own "this"</span></div>
+    </div>
+    <div class="analogy-box" style="border-left-color:var(--purple)">
+      <div class="label">The analogy</div>
+      <p><strong>A regular function's <code>this</code> is like a name tag handed out at check-in — it depends on who's checking you in (how it's called).</strong> An arrow function doesn't get its own name tag at all; it just reads whatever tag was already on the wall where it was defined (the enclosing scope's <code>this</code>), and never changes based on how it's later invoked. That's why arrow functions are the standard fix for callbacks that need to reference the surrounding class instance.</p>
+    </div>
+  </div>
+
+  <!-- EVENT LOOP: MICROTASKS VS MACROTASKS -->
+  <div class="content-section" id="microtasks-vs-macrotasks">
+    <div class="section-title">Microtasks vs. macrotasks</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Promise callbacks (<code>.then</code>, <code>async/await</code> continuations, <code>queueMicrotask</code>) go on the <strong>microtask queue</strong>. Timer callbacks (<code>setTimeout</code>, <code>setInterval</code>) and things like I/O callbacks go on the <strong>macrotask (task) queue</strong>. After each single macrotask finishes, the event loop fully drains the entire microtask queue — including any new microtasks queued while draining — before it's allowed to pick up the next macrotask.</p>
+    </div>
+    <div class="code-block">console.log(<span class="str">'1'</span>);
+setTimeout(() => console.log(<span class="str">'2'</span>), 0);
+Promise.resolve().then(() => console.log(<span class="str">'3'</span>));
+console.log(<span class="str">'4'</span>);
+<span class="cm">// logs: 1, 4, 3, 2</span>
+<span class="cm">// sync code first, then the microtask queue fully drains, then the timer</span></div>
+    <div class="info-card">
+      <p>The practical impact: a Promise that resolves "immediately" will always run before a <code>setTimeout(fn, 0)</code> scheduled at the same moment, no matter how the code is ordered on the page. This trips people up in interviews specifically because both look like "run this as soon as possible" — but they're on different queues with a strict priority order between them.</p>
+    </div>
+  </div>
+
+  <!-- PROTOTYPES -->
+  <div class="content-section" id="prototypes">
+    <div class="section-title">Prototypes &amp; prototypal inheritance</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>The prototype chain is asking a question up a chain of managers when your own desk doesn't have the answer.</strong> Every object has an internal link to another object (its prototype). When you access a property, JavaScript checks the object itself first; if it's not there, it walks up to the prototype, then that prototype's prototype, and so on, until it finds the property or hits the end of the chain (<code>null</code>).</p>
+    </div>
+    <div class="info-card">
+      <p><code>class</code> syntax in modern JavaScript is largely sugar over this same mechanism — methods defined in a class body actually live on the class's <code>prototype</code> object, shared by every instance, rather than being copied onto each individual object. That's also why prototype-chain lookups are relevant to performance discussions: a property found on the object itself is faster to access than one several links up the chain, though this rarely matters outside of very hot code paths.</p>
+    </div>
+  </div>
+
+  <!-- ASYNC PATTERNS -->
+  <div class="content-section" id="async-patterns">
+    <div class="section-title">Callbacks → Promises → async/await</div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Pattern</th><th>What it looks like</th><th>Main drawback it solved / introduced</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Callbacks</td><td>Pass a function to run later, as an argument</td><td>Nesting multiple sequential async steps produces "callback hell" — deeply indented, hard-to-follow code</td></tr>
+        <tr><td>Promises</td><td><code>.then().then().catch()</code> chains</td><td>Flattens the nesting and gives a single standard way to handle success/failure, but chains can still get visually busy</td></tr>
+        <tr><td>async/await</td><td><code>await</code> inside an <code>async function</code>, wrapped in <code>try/catch</code></td><td>Reads like synchronous code top to bottom; still Promises underneath — <code>await</code> is sugar over <code>.then()</code></td></tr>
+      </tbody>
+    </table>
+    <div class="info-card">
+      <p><strong>A frequent interview trap:</strong> forgetting that <code>await</code> only pauses execution within the current <code>async function</code> — it does not block the rest of the JavaScript engine. Other code, other requests, and other timers keep running normally while one function is paused on an <code>await</code>. This is the same non-blocking behavior the Node.js internals material covers at the runtime level — async/await is just a cleaner syntax on top of it.</p>
+    </div>
+  </div>
+
+  <!-- ARRAY METHODS -->
+  <div class="content-section" id="array-methods">
+    <div class="section-title">Array methods that come up constantly</div>
+    <div class="code-block"><span class="kw">const</span> nums = [1, 2, 3, 4, 5];
+
+nums.map(n => n * 2);              <span class="cm">// [2,4,6,8,10] — transform each item, same length</span>
+nums.filter(n => n % 2 === 0);     <span class="cm">// [2,4] — keep items matching a condition</span>
+nums.reduce((sum, n) => sum + n, 0); <span class="cm">// 15 — fold into a single value</span>
+nums.find(n => n > 3);             <span class="cm">// 4 — first match, or undefined</span>
+nums.some(n => n > 4);             <span class="cm">// true — does any item match?</span>
+nums.every(n => n > 0);            <span class="cm">// true — do all items match?</span></div>
+    <div class="info-card">
+      <p><code>map</code> and <code>filter</code> both return new arrays and never mutate the original — that immutability is exactly why they're the default choice in React and other state-driven UIs, where mutating an array in place can silently break change detection. <code>reduce</code> is the most general of the bunch — <code>map</code> and <code>filter</code> can technically both be written as a <code>reduce</code> — but reaching for the more specific method when it fits is almost always more readable.</p>
+    </div>
+  </div>
+
+  <!-- EQUALITY -->
+  <div class="content-section" id="equality">
+    <div class="section-title">== vs. === vs. Object.is</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>==</code> ("loose equality") coerces types before comparing — <code>'5' == 5</code> is <code>true</code>. <code>===</code> ("strict equality") compares both value and type with no coercion — <code>'5' === 5</code> is <code>false</code>. The near-universal convention is to default to <code>===</code> everywhere and treat <code>==</code>'s coercion rules as a source of surprising bugs rather than a convenience.</p>
+    </div>
+    <div class="info-card">
+      <p>Even <code>===</code> has two well-known edge cases worth naming: <code>NaN === NaN</code> is <code>false</code> (NaN is defined to never equal anything, including itself — use <code>Number.isNaN()</code> to actually check for it), and <code>-0 === 0</code> is <code>true</code> despite being distinct values. <code>Object.is()</code> is the rarely-used strict-equality variant that gets both of those "right" — <code>Object.is(NaN, NaN)</code> is <code>true</code> — but outside of niche cases like this, plain <code>===</code> is still what you reach for.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>Naming these concepts under pressure</h3>
+    <ul>
+      <li><strong>Closures:</strong> "a function keeps access to the variables from where it was defined, even after that outer scope has finished running" — then give the counter or loop-variable example.</li>
+      <li><strong>this:</strong> "it's set by how the function is called, not where it's written" — and know that arrow functions are the fix when a callback needs to keep the surrounding <code>this</code>.</li>
+      <li><strong>Microtasks vs. macrotasks:</strong> "Promises always drain before the next timer fires, even if both were scheduled at the same moment" — the classic <code>console.log</code> ordering question tests exactly this.</li>
+      <li><strong>Prototypes:</strong> "classes are sugar over the same prototype-chain lookup mechanism" — shows you understand what <code>class</code> is actually doing underneath.</li>
+      <li><strong>Default to <code>===</code></strong> and be ready to name the <code>NaN</code>/<code>-0</code> edge cases if pushed on equality specifically.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>JavaScript fundamentals · Interview essentials</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

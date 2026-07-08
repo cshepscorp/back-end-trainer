@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Infrastructure as Code &amp; Deployment Basics</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .code-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--subtle);
+    overflow-x: auto;
+    margin-bottom: 16px;
+    white-space: pre;
+  }
+  .code-block .kw { color: var(--purple); }
+  .code-block .cm { color: var(--muted); font-style: italic; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+  @media (max-width: 720px) { .code-cols { grid-template-columns: 1fr; } }
+
+  .compare-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .compare-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 300; line-height: 1.5; color: var(--subtle); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+
+  .note-callout {
+    background: var(--surface2);
+    border: 1px dashed var(--border2);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .note-callout a { color: var(--card-accent, var(--blue)); text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Deployment &amp; infrastructure · Concepts</div>
+    <h1>Infrastructure as code &amp; deployment basics</h1>
+    <p class="intro">The vocabulary and mental models behind "how does this actually get deployed" — declarative vs. imperative infrastructure, what a tool like CloudFormation or Terraform actually does with your config, serverless vs. always-on trade-offs, and IAM as the permission layer underneath all of it.</p>
+  </div>
+
+  <div class="note-callout">Looking for the specific story of how this project got deployed to AWS Amplify — the bugs, the fixes, the actual commands? That's a separate case study: <a href="deploying-with-amplify.html">Deploying to the cloud, start to finish</a>. This page is the general concepts; that one is what actually happened.</div>
+
+  <!-- DECLARATIVE VS IMPERATIVE -->
+  <div class="content-section" id="declarative-vs-imperative">
+    <div class="section-title">Declarative vs. imperative infrastructure</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>Imperative is a recipe; declarative is a finished-dish photo.</strong> An imperative approach is a script of exact steps — "create this VM, then install this package, then open this port, then start this process" — run in order. A declarative approach just describes the end state you want — "I want one server, this size, running this app, with this port open" — and hands that description to a tool that figures out what steps are needed to make reality match it.</p>
+    </div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// imperative — a script of steps</span>
+<span class="kw">ssh</span> server
+apt install postgres
+createdb myapp
+<span class="kw">export</span> PORT=3000
+npm start &amp;
+<span class="cm">// run it twice? results may differ</span>
+<span class="cm">// depending on current server state</span></div>
+      <div class="code-block dim-right"><span class="cm">// declarative — describe the end state</span>
+database:
+  engine: postgres
+service:
+  port: 3000
+  command: npm start
+<span class="cm">// run it 10 times — tool computes the</span>
+<span class="cm">// diff from current state each time</span></div>
+    </div>
+    <div class="info-card">
+      <p>Infrastructure-as-code tools (Terraform, AWS CloudFormation, Pulumi, and Amplify's CDK-based config underneath) are declarative. The practical benefit is <strong>idempotency</strong> — running the same declarative config twice doesn't recreate everything from scratch or double up resources; the tool compares the description against what's actually deployed and only changes what's different. An imperative script re-run against an already-configured server has no such guarantee — it might error out, duplicate work, or silently drift depending on what state the server happened to be in.</p>
+    </div>
+  </div>
+
+  <!-- WHAT AN ORCHESTRATOR DOES -->
+  <div class="content-section" id="orchestration-and-dependency-graphs">
+    <div class="section-title">What an IaC tool does with your config: dependency graphs</div>
+    <div class="analogy-box" style="border-left-color:var(--purple)">
+      <div class="label">The analogy</div>
+      <p><strong>An IaC tool reads your infrastructure description the way a project manager reads a construction plan — building a dependency graph before doing anything.</strong> You don't hand a contractor a photo of a finished house and have them start randomly; you can't put up drywall before the framing exists. The tool inspects everything you declared — a database, a function that reads from it, permissions the function needs — figures out what depends on what, and works out a valid build order automatically.</p>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Concretely: if your config declares a Lambda function that reads from a DynamoDB table, the tool sees that dependency and knows the table has to exist (or at least be far enough along) before the function's permissions can reference it. You never write out that ordering yourself — you just declare both resources and how they relate, and the tool derives the graph and executes accordingly, in parallel wherever there's no dependency forcing a specific order.</p>
+    </div>
+    <div class="info-card">
+      <p>This is also what makes changes safe to reason about: before actually applying anything, most of these tools can show you a "plan" or "diff" — here's what would be created, changed, or destroyed, based on comparing your new config against the last known deployed state. Reviewing that plan before approving it is the infrastructure equivalent of reviewing a code diff before merging.</p>
+    </div>
+  </div>
+
+  <!-- SERVERLESS VS ALWAYS-ON -->
+  <div class="content-section" id="serverless-vs-always-on">
+    <div class="section-title">Serverless vs. always-on servers</div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Consideration</th><th>Serverless (e.g. Lambda)</th><th>Always-on (e.g. a VM or container running 24/7)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>What's running</td><td>Nothing, most of the time — code only executes when triggered, then the environment goes away</td><td>A process stays alive continuously, whether or not it's currently handling a request</td></tr>
+        <tr><td>Cost model</td><td>Pay per invocation/execution time — near-zero cost at zero traffic</td><td>Pay for the server running, regardless of traffic level</td></tr>
+        <tr><td>Cold starts</td><td>A request after idle time may wait briefly while the environment spins up</td><td>No cold start — the process is already warm and waiting</td></tr>
+        <tr><td>Good for</td><td>Spiky, unpredictable, or infrequent traffic; scheduled/event-driven jobs</td><td>Steady, predictable, high-frequency traffic where cold starts would be costly</td></tr>
+        <tr><td>State between requests</td><td>None guaranteed — treat each invocation as if it might be a fresh environment</td><td>In-memory state can persist across requests naturally (with the multi-instance caveats system design covers)</td></tr>
+      </tbody>
+    </table>
+    <div class="info-card">
+      <p>This is exactly the trade-off behind why a scheduled daily task (like a cron job that runs once and does a bounded amount of work) is a natural fit for a serverless function, while a server handling a constant stream of live user traffic often favors an always-on process — the "pay only when it runs" model stops being an advantage once something is effectively always running anyway.</p>
+    </div>
+  </div>
+
+  <!-- IAM AS THE PERMISSION LAYER -->
+  <div class="content-section" id="iam-permission-layer">
+    <div class="section-title">IAM: the permission layer underneath everything</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>IAM (Identity and Access Management) roles are like key cards, not passwords.</strong> A person doesn't get a copy of a database's actual credentials; a piece of infrastructure (a function, a server) is issued a role — a key card — that's been granted access to specific doors (specific resources, specific actions on them). The system checks the key card at the door every time, rather than the requester needing to know a secret to get in.</p>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>This matters architecturally because it replaces "hand out a secret and hope it's stored safely" with "grant a role specific, narrow permissions, enforced by the platform itself." A Lambda function with a role that can only read from one specific table can't accidentally (or maliciously, if compromised) write to a different one, delete a bucket, or spin up new infrastructure — the permission boundary is enforced independent of the function's own code.</p>
+    </div>
+    <div class="info-card">
+      <p>The principle to name in an interview is <strong>least privilege</strong>: grant only the specific permissions a piece of infrastructure actually needs to do its job, nothing broader "just in case." A role that can do everything is a much bigger blast radius if something goes wrong — a bug, a leaked credential, a misconfigured request — than a role scoped tightly to exactly what's required.</p>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENTS -->
+  <div class="content-section" id="environments-and-promotion">
+    <div class="section-title">Environments &amp; promotion</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Most real deployments aren't a single environment — there's typically a personal/dev environment (a sandbox one engineer can freely break), a shared staging environment (closer to production, used to catch integration issues before real users see them), and production itself. Infrastructure as code makes this practical: the same declarative config can be applied to multiple environments with different parameters (a smaller database in dev, stricter alerting in production) instead of hand-building each environment separately and hoping they stay in sync.</p>
+    </div>
+    <div class="info-card">
+      <p><strong>Promotion</strong> is the practice of moving a change through these environments in order — verified in dev, then staging, then production — rather than deploying straight to production. It's the infrastructure equivalent of a code review process: each stage is a chance to catch a problem before it reaches real users, and the cost of a mistake increases the further along that chain it slips through undetected.</p>
+    </div>
+  </div>
+
+  <!-- ROLLBACK -->
+  <div class="content-section" id="rollback-and-drift">
+    <div class="section-title">Rollback &amp; drift</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Because declarative IaC tools track the last known deployed state, a bad deploy can often be <strong>rolled back</strong> by reapplying the previous known-good configuration — the tool computes the diff back to that state the same way it computes any other change. This is a real advantage over ad hoc manual changes, where "undo" often means someone trying to remember and manually reverse whatever they clicked or typed.</p>
+    </div>
+    <div class="info-card">
+      <p><strong>Drift</strong> is what happens when the real infrastructure no longer matches what the IaC config says it should be — usually because someone made a manual change directly (clicking around in a cloud console) instead of going through the declarative config. Drift is a genuine operational risk: the next time the IaC tool runs, it may "correct" that manual change back to what the config says, silently undoing something someone did for a real reason. The standard discipline is to treat the IaC config as the single source of truth and avoid manual out-of-band changes to anything it manages.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>"Walk me through how you'd deploy this"</h3>
+    <ul>
+      <li><strong>Lead with declarative over imperative</strong> — describe the desired end state and let a tool compute the diff, rather than scripting exact steps that may not be safe to re-run.</li>
+      <li><strong>Name the dependency graph</strong> — the tool figures out build order from what you declare (a function needing a database) rather than you hand-sequencing every step.</li>
+      <li><strong>Justify serverless vs. always-on by traffic shape</strong> — spiky/infrequent leans serverless, steady/high-frequency leans always-on, and say why cold starts matter for one but not the other.</li>
+      <li><strong>Default to least-privilege IAM roles</strong> — narrow, resource-specific permissions rather than broad access "just in case."</li>
+      <li><strong>Mention promotion through environments</strong> — dev → staging → production, catching problems before they reach real users, rather than deploying straight to production.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Infrastructure as code · Interview essentials</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

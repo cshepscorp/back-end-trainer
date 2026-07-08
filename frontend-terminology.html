@@ -69,7 +69,7 @@
   </div>
 
   <!-- Group 1 -->
-  <div class="term-group">
+  <div class="term-group" id="ui-lib-vs-framework">
     <div class="group-header">
       <div class="group-label">UI libraries &amp; frameworks</div>
       <div class="group-line"></div>
@@ -99,7 +99,7 @@
   </div>
 
   <!-- Group 2 -->
-  <div class="term-group">
+  <div class="term-group" id="meta-frameworks">
     <div class="group-header">
       <div class="group-label">Meta-frameworks &amp; build tools</div>
       <div class="group-line"></div>
@@ -112,14 +112,14 @@
         <div class="term-desc">Sits on top of a UI library and adds everything it's missing: file-based routing, SSR, API routes, build optimization, deployment config. Turns a library into a <em>complete application structure</em>.</div>
         <div class="term-examples"><span class="pill">Next.js</span><span class="pill">Remix</span><span class="pill">Nuxt</span><span class="pill">SvelteKit</span></div>
       </div>
-      <div class="term-card featured">
+      <div class="term-card featured" id="term-nextjs">
         <div class="featured-badge">you've used this</div>
         <div class="term-name">Next.js</div>
         <div class="term-aka">React meta-framework — built by Vercel</div>
         <div class="term-desc">Most popular meta-framework for React. Adds file-based routing, server-side rendering, image optimization, and API routes. Frontend and a lightweight backend <em>in one project</em>.</div>
         <div class="term-examples"><span class="pill green">React + routing + SSR</span><span class="pill green">API routes built in</span></div>
       </div>
-      <div class="term-card featured">
+      <div class="term-card featured" id="term-vite">
         <div class="featured-badge">you've used this</div>
         <div class="term-name">Vite</div>
         <div class="term-aka">build tool — not a framework</div>
@@ -130,7 +130,7 @@
   </div>
 
   <!-- Group 3 -->
-  <div class="term-group">
+  <div class="term-group" id="rendering-strategies">
     <div class="group-header">
       <div class="group-label">Rendering strategies</div>
       <div class="group-line"></div>
@@ -160,7 +160,7 @@
 
   <!-- Comparison table -->
   <div class="section-title">How they compare — at a glance</div>
-  <table class="compare-table">
+  <table class="compare-table" id="compare-table">
     <thead>
       <tr><th>Tool</th><th>Category</th><th>Handles routing?</th><th>Handles rendering?</th><th>Needs a runtime?</th></tr>
     </thead>
@@ -175,7 +175,7 @@
 
   <!-- Decision -->
   <div class="section-title">What this means for the parks app</div>
-  <div class="decision-box">
+  <div class="decision-box" id="parks-app-decision">
     <div class="db-label">The decision</div>
     <h3>Which setup makes sense here?</h3>
     <p>The parks app is dynamic and user-specific — saved trips, auth, real-time search. SSG is out. The real choice is how much structure you want up front vs how much you learn by wiring things yourself.</p>
@@ -202,5 +202,6 @@
 </div>
 
 <script src="theme.js"></script>
+<script src="notes.js"></script>
 </body>
 </html>

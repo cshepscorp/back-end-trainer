@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Production & Operations Basics</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Operations · Interview essentials</div>
+    <h1>Production &amp; operations basics</h1>
+    <p class="intro">What changes once real users depend on your app staying up — logging, error handling, graceful shutdown, and environment configs.</p>
+  </div>
+
+  <!-- LOGGING -->
+  <div class="content-section" id="structured-logging">
+    <div class="section-title">Structured logging</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>console.log</code> is fine locally, but in production you need logs that are <strong>searchable and machine-parseable</strong> — structured as JSON with consistent fields, not free-form text. A <strong>request ID</strong> (or correlation ID) attached to every log line for a given request lets you trace one user's journey through your system, even across multiple services.</p>
+    </div>
+    <div class="code-block"><span class="cm">// Unstructured — hard to search or aggregate</span>
+console.<span class="cf">log</span>(<span class="cs">'user 42 failed to login'</span>);
+
+<span class="cm">// Structured — queryable, consistent shape</span>
+logger.<span class="cf">error</span>({
+  event: <span class="cs">'login_failed'</span>,
+  userId: <span class="cn">42</span>,
+  requestId: req.id,
+  reason: <span class="cs">'invalid_password'</span>
+});</div>
+    <div class="code-caption">"Show me every failed login for user 42 last week" — trivial with structured logs, painful with plain strings</div>
+  </div>
+
+  <!-- ERROR HANDLING -->
+  <div class="content-section" id="error-handling-patterns">
+    <div class="section-title">Error handling patterns</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">Operational errors</div>
+        <p>Expected failures that happen in normal operation — invalid input, a failed DB connection, a 404. Handle these gracefully and return a proper response.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Programmer errors</div>
+        <p>Actual bugs — calling a function with the wrong type, a typo. These usually mean something is broken and should be logged loudly, not quietly swallowed.</p>
+      </div>
+    </div>
+    <div class="info-card">
+      <p>A <strong>centralized Express error-handling middleware</strong> (the one with 4 arguments — <code>err, req, res, next</code>) is where you catch both kinds, log appropriately, and send a consistent error response shape to the client instead of scattering try/catch blocks with inconsistent responses across every route.</p>
+    </div>
+  </div>
+
+  <!-- GRACEFUL SHUTDOWN -->
+  <div class="content-section" id="graceful-shutdown">
+    <div class="section-title">Graceful shutdown</div>
+    <div class="analogy-box">
+      <div class="label">The problem</div>
+      <p><strong>Killing a process instantly mid-request cuts users off in the middle of something</strong> — a half-finished database write, a dropped response the client never receives. When your process gets a <code>SIGTERM</code> (the signal sent before a deploy, restart, or scale-down), the right move is to stop accepting new requests, finish the ones already in flight, close database connections cleanly, and only then exit.</p>
+    </div>
+    <div class="code-block"><span class="cm">// Listen for the shutdown signal and drain in-flight work first</span>
+process.<span class="cf">on</span>(<span class="cs">'SIGTERM'</span>, <span class="ck">async</span> () => {
+  server.<span class="cf">close</span>(<span class="ck">async</span> () => {
+    <span class="ck">await</span> db.$disconnect();
+    process.<span class="cf">exit</span>(<span class="cn">0</span>);
+  });
+});</div>
+    <div class="code-caption">server.close() stops new connections but lets existing ones finish</div>
+  </div>
+
+  <!-- ENV CONFIG & HEALTH CHECKS -->
+  <div class="content-section" id="env-and-health-checks">
+    <div class="section-title">Environment configs &amp; health checks</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">Environment separation</div>
+        <p>Dev, staging, and production typically need different database URLs, API keys, and log verbosity. Keeping these in environment variables (not hardcoded, not in one shared file) is what makes the same codebase safely deployable to all three.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Health checks</div>
+        <p>A simple <code>/health</code> endpoint that returns 200 if the app (and its DB connection) is actually working. Load balancers and orchestration tools poll this to decide whether to route traffic to an instance — or restart it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CI/CD & CONTAINERS -->
+  <div class="content-section" id="cicd-containers">
+    <div class="section-title">CI/CD &amp; containers, at a glance</div>
+    <div class="info-card">
+      <p><strong>Docker</strong> packages your app with everything it needs to run — same environment on your laptop, in staging, and in production, eliminating "it works on my machine." <strong>CI/CD</strong> automates running tests and deploying on every push, so shipping isn't a manual, error-prone ritual. You don't need deep expertise here for most interviews — being able to explain <em>what problem each one solves</em> is usually enough at the fundamentals level.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>"What would you add before this goes to production?"</h3>
+    <ul>
+      <li><strong>Structured logging with request IDs</strong> — so a failure can actually be traced, not just noticed.</li>
+      <li><strong>A centralized error handler</strong> — consistent responses, proper logging, no scattered try/catch inconsistency.</li>
+      <li><strong>Graceful shutdown handling</strong> — so deploys and restarts don't cut users off mid-request.</li>
+      <li><strong>Environment-specific config via env vars</strong> — never hardcoded secrets or URLs.</li>
+      <li><strong>A health check endpoint</strong> — so infrastructure can tell if the app is actually healthy, not just running.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Production &amp; operations · Interview essentials</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

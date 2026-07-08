@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Apply saved theme before paint to avoid flash -->
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Authentication — Sessions, JWTs & OAuth</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  /* ── SHARED CARD STYLES ── */
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  /* ── ANALOGY BOX ── */
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box p + p { margin-top: 8px; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .flow-steps { display: flex; flex-direction: column; gap: 0; }
+  .flow-step { display: flex; gap: 16px; align-items: flex-start; }
+  .flow-step-connector { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .step-line { width: 1px; flex: 1; min-height: 16px; background: var(--border2); margin: 4px 0; }
+  .flow-step:last-child .step-line { display: none; }
+  .step-content { padding-bottom: 20px; padding-top: 4px; flex: 1; }
+  .step-content .step-title { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+  .step-content .step-desc { font-size: 12.5px; font-weight: 300; color: var(--muted); line-height: 1.5; }
+  .step-content .step-desc em { color: var(--subtle); font-style: normal; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .compare-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .compare-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 300; line-height: 1.5; color: var(--subtle); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; }
+  .compare-table td.win  { color: var(--green); font-weight: 400; }
+  .compare-table td.lose { color: var(--muted); }
+  .compare-table td.mid  { color: var(--amber); font-weight: 400; }
+
+  /* ── STORAGE CARDS ── */
+  .storage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .storage-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; transition: var(--theme-transition); }
+  .storage-card.chosen { border-color: #4ade8044; background: #4ade8008; }
+  .storage-card.not-chosen { opacity: 0.7; }
+  .storage-card .sc-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .sc-label.chosen { color: var(--green); }
+  .sc-label.not-chosen { color: var(--muted); }
+  .storage-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .storage-card p { font-size: 13px; font-weight: 300; color: var(--subtle); line-height: 1.55; margin-bottom: 8px; }
+  .storage-card .risk { font-size: 12px; font-family: var(--mono); padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+  .risk.high { background: #f7816615; color: var(--coral); border: 1px solid #f7816630; }
+  .risk.low  { background: #4ade8015; color: var(--green); border: 1px solid #4ade8030; }
+
+  /* ── DECISION BOX ── */
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+
+  /* ── INTERVIEW CALLOUT ── */
+  .interview-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--purple);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .interview-box .i-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--purple); margin-bottom: 10px; }
+  .interview-box blockquote { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.7; font-style: italic; border: none; padding: 0; }
+  .interview-box blockquote strong { color: var(--ink); font-style: normal; font-weight: 600; }
+
+  /* step dot colors */
+  .dot-blue   { background: #6c8ef520; color: var(--blue);   border: 1px solid #6c8ef540; }
+  .dot-teal   { background: #2dd4bf20; color: var(--teal);   border: 1px solid #2dd4bf40; }
+  .dot-purple { background: #a78bfa20; color: var(--purple); border: 1px solid #a78bfa40; }
+  .dot-green  { background: #4ade8020; color: var(--green);  border: 1px solid #4ade8040; }
+  .dot-amber  { background: #fbbf2420; color: var(--amber);  border: 1px solid #fbbf2440; }
+  .dot-orange { background: #fb923c20; color: var(--orange); border: 1px solid #fb923c40; }
+  .dot-coral  { background: #f7816620; color: var(--coral);  border: 1px solid #f7816640; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Auth · Security</div>
+    <h1>Authentication:<br>Sessions, JWTs &amp; OAuth</h1>
+    <p class="intro">How identity works on the web, why HTTP being stateless creates the problem, and the full auth stack the parks app uses.</p>
+  </div>
+
+
+  <!-- THE STATELESS PROBLEM -->
+  <div class="content-section" id="stateless-problem">
+    <div class="section-title">The problem — HTTP is stateless</div>
+    <div class="info-card" style="margin-bottom:20px">
+      <p>Every HTTP request is independent. The server has no memory of previous requests — each one arrives as if it's the first time. This means after you log in, the server immediately forgets you did. Every subsequent request needs to prove identity all over again.</p>
+      <p>Auth is the solution to this problem. The question is <strong>where that proof of identity lives</strong> between requests — on the server, or on the client.</p>
+    </div>
+  </div>
+
+
+  <!-- TWO APPROACHES -->
+  <div class="content-section">
+    <div class="section-title">Two approaches — sessions vs JWTs</div>
+    <div class="info-grid" id="sessions-vs-jwt">
+      <div class="info-card">
+        <div class="accent-bar" style="background:var(--teal)"></div>
+        <div class="card-label">Approach 1</div>
+        <h2>Sessions</h2>
+        <p>On login, the server creates a session, stores your user info in its own memory or database, and gives you back a random session ID. That ID gets saved in a <strong>cookie</strong> in your browser. Every subsequent request sends the cookie automatically — the server looks up the ID, finds your data, and knows who you are.</p>
+        <p style="margin-top:10px"><strong>User data lives on the server.</strong> The browser only holds an ID — a claim ticket.</p>
+      </div>
+      <div class="info-card">
+        <div class="accent-bar" style="background:var(--blue)"></div>
+        <div class="card-label">Approach 2</div>
+        <h2>JWTs</h2>
+        <p>On login, the server creates a <strong>JSON Web Token</strong> containing your user info directly — your ID, role, expiration time. It cryptographically signs it and sends it to you. Your client stores it. Every request you send the JWT, the server verifies the signature and reads your info right out of the token.</p>
+        <p style="margin-top:10px"><strong>User data lives in the token, on the client.</strong> The server stores nothing.</p>
+      </div>
+    </div>
+
+    <div class="analogy-box" id="auth-analogy">
+      <div class="label">The analogy</div>
+      <p><strong>Sessions</strong> — the server holds your file in a cabinet, hands you a numbered ticket. Every visit you show the ticket and they pull your file.</p>
+      <p><strong>JWTs</strong> — the server hands you your file directly, stamped and signed. Every visit you show the file and they verify the stamp. No cabinet needed.</p>
+    </div>
+
+    <div class="section-title">Why JWTs for the parks app</div>
+    <div class="info-card" id="why-jwt-chosen" style="margin-bottom:20px">
+      <p>Sessions work best when frontend and backend share the same server — cookies travel automatically on the same domain. But the parks app has a <strong>separate React frontend and Express backend</strong> running on different origins. Cookies across origins require careful CORS configuration and hit browser restrictions.</p>
+      <p style="margin-top:8px">JWTs sidestep this entirely. The token is just a string — React stores it and manually attaches it to every request in an <code>Authorization</code> header. No domain matching required. Clean and explicit.</p>
+    </div>
+
+    <table class="compare-table" id="jwt-tradeoffs-table">
+      <thead>
+        <tr><th>Consideration</th><th>Sessions</th><th>JWTs</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Where data lives</td>
+          <td class="mid">Server — session store</td>
+          <td class="mid">Client — inside the token</td>
+        </tr>
+        <tr>
+          <td>Separate frontend + backend</td>
+          <td class="lose">Cookie CORS complexity</td>
+          <td class="win">Simple — token in Authorization header</td>
+        </tr>
+        <tr>
+          <td>Revoking access instantly</td>
+          <td class="win">Easy — delete the session</td>
+          <td class="lose">Hard — token valid until expiry</td>
+        </tr>
+        <tr>
+          <td>Server memory needed</td>
+          <td class="lose">Yes — session store required</td>
+          <td class="win">No — server is stateless</td>
+        </tr>
+        <tr>
+          <td>Scaling across servers</td>
+          <td class="lose">Needs shared session store</td>
+          <td class="win">Any server can verify any token</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- JWT STORAGE -->
+  <div class="content-section">
+    <div class="section-title">Where to store the JWT — and why it matters</div>
+    <div class="storage-grid">
+      <div class="storage-card not-chosen" id="storage-localstorage">
+        <div class="sc-label not-chosen">Simpler approach — not chosen</div>
+        <h3>localStorage</h3>
+        <div class="risk high">XSS vulnerable</div>
+        <p>Easy to implement — store the token after login, read it on every request, attach it to the Authorization header manually. Most tutorials use this approach.</p>
+        <p>The problem: localStorage is readable by any JavaScript running on the page. An <strong>XSS attack</strong> (malicious JS injected into your app) can read and steal the token. Once stolen, the attacker can impersonate the user until the token expires.</p>
+      </div>
+      <div class="storage-card chosen" id="storage-httponly">
+        <div class="sc-label chosen">✓ what we're building</div>
+        <h3>HttpOnly Cookie</h3>
+        <div class="risk low">XSS protected</div>
+        <p>The JWT is set as a cookie with the <code>httpOnly</code> flag. This means <strong>JavaScript on the page cannot read it</strong> — only the browser can send it. An XSS attack can't steal what it can't see.</p>
+        <p>Requires a bit more setup — <code>credentials: 'include'</code> on fetch calls and a CORS configuration that allows credentials. Worth it for a real deployed app.</p>
+      </div>
+    </div>
+
+    <div class="section-title">The implementation difference</div>
+    <div class="code-block"><span class="cm">// ── EXPRESS SERVER — setting the HttpOnly cookie on login ──</span>
+app.<span class="cf">post</span>(<span class="cs">'/auth/callback'</span>, <span class="ck">async</span> (req, res) => {
+  <span class="ck">const</span> token = jwt.<span class="cf">sign</span>(
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: <span class="cs">'1h'</span> }
+  );
+
+  res.<span class="cf">cookie</span>(<span class="cs">'token'</span>, token, {
+    httpOnly: <span class="ck">true</span>,                              <span class="cm">// JS can't read it</span>
+    secure: process.env.NODE_ENV === <span class="cs">'production'</span>, <span class="cm">// HTTPS only in prod</span>
+    sameSite: <span class="cs">'strict'</span>,                          <span class="cm">// your domain only</span>
+    maxAge: <span class="cn">60</span> * <span class="cn">60</span> * <span class="cn">1000</span>                        <span class="cm">// 1 hour in ms</span>
+  });
+
+  res.<span class="cf">json</span>({ message: <span class="cs">'logged in'</span> });
+});
+
+<span class="cm">// ── REACT FRONTEND — no manual token handling needed ──</span>
+<span class="ck">const</span> trips = <span class="ck">await</span> <span class="cf">fetch</span>(<span class="cs">'/api/trips'</span>, {
+  credentials: <span class="cs">'include'</span> <span class="cm">// browser sends the cookie automatically</span>
+});
+
+<span class="cm">// ── EXPRESS — CORS config to allow credentials ──</span>
+app.<span class="cf">use</span>(<span class="cf">cors</span>({
+  origin: <span class="cs">'http://localhost:5173'</span>, <span class="cm">// your Vite dev server</span>
+  credentials: <span class="ck">true</span>               <span class="cm">// allow cookies cross-origin</span>
+}));</div>
+    <div class="code-caption">HttpOnly cookie setup — Express sets it, browser sends it, JS never touches it</div>
+
+    <div class="interview-box">
+      <div class="i-label">Interview answer — JWT storage trade-off</div>
+      <blockquote>"I could have stored the JWT in localStorage — it's simpler and how most tutorials show it. But localStorage is vulnerable to XSS attacks, so I went with <strong>HttpOnly cookies</strong> instead. JavaScript on the page can't read them, which removes that attack surface entirely. It required a bit more setup on the CORS configuration, but for a real deployed app it's the right call."</blockquote>
+    </div>
+  </div>
+
+
+  <!-- OAUTH -->
+  <div class="content-section">
+    <div class="section-title">OAuth — delegating authentication to Google</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">The user-facing reason</div>
+        <h3>No new password</h3>
+        <p>Users sign in with a Google account they already have. No new username, no new password to remember, no forgot-password flow to build.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label">The developer-facing reason</div>
+        <h3>Passwords are a liability</h3>
+        <p>Handling passwords means hashing, storage, breach risk, and reset flows. OAuth lets you say: <strong>"Google handles that. I'll trust their confirmation."</strong> You never touch the password.</p>
+      </div>
+    </div>
+
+    <div class="section-title">The OAuth flow — step by step</div>
+    <div class="flow-diagram" id="oauth-flow">
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-blue">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">User clicks "Sign in with Google"</div>
+            <div class="step-desc">Your React app redirects the user to Google's login page. <em>Your app is completely out of the picture at this point.</em></div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-teal">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">User logs in with Google</div>
+            <div class="step-desc">Google handles authentication entirely. <em>Your app never sees the password.</em></div>
+          </div>
+        </div>
+        <div class="flow-step" id="oauth-step-3">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-purple">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Google redirects back with a temporary code</div>
+            <div class="step-desc">Google sends the user back to your Express server with a short-lived authorization code. <em>This code is useless on its own.</em></div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-amber">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Your server exchanges the code for user info</div>
+            <div class="step-desc">Express sends the code to Google's API server-to-server. Google responds with the user's name, email, and Google ID. <em>This exchange happens on the backend — never in the browser.</em></div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-orange">5</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Your server finds or creates the user</div>
+            <div class="step-desc">Look up the Google ID in your <code>users</code> table. If they exist, fetch them. If not, create a new user row. <em>First-time login creates the account automatically.</em></div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-green">6</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Your server issues a JWT and sets the HttpOnly cookie</div>
+            <div class="step-desc">Your server mints a JWT with the user's ID and sets it as an HttpOnly cookie. <em>Google is now completely out of the picture — all future requests use this JWT.</em></div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-connector">
+            <div class="step-dot dot-blue">7</div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">All future requests use the JWT</div>
+            <div class="step-desc">The browser sends the cookie automatically on every request. Express verifies the JWT and identifies the user. Normal app flow resumes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-card" id="passport-js" style="margin-bottom:20px">
+      <div class="card-label">The library — Passport.js</div>
+      <p><strong>Passport.js</strong> is the standard Node.js library for OAuth. It has "strategies" for dozens of providers — Google, GitHub, Apple, and more. For the parks app you'd use <code>passport-google-oauth20</code>. Passport handles the redirect, the code exchange, and the callback — you just configure your Google credentials and tell it what to do with the user info it retrieves.</p>
+    </div>
+  </div>
+
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">The full auth stack — parks app</div>
+  <div class="decision-box">
+    <div class="db-label">Interview-ready reasoning</div>
+    <h3>OAuth → JWT → HttpOnly Cookie</h3>
+    <ul>
+      <li><strong>OAuth via Google</strong> — no passwords to handle, low friction for users, delegates auth to a trusted provider.</li>
+      <li><strong>JWTs over sessions</strong> — the frontend and backend are separate projects on different origins. JWTs are stateless and travel explicitly in requests, avoiding the cookie/CORS complexity that sessions bring in a decoupled architecture.</li>
+      <li><strong>HttpOnly cookies over localStorage</strong> — removes the XSS attack surface entirely. JavaScript on the page cannot read the token. Slightly more setup on CORS, worth it for a real deployed app.</li>
+      <li><strong>Passport.js</strong> — handles the OAuth flow so we're not implementing the Google redirect and code exchange from scratch.</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>Authentication · Sessions, JWTs &amp; OAuth</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Security Fundamentals — Beyond Auth</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+
+  .vuln-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  .vuln-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; transition: var(--theme-transition); }
+  .vuln-card .vuln-name { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--coral); }
+  .vuln-card p { font-size: 12.5px; font-weight: 300; color: var(--subtle); line-height: 1.55; }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Security · Beyond auth</div>
+    <h1>Security fundamentals,<br>beyond auth</h1>
+    <p class="intro">You've already got sessions, JWTs, and OAuth covered. This is the rest of the standard security checklist — input validation, injection attacks, CSRF, and rate limiting.</p>
+  </div>
+
+  <!-- INPUT VALIDATION -->
+  <div class="content-section" id="input-validation">
+    <div class="section-title">Input validation — never trust the client</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Anything arriving from outside your server — request bodies, query params, headers — should be treated as untrusted until validated. A library like <strong>Zod</strong> or <strong>Joi</strong> lets you define a schema once and reject malformed data before it ever touches your business logic or database.</p>
+    </div>
+    <div class="code-block"><span class="cm">// Validate at the boundary, before anything else runs</span>
+<span class="ck">const</span> schema = z.<span class="cf">object</span>({
+  email: z.<span class="cf">string</span>().<span class="cf">email</span>(),
+  age: z.<span class="cf">number</span>().<span class="cf">int</span>().<span class="cf">positive</span>()
+});
+
+app.<span class="cf">post</span>(<span class="cs">'/users'</span>, (req, res) => {
+  <span class="ck">const</span> result = schema.<span class="cf">safeParse</span>(req.body);
+  <span class="ck">if</span> (!result.success) {
+    <span class="ck">return</span> res.<span class="cf">status</span>(<span class="cn">400</span>).<span class="cf">json</span>({ error: <span class="cs">'Invalid input'</span> });
+  }
+  <span class="cm">// result.data is now safe to use</span>
+});</div>
+    <div class="code-caption">Reject bad data before it reaches your logic — not after</div>
+  </div>
+
+  <!-- INJECTION -->
+  <div class="content-section" id="sql-injection">
+    <div class="section-title">SQL injection</div>
+    <div class="analogy-box">
+      <div class="label">The core problem</div>
+      <p><strong>If user input gets pasted directly into a SQL string, a malicious user can write input that changes the query itself</strong> — not just the data inside it. Classic example: a login form where the "password" field contains SQL that always evaluates true.</p>
+    </div>
+    <div class="code-cols">
+      <div>
+        <div class="code-block dim-left"><span class="cm">// ✗ Vulnerable — string concatenation</span>
+<span class="ck">const</span> query = <span class="cs">`SELECT * FROM users
+  WHERE email = '${email}'`</span>;
+<span class="cm">// email = "' OR '1'='1" breaks out</span>
+<span class="cm">// of the string and changes the query</span></div>
+        <div class="code-caption">User input becomes part of the SQL itself</div>
+      </div>
+      <div>
+        <div class="code-block dim-right"><span class="cm">// ✓ Safe — parameterized query</span>
+<span class="ck">const</span> result = <span class="ck">await</span> db.<span class="cf">query</span>(
+  <span class="cs">'SELECT * FROM users WHERE email = $1'</span>,
+  [email]
+);
+<span class="cm">// email is always treated as DATA,</span>
+<span class="cm">// never as part of the query structure</span></div>
+        <div class="code-caption">Parameters are data, never executable SQL</div>
+      </div>
+    </div>
+<!-- Walking through the substitution, character by character -->
+    <div class="section-title" style="margin-top:8px"></div>
+    <div class="code-block"><span class="cm">// Normal input: email = "alice@example.com"</span>
+SELECT * FROM users WHERE email = <span class="cs">'alice@example.com'</span>
+<span class="cm">// A normal, valid comparison — one email, one match</span>
+
+<span class="cm">// Malicious input: email = "' OR '1'='1"</span>
+SELECT * FROM users WHERE email = <span class="cs">''</span> OR <span class="cs">'1'</span>=<span class="cs">'1'</span>
+<span class="cm">// The attacker's own quote closed the string early —</span>
+<span class="cm">// everything after it is no longer "data inside quotes,"</span>
+<span class="cm">// it's now real SQL the database will execute</span></div>
+    <div class="code-caption">Same template, same code — only the input changed</div>
+
+    <div class="info-card" style="margin-bottom:16px">
+      <p>The quote character in the attacker's input isn't just an unusual value — it's a boundary marker. The template's own opening <code>'</code> plus the attacker's leading <code>'</code> together close the string almost immediately, so <code>OR '1'='1'</code> stops being text stuck inside quotes and becomes a literal, working piece of SQL. And <code>'1'='1'</code> is always true — comparing the string <code>1</code> to itself. An <code>OR</code> with something always-true makes the <strong>entire</strong> <code>WHERE</code> clause always true, so the query returns every row in the table instead of the one it was supposed to filter for. That's the classic version of this bug bypassing a login check: no valid password required, because the query was never really asking "does this password match" anymore.</p>
+    </div>
+
+    <div class="analogy-box" style="border-left-color:var(--purple)">
+      <div class="label">Why the parameterized version is actually safe</div>
+      <p><strong>String concatenation is like handing someone a blank contract and letting them write directly in the blank space</strong> — if their handwriting runs past the line, they've added real new clauses to the document, and the notary reads all of it as part of the contract. <strong>A parameterized query is like a sealed, pre-printed form with a slot for a labeled index card.</strong> No matter what's written on that card — even if it's the word "clause" or contains punctuation — it goes into the slot as a single answer. It can never be mistaken for new wording in the contract, because the contract's structure was already locked in and parsed before the card ever arrived. That's the real mechanism behind <code>$1</code>: the database commits to "compare email to exactly one value" first, and only afterward drops in whatever the value happens to be, with no opportunity for it to reshape the query around itself.</p>
+    </div>
+
+    <div class="info-card">
+      <p>ORMs like Prisma parameterize queries by default, which is a real, practical reason they reduce this entire class of bug — but it's worth knowing <em>why</em> it's safe, not just that it is.</p>
+    </div>
+  </div>
+
+  <!-- CSRF -->
+  <div class="content-section" id="csrf-explainer">
+    <div class="section-title">CSRF — cross-site request forgery</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>CSRF tricks a logged-in user's <strong>browser</strong> into sending a request they didn't intend — e.g. a malicious page auto-submits a form to your bank's "transfer money" endpoint while you're still logged in elsewhere, and your browser happily attaches your real session cookie. It's different from XSS: CSRF doesn't need to read anything, it just needs your browser to send a request with credentials already attached.</p>
+    </div>
+    <div class="info-card">
+      <div class="card-label">The main defense</div>
+      <p><strong>SameSite cookies.</strong> Setting <code>sameSite: 'strict'</code> or <code>'lax'</code> on your auth cookie tells the browser not to send it along with requests originating from other sites — closing off most CSRF attacks without any extra token infrastructure.</p>
+    </div>
+  </div>
+
+  <!-- RATE LIMITING & HEADERS -->
+  <div class="content-section" id="rate-limiting-headers">
+    <div class="section-title">Rate limiting &amp; security headers</div>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="card-label">Rate limiting</div>
+        <p>Caps how many requests a client can make in a window of time — protects against brute-force login attempts and abusive traffic. Same underlying idea as rate limiting on a proxy, applied to your whole app.</p>
+      </div>
+      <div class="info-card">
+        <div class="card-label">Security headers</div>
+        <p><strong>helmet.js</strong> sets a batch of sensible HTTP security headers automatically — things like disabling content sniffing and controlling what content sources a page can load from — for effectively one line of setup.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK REFERENCE -->
+  <div class="content-section">
+    <div class="section-title">Quick reference — what each attack targets</div>
+    <div class="vuln-grid">
+      <div class="vuln-card">
+        <div class="vuln-name">SQL injection</div>
+        <p>Malicious input changes the structure of a database query. Fixed by parameterized queries / ORMs.</p>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-name">XSS</div>
+        <p>Malicious JavaScript gets injected into a page and runs in other users' browsers. Fixed by escaping output and HttpOnly cookies.</p>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-name">CSRF</div>
+        <p>A user's browser is tricked into sending an authenticated request they didn't intend. Fixed by SameSite cookies.</p>
+      </div>
+      <div class="vuln-card">
+        <div class="vuln-name">Brute force / abuse</div>
+        <p>Attacker hammers an endpoint with requests (login guesses, scraping). Fixed by rate limiting.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>"What security measures would you add to this API?"</h3>
+    <ul>
+      <li><strong>Validate every input</strong> at the boundary with a schema library — never trust the shape or content of a request.</li>
+      <li><strong>Use parameterized queries or an ORM</strong> — never string-concatenate user input into SQL.</li>
+      <li><strong>Set SameSite on auth cookies</strong> to cut off most CSRF attacks for free.</li>
+      <li><strong>Rate limit sensitive endpoints</strong> — especially login and anything that touches money or sends messages.</li>
+      <li><strong>Add helmet.js</strong> for a solid baseline of security headers with almost no effort.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Security fundamentals · Beyond auth</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

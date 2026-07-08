@@ -39,6 +39,7 @@ const TOPIC_ORDER = [
   'production',
   'javascript',
   'ai-llm',
+  'infra-as-code',
   'synthesis',
 ];
 const DIFFICULTY_ORDER = ['easy', 'moderate', 'hard', 'advanced'];

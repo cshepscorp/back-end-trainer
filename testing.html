@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Testing Backend Code</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  /* pyramid */
+  .pyramid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .pyramid-tier { border-radius: 8px; padding: 16px 20px; border: 1px solid var(--border); transition: var(--theme-transition); }
+  .pyramid-tier.e2e   { background: #f7816608; border-color: #f7816633; width: 100%; }
+  .pyramid-tier.integ { background: #fbbf2408; border-color: #fbbf2433; width: 85%; margin: 0 auto; }
+  .pyramid-tier.unit  { background: #4ade8008; border-color: #4ade8033; width: 70%; margin: 0 auto; }
+  .pyramid-tier .pt-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .pyramid-tier.e2e .pt-name   { color: var(--coral); }
+  .pyramid-tier.integ .pt-name { color: var(--amber); }
+  .pyramid-tier.unit .pt-name  { color: var(--green); }
+  .pyramid-tier p { font-size: 12.5px; font-weight: 300; color: var(--muted); line-height: 1.5; }
+
+  .code-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .code-block.dim-left { border-left: 3px solid var(--coral); }
+  .code-block.dim-right { border-left: 3px solid var(--teal); }
+
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Quality &amp; process · Interview essentials</div>
+    <h1>Testing backend code</h1>
+    <p class="intro">Unit vs. integration vs. end-to-end, what mocking actually buys you, and how to answer "how would you test this?" in an interview.</p>
+  </div>
+
+  <!-- PYRAMID -->
+  <div class="content-section" id="testing-pyramid">
+    <div class="section-title">The testing pyramid</div>
+    <div class="pyramid">
+      <div class="pyramid-tier unit">
+        <div class="pt-name">Unit tests — most of them</div>
+        <p>Test one function or module in isolation. Fast, cheap, run in milliseconds. Mock anything external (the database, a third-party API).</p>
+      </div>
+      <div class="pyramid-tier integ">
+        <div class="pt-name">Integration tests — some of them</div>
+        <p>Test how pieces work together — an Express route hitting a real (test) database. Slower than unit tests, but catch bugs at the seams.</p>
+      </div>
+      <div class="pyramid-tier e2e">
+        <div class="pt-name">End-to-end tests — the fewest</div>
+        <p>Drive the whole app like a real user would, browser included. Slowest and most brittle, but validate the entire flow actually works.</p>
+      </div>
+    </div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>Unit tests taste one ingredient. Integration tests taste the dish coming together. End-to-end tests taste the final plate as a customer would.</strong> You want a lot of the cheap, fast ingredient checks, and only a few full-meal tastings — not the other way around.</p>
+    </div>
+  </div>
+
+  <!-- MOCKING -->
+  <div class="content-section" id="mocking-explainer">
+    <div class="section-title">Mocking — isolating the thing you're actually testing</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>A mock is a fake stand-in for something your code depends on — a database call, a third-party API, the current time. You replace the real thing with a controllable fake so your test is fast, deterministic, and actually testing <strong>your logic</strong>, not whether the network is having a good day.</p>
+    </div>
+    <div class="code-cols">
+      <div>
+        <div class="code-block dim-left"><span class="cm">// Without mocking — slow, flaky, hits a real DB</span>
+<span class="ck">test</span>(<span class="cs">'creates a user'</span>, <span class="ck">async</span> () => {
+  <span class="ck">const</span> user = <span class="ck">await</span> createUser(
+    db, <span class="cs">'a@b.com'</span>
+  );
+  expect(user.email).<span class="cf">toBe</span>(<span class="cs">'a@b.com'</span>);
+});
+<span class="cm">// depends on a real, running database</span></div>
+        <div class="code-caption">Fragile — needs real infrastructure to run</div>
+      </div>
+      <div>
+        <div class="code-block dim-right"><span class="cm">// With mocking — fast, isolated, deterministic</span>
+<span class="ck">const</span> mockDb = { insert: jest.<span class="cf">fn</span>().<span class="cf">mockResolvedValue</span>(
+  { email: <span class="cs">'a@b.com'</span> }
+) };
+
+<span class="ck">test</span>(<span class="cs">'creates a user'</span>, <span class="ck">async</span> () => {
+  <span class="ck">const</span> user = <span class="ck">await</span> createUser(
+    mockDb, <span class="cs">'a@b.com'</span>
+  );
+  expect(user.email).<span class="cf">toBe</span>(<span class="cs">'a@b.com'</span>);
+});</div>
+        <div class="code-caption">Runs anywhere, in milliseconds, every time</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT TO TEST -->
+  <div class="content-section" id="what-to-test">
+    <div class="section-title">What to actually test, when asked live</div>
+    <div class="info-card">
+      <p>Given a function in an interview, don't just test the happy path. Interviewers are listening for: <strong>the normal case</strong> (valid input, expected output), <strong>edge cases</strong> (empty array, zero, null, the boundary of a range), and <strong>error paths</strong> (what happens when a dependency throws, or input is malformed). Naming all three categories out loud, even briefly, signals real testing instinct.</p>
+    </div>
+  </div>
+
+  <!-- TDD -->
+  <div class="content-section" id="tdd-cycle">
+    <div class="section-title">TDD — red, green, refactor</div>
+    <div class="analogy-box" style="border-left-color:var(--purple)">
+      <div class="label">The cycle</div>
+      <p><strong>Red:</strong> write a failing test for behavior that doesn't exist yet. <strong>Green:</strong> write the minimum code to make it pass. <strong>Refactor:</strong> clean up the code with the safety net of a passing test behind you. You don't have to practice strict TDD to know the cycle — interviewers mostly want to hear that you write tests before you're confident the code already works, not only after something breaks in production.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>"How would you test this endpoint?"</h3>
+    <ul>
+      <li><strong>Unit test the logic</strong> — pure functions, validation, business rules — with dependencies mocked out.</li>
+      <li><strong>Integration test the route</strong> — use something like supertest to hit the real Express app against a test database, confirming the whole path works together.</li>
+      <li><strong>Cover the edge and error cases explicitly</strong> — not just "it works," but "it fails correctly" too.</li>
+      <li><strong>Keep the pyramid shape</strong> — lots of fast unit tests, fewer integration tests, a handful of true end-to-end tests for critical flows only.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>Testing backend code · Interview essentials</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

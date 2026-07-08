@@ -76,7 +76,7 @@
   </div>
 
   <div class="section-title">Request lifecycle — every hop</div>
-  <div class="diagram">
+  <div class="diagram" id="request-lifecycle">
     <div class="hops">
       <div class="hop-node">
         <div class="hop-box browser">
@@ -130,8 +130,8 @@
   </div>
 
   <div class="section-title">Why it matters</div>
-  <div class="why-grid">
-    <div class="why-card good">
+  <div class="why-grid" id="why-proxy-matters">
+    <div class="why-card good" id="key-stays-secret">
       <div class="why-label good">With a proxy ✓</div>
       <h3>API key stays secret</h3>
       <p>The key lives in an environment variable on your server. It never touches the browser. Even if someone opens dev tools and reads every network request, they cannot find it.</p>
@@ -144,7 +144,7 @@
   </div>
 
   <div class="section-title">In code</div>
-  <div class="code-block"><span class="cm">// ✗ DON'T — key is exposed in the browser bundle</span>
+  <div class="code-block" id="proxy-code-example"><span class="cm">// ✗ DON'T — key is exposed in the browser bundle</span>
 <span class="ck">const</span> res = <span class="ck">await</span> <span class="cf">fetch</span>(
   <span class="cs">`https://api.nps.gov/api/v1/parks?q=${query}&api_key=ABC123SECRET`</span>
 );
@@ -163,7 +163,7 @@ app.<span class="cf">get</span>(<span class="cs">'/api/parks'</span>, <span clas
   <div class="code-caption">The proxy in Express — key never leaves the server</div>
 
   <div class="section-title">Bonus benefits of the proxy</div>
-  <div class="bonus-card">
+  <div class="bonus-card" id="bonus-benefits">
     <h3>Security isn't the only reason to use this pattern</h3>
     <ul>
       <li><strong>Caching</strong> — cache NPS responses so you're not hitting their API on every keystroke. Saves on rate limits, speeds up the app.</li>
@@ -180,5 +180,6 @@ app.<span class="cf">get</span>(<span class="cs">'/api/parks'</span>, <span clas
 </div>
 
 <script src="theme.js"></script>
+<script src="notes.js"></script>
 </body>
 </html>

@@ -80,7 +80,7 @@
       <h2>Node.js</h2>
       <p>A JavaScript runtime built on Chrome's V8 engine. Lets you run JavaScript outside the browser — on a server or local machine. Bundles V8, an event loop, and system-level modules (file system, networking, crypto).</p>
     </div>
-    <div class="info-card express">
+    <div class="info-card express" id="info-express">
       <div class="accent-bar"></div>
       <div class="card-label">The library</div>
       <h2>Express</h2>
@@ -88,7 +88,7 @@
     </div>
   </div>
 
-  <div class="analogy-box">
+  <div class="analogy-box" id="node-express-analogy">
     <div>
       <div class="label">The analogy</div>
       <div class="text"><strong>Node.js is the engine.</strong> Express is the frame, steering wheel, and dashboard.</div>
@@ -101,7 +101,7 @@
   </div>
 
   <div class="section-title">The same server — with and without Express</div>
-  <div class="code-cols">
+  <div class="code-cols" id="code-comparison">
     <div>
       <div class="code-block dim-left"><span class="cm">// Raw Node.js — verbose, manual</span>
 <span class="ck">const</span> http = <span class="cf">require</span>(<span class="cs">'http'</span>);
@@ -144,7 +144,7 @@ app.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
   </div>
 
   <div class="section-title">A request's journey through Express</div>
-  <div class="flow">
+  <div class="flow" id="request-journey">
     <div class="flow-step">
       <div class="num">01</div>
       <div class="step-title">HTTP request arrives</div>
@@ -174,15 +174,15 @@ app.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
 
   <div class="section-title">Key questions answered</div>
   <div class="key-points">
-    <div class="kp">
+    <div class="kp" id="kp-express-node">
       <div class="kp-label">Does Express work without Node?</div>
       <p>No. Express is a Node.js library — it uses Node's <code>http</code> module internally and has no runtime of its own.</p>
     </div>
-    <div class="kp">
+    <div class="kp" id="kp-alternatives">
       <div class="kp-label">Could you use something other than Express?</div>
       <p>Yes. Fastify, Koa, and Hono are popular alternatives — all Node.js libraries with different trade-offs in speed and API style.</p>
     </div>
-    <div class="kp">
+    <div class="kp" id="kp-middleware">
       <div class="kp-label">What does middleware actually do?</div>
       <p>Functions that run between the request arriving and your handler executing. Each can read, modify, or short-circuit the request. They chain in order of <code>app.use()</code> calls.</p>
     </div>
@@ -195,5 +195,6 @@ app.<span class="cf">listen</span>(<span class="cn">3000</span>);</div>
 </div>
 
 <script src="theme.js"></script>
+<script src="notes.js"></script>
 </body>
 </html>

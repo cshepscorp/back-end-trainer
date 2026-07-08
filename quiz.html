@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Quiz Yourself — Backend Fundamentals</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body.content-page { padding-top: 48px; }
+
+  :root {
+    --synth: #e879f9;
+    --cyan: #22d3ee;
+    --lime: #a3e635;
+    --rose: #fb7185;
+    --indigo: #818cf8;
+    --slate: #94a3b8;
+    --gold: #eab308;
+    --violet: #8b5cf6;
+    --sky: #38bdf8;
+  }
+
+  .filter-row { margin-bottom: 18px; }
+  .filter-row-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .topic-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .filter-chip {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .filter-chip:hover { color: var(--ink); border-color: var(--border2); }
+  .filter-chip.active {
+    color: var(--chip-accent, var(--ink));
+    border-color: var(--chip-accent, var(--border2));
+    background: color-mix(in srgb, var(--chip-accent, var(--ink)) 12%, transparent);
+  }
+  .chip-teal   { --chip-accent: var(--teal); }
+  .chip-blue   { --chip-accent: var(--blue); }
+  .chip-purple { --chip-accent: var(--purple); }
+  .chip-orange { --chip-accent: var(--orange); }
+  .chip-green  { --chip-accent: var(--green); }
+  .chip-amber  { --chip-accent: var(--amber); }
+  .chip-coral  { --chip-accent: var(--coral); }
+  .chip-synth  { --chip-accent: var(--synth); }
+  .chip-cyan   { --chip-accent: var(--cyan); }
+  .chip-lime   { --chip-accent: var(--lime); }
+  .chip-rose   { --chip-accent: var(--rose); }
+  .chip-indigo { --chip-accent: var(--indigo); }
+  .chip-slate  { --chip-accent: var(--slate); }
+  .chip-gold   { --chip-accent: var(--gold); }
+  .chip-violet { --chip-accent: var(--violet); }
+  .chip-sky    { --chip-accent: var(--sky); }
+
+  /* stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 32px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-num { font-family: var(--mono); font-size: 20px; font-weight: 600; }
+  .stat-label { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .stat-num.good { color: var(--green); }
+  .stat-num.bad  { color: var(--coral); }
+  .stats-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .btn:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .btn-good { background: var(--green); color: #06240f; border-color: var(--green); }
+  .btn-bad  { background: var(--coral); color: #2b0a0a; border-color: var(--coral); }
+
+  /* question card */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 30px 28px;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+  }
+  .quiz-meta { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .quiz-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .quiz-topic-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--card-accent, var(--muted));
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  .diff-badge {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+  .diff-easy     { color: var(--green);  border-color: #4ade8045;  background: #4ade8012; }
+  .diff-moderate { color: var(--blue);   border-color: #6c8ef545;  background: #6c8ef512; }
+  .diff-hard     { color: var(--orange); border-color: #fb923c45; background: #fb923c12; }
+  .diff-advanced { color: var(--synth);  border-color: #e879f945; background: #e879f912; }
+
+  .quiz-links { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .quiz-progress-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .quiz-question { font-size: 19px; font-weight: 600; letter-spacing: -0.3px; line-height: 1.4; margin-bottom: 24px; color: darkgoldenrod; }
+
+  .source-link {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--card-accent, var(--blue));
+    text-decoration: none;
+    background: none;
+    border: none;
+    border-bottom: 1px dashed currentColor;
+    padding: 0 0 1px 0;
+    white-space: nowrap;
+    cursor: pointer;
+    font-weight: inherit;
+  }
+  .source-link:hover { opacity: 0.75; }
+
+  /* source modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    width: min(920px, 100%);
+    height: min(740px, 90vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+  }
+  .modal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .modal-bar-label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .modal-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .modal-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--ink);
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .modal-btn:hover { border-color: var(--border2); }
+  .modal-iframe { flex: 1; width: 100%; border: none; background: var(--bg); }
+  @media (max-width: 640px) {
+    .modal-overlay { padding: 0; }
+    .modal-box { width: 100%; height: 100%; border-radius: 0; }
+  }
+
+  .my-answer-block { margin-bottom: 18px; }
+  .my-answer-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .my-answer-input {
+    width: 100%;
+    min-height: 70px;
+    resize: vertical;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+  .my-answer-input:focus { outline: none; border-color: var(--card-accent, var(--border2)); }
+  .my-answer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+  .my-answer-status { font-family: var(--mono); font-size: 9.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .btn-text {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    padding: 2px 0;
+    text-decoration: underline;
+  }
+  .btn-text:hover { color: var(--coral); }
+
+  .mc-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .mc-option {
+    text-align: left;
+    padding: 13px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--ink);
+    font-size: 14px;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .mc-option:hover:not(:disabled) { border-color: var(--border2); }
+  .mc-option.correct { border-color: var(--green); background: color-mix(in srgb, var(--green) 15%, var(--surface2)); }
+  .mc-option.incorrect { border-color: var(--coral); background: color-mix(in srgb, var(--coral) 15%, var(--surface2)); }
+  .mc-option:disabled { cursor: default; }
+
+  .explain-box {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--card-accent, var(--blue));
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: var(--subtle);
+    line-height: 1.6;
+  }
+
+  .flip-back {
+    padding: 16px 18px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--card-accent, var(--blue));
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+
+  .card-footer-actions { margin-top: 1rem; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .end-screen { text-align: center; padding: 40px 20px; }
+  .end-score { font-family: var(--mono); font-size: 48px; font-weight: 700; margin-bottom: 8px; }
+  .end-sub { color: var(--muted); margin-bottom: 28px; }
+  .weak-topics { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 28px; }
+
+  @media (max-width: 640px) {
+    .stats-bar { flex-direction: column; align-items: flex-start; }
+    .stats-actions { margin-left: 0; }
+  }
+</style>
+</head>
+<body class="content-page">
+
+<div class="page-wrap">
+  <div class="page-nav">
+    <a class="back-link" href="index.html">&larr; back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">&#9728;&#xFE0E;</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </div>
+
+  <div class="page-header">
+    <div class="eyebrow">Self-test &middot; All topics &middot; 4 difficulty levels</div>
+    <h1>Quiz yourself</h1>
+    <p class="intro">161 questions pulled from every page in this guide, from easy recall up through advanced whiteboard-style scenarios that combine multiple topics — including database performance, testing, security, system design, production ops, JavaScript fundamentals, AI/LLM fundamentals, and infrastructure as code. Filter by topic, difficulty, or both. Every question links back to the exact spot it came from.</p>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-row-label">Topic</div>
+    <div class="topic-filters" id="topicFilters"></div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-row-label">Difficulty</div>
+    <div class="topic-filters" id="difficultyFilters"></div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num" id="statAnswered">0</div><div class="stat-label">Answered</div></div>
+    <div class="stat"><div class="stat-num good" id="statCorrect">0</div><div class="stat-label">Correct</div></div>
+    <div class="stat"><div class="stat-num" id="statRemaining">0</div><div class="stat-label">Remaining</div></div>
+    <div class="stat"><div class="stat-num bad" id="statFlagged">0</div><div class="stat-label">Flagged for review</div></div>
+    <div class="stats-actions">
+      <button class="btn" id="reviewListBtn">View flagged list</button>
+      <button class="btn" id="shuffleBtn">&#8635; Shuffle</button>
+      <button class="btn" id="restartBtn">Restart</button>
+    </div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="page-footer">
+    <span>Backend fundamentals &middot; Quiz</span>
+    <span>161 questions &middot; 15 topics + cross-topic synthesis</span>
+  </div>
+</div>
+
+<div class="modal-overlay" id="sourceModalOverlay">
+  <div class="modal-box">
+    <div class="modal-bar">
+      <span class="modal-bar-label" id="modalSourceLabel">Guide reference</span>
+      <div class="modal-bar-actions">
+        <a class="modal-btn" id="modalOpenNewTab" href="#" target="_blank" rel="noopener">Open in new tab &#8599;</a>
+        <button class="modal-btn" id="modalCloseBtn" type="button">Close &#10005;</button>
+      </div>
+    </div>
+    <iframe class="modal-iframe" id="sourceModalFrame" title="Guide reference"></iframe>
+  </div>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+<script>
+/* ============================================================
+   TOPICS & DIFFICULTY LEVELS
+   ============================================================ */
+const TOPICS = [
+  { id: 'node-express',   label: 'Node & Express',     accent: 'teal'   },
+  { id: 'node-internals', label: 'Node internals',     accent: 'blue'   },
+  { id: 'proxy',          label: 'Proxy pattern',      accent: 'purple' },
+  { id: 'frontend',       label: 'Frontend terms',     accent: 'orange' },
+  { id: 'databases',      label: 'Databases & ORMs',   accent: 'green'  },
+  { id: 'auth',           label: 'Auth',                accent: 'amber'  },
+  { id: 'terminal',       label: 'Terminal & shell',    accent: 'coral'  },
+  { id: 'db-performance', label: 'DB performance',      accent: 'cyan'   },
+  { id: 'testing',        label: 'Testing',              accent: 'lime'   },
+  { id: 'security',       label: 'Security',             accent: 'rose'   },
+  { id: 'system-design',  label: 'System design',        accent: 'indigo' },
+  { id: 'production',     label: 'Production & ops',     accent: 'slate'  },
+  { id: 'javascript',     label: 'JavaScript',           accent: 'gold'   },
+  { id: 'ai-llm',         label: 'AI / LLM',              accent: 'violet' },
+  { id: 'infra-as-code',  label: 'Infra as code',         accent: 'sky'    },
+  { id: 'synthesis',      label: 'Cross-topic',         accent: 'synth'  },
+];
+
+const DIFFICULTIES = [
+  { id: 'easy',       label: 'Easy' },
+  { id: 'moderate',   label: 'Moderate' },
+  { id: 'hard',       label: 'Hard' },
+  { id: 'advanced',   label: 'Advanced' },
+];
+
+/* ============================================================
+   QUESTION BANK — 83 questions
+   Difficulty guide:
+     easy      recall / definitions
+     moderate  connecting two facts, explaining a mechanism
+     hard      trade-offs, edge cases, single-topic depth
+     advanced  cross-topic whiteboard-style synthesis
+   ============================================================ */
+const QUESTIONS = [
+  // ================= NODE & EXPRESS =================
+  { id:'ne1', topic:'node-express', difficulty:'easy', type:'mc', source:'node-express-onepager.html#info-express',
+    q:'Express cannot run without which piece of software?',
+    options:['A web browser','Node.js','A relational database','Docker'],
+    correct:1,
+    explain:'Express is an npm library, not a runtime — it runs inside Node.js and has no execution engine of its own.' },
+  { id:'ne2', topic:'node-express', difficulty:'easy', type:'mc', source:'node-express-onepager.html#info-express',
+    q:'Which built-in Node module does Express wrap under the hood?',
+    options:['fs','http','crypto','path'],
+    correct:1,
+    explain:"Express wraps Node's raw http module with a friendlier API — routing, middleware chaining, and response helpers." },
+  { id:'ne8', topic:'node-express', difficulty:'easy', type:'mc', source:'node-express-onepager.html#code-comparison',
+    q:'Which method call actually starts an Express server listening for incoming connections?',
+    options:['app.listen(3000)','app.use(express.json())',"app.get('/', handler)","require('express')"],
+    correct:0,
+    explain:'app.listen() binds the server to a port and starts accepting connections. The others configure middleware, define a route, or just load the library.' },
+  { id:'ne6', topic:'node-express', difficulty:'easy', type:'mc', source:'node-express-onepager.html#kp-alternatives',
+    q:'Which of these is NOT a commonly cited alternative to Express?',
+    options:['Fastify','Koa','Hono','Mongoose'],
+    correct:3,
+    explain:'Fastify, Koa, and Hono are alternative Node.js server libraries. Mongoose is an ODM for MongoDB — a completely different kind of tool.' },
+  { id:'ne3', topic:'node-express', difficulty:'moderate', type:'flip', source:'node-express-onepager.html#node-express-analogy',
+    front:'In your own words: what\'s the difference between a runtime and a library? Use Node/Express as the example.',
+    back:'A runtime (Node.js) is the engine that actually executes JavaScript outside the browser — it bundles V8, the event loop, and system modules. A library (Express) runs on top of a runtime and adds convenience — it can\'t execute JS on its own. Analogy: Node is the engine, Express is the frame, steering wheel, and dashboard built on top of it.' },
+  { id:'ne4', topic:'node-express', difficulty:'moderate', type:'mc', source:'node-express-onepager.html#request-journey',
+    q:'When a request hits an Express server, what happens right after Node\'s http module parses the raw TCP connection?',
+    options:['The response is sent immediately','It passes through middleware (logging, auth, body parsing, CORS)','The database is queried directly','The client re-sends the request'],
+    correct:1,
+    explain:'The journey is: request arrives → Node parses it → middleware chain runs → route handler matches path+method → response is sent.' },
+  { id:'ne5', topic:'node-express', difficulty:'moderate', type:'flip', source:'node-express-onepager.html#kp-middleware',
+    front:'What does middleware actually do, and how does execution order get decided?',
+    back:'Middleware are functions that run between the request arriving and your route handler executing. Each one can read, modify, or short-circuit the request/response. They run in the order their app.use() calls appear in the code.' },
+  { id:'ne7', topic:'node-express', difficulty:'moderate', type:'flip', source:'node-express-onepager.html#node-express-analogy',
+    front:'Someone asks: "why not just use Node\'s http module directly instead of Express?" What\'s your answer?',
+    back:'You could — but you\'d be manually handling routing, body parsing, and error handling for every endpoint yourself. Express gives you that scaffolding (routing, middleware, response helpers) so you focus on your app logic instead of rebuilding plumbing every project.' },
+  { id:'ne9', topic:'node-express', difficulty:'hard', type:'mc', source:'node-express-onepager.html#kp-middleware',
+    q:'In Express 4, if an async route handler throws an error inside an awaited call (e.g. a failed DB query) without a try/catch, what happens by default?',
+    options:['Express automatically forwards it to your error-handling middleware','The error is silently swallowed and the request just hangs','The whole server process crashes immediately','Express automatically retries the request'],
+    correct:1,
+    explain:'In Express 4 and earlier, unhandled promise rejections inside async route handlers are NOT automatically caught and forwarded to error middleware — you have to catch them yourself (or wrap routes in a helper) or the request just hangs. Express 5 changed this behavior.' },
+  { id:'ne10', topic:'node-express', difficulty:'hard', type:'flip', source:'node-express-onepager.html#kp-middleware',
+    front:'You register your error-handling middleware (the one with 4 arguments: err, req, res, next) at the very top of your Express app, before any routes. What breaks, and why?',
+    back:'Middleware and routes run in registration order. If error-handling middleware is registered before your routes, it\'s already been skipped by the time an error occurs further down the chain — Express won\'t loop back to it. Error-handling middleware has to be registered after all your routes so it\'s the last thing in the chain, ready to catch whatever falls through.' },
+
+  // ================= NODE INTERNALS =================
+  { id:'ni1', topic:'node-internals', difficulty:'easy', type:'mc', source:'node-internals-deepdive.html#layers-overview',
+    q:'Node.js is built from three distinct layers. Which set is correct?',
+    options:['V8, libuv/event loop, built-in modules','Express, Passport, Prisma','React, Vite, Node','HTTP, HTTPS, WebSockets'],
+    correct:0,
+    explain:'V8 runs your JS, libuv + the event loop handle non-blocking async I/O, and built-in modules expose OS-level capabilities.' },
+  { id:'ni5', topic:'node-internals', difficulty:'easy', type:'mc', source:'node-internals-deepdive.html#libuv-card',
+    q:'What is libuv responsible for?',
+    options:['Compiling JavaScript to machine code','Handling async I/O (file reads, network, timers, DNS) and talking to the OS','Rendering HTML on the server','Managing npm packages'],
+    optionsAlt:['Turning your JavaScript into machine instructions the CPU runs','Managing all non-blocking I/O — reading files, hitting the network, timers, DNS — by talking directly to the operating system','Generating server-side HTML for each request','Installing and tracking your project\'s dependencies'],
+    correct:1,
+    explain:"libuv is a C library that handles all async I/O and manages a thread pool for operations the OS can't do asynchronously on its own." },
+  { id:'ni6', topic:'node-internals', difficulty:'easy', type:'mc', source:'node-internals-deepdive.html#module-crypto',
+    q:'Which built-in Node module would you use to hash a password?',
+    options:['fs','os','crypto','stream'],
+    correct:2,
+    explain:"crypto handles hashing, encryption, secure random numbers, and HMAC signatures — all built in, no npm install needed." },
+  { id:'ni3', topic:'node-internals', difficulty:'easy', type:'mc', source:'node-internals-deepdive.html#event-loop-analogy',
+    q:'In the restaurant/waiter analogy for the event loop, what does the "kitchen calling order up" represent?',
+    options:['A new incoming HTTP request','Async work (e.g. a DB query) finishing','The server crashing','A middleware function running'],
+    optionsAlt:['A brand-new request arriving at the server','A pending async operation — like a database call — completing and returning its result','An unhandled exception taking the process down','One of your app.use() functions executing'],
+    correct:1,
+    explain:'The waiter (event loop) doesn\'t wait at the table — it takes the order (starts async work) and moves on. When the kitchen (DB/OS) finishes, it notifies the event loop, which queues the callback.' },
+  { id:'ni8', topic:'node-internals', difficulty:'moderate', type:'mc', source:'node-internals-deepdive.html#event-loop-analogy',
+    q:'Is Node.js single-threaded or multi-threaded?',
+    options:['Fully single-threaded, no exceptions','Your JavaScript runs on a single thread, but libuv uses a thread pool behind the scenes for some async operations','Fully multi-threaded like a typical Java server','It depends only on how many CPU cores the machine has'],
+    correct:1,
+    explain:'Your JS code always runs on one thread, but libuv can delegate certain operations (like some file system work) to a background thread pool so the main thread stays free.' },
+  { id:'ni2', topic:'node-internals', difficulty:'moderate', type:'flip', source:'node-internals-deepdive.html#v8-section',
+    front:'What does V8 actually do, and what is JIT compilation?',
+    back:"V8 is Google's JS engine (written in C++) that parses your JavaScript, compiles it to machine code, manages memory, and runs garbage collection. JIT (Just-In-Time) compilation means V8 doesn't just interpret code line by line — it detects \"hot\" (frequently run) functions and compiles them to optimized machine code on the fly, which is why modern JS can handle huge request volumes." },
+  { id:'ni4', topic:'node-internals', difficulty:'moderate', type:'flip', source:'node-internals-deepdive.html#event-loop-warning',
+    front:'What kind of work breaks the "one waiter, many tables" analogy — and why?',
+    back:"CPU-heavy work — image/video processing, large encryption, heavy math loops. libuv can hand off async I/O to the OS, but pure computation has to run synchronously on the single JS thread, which blocks the event loop and stalls every other request. Node is great for I/O-heavy workloads (APIs, DB, file serving), not CPU-intensive computation." },
+  { id:'ni9', topic:'node-internals', difficulty:'hard', type:'mc', source:'node-internals-deepdive.html#event-loop-diagram',
+    q:'Which logs first: a Promise.then() callback scheduled right now, or a setTimeout(fn, 0) scheduled right now?',
+    options:['The setTimeout callback, always','The Promise callback — microtasks run before the next macrotask','They always run in the exact order they were written','It\'s random and unpredictable'],
+    correct:1,
+    explain:'Promise callbacks go on the microtask queue, which the event loop fully drains after the current synchronous code finishes but before it picks up the next macrotask (like a timer). So Promise.then() beats setTimeout(fn, 0) even though both were "scheduled immediately."' },
+  { id:'ni7', topic:'node-internals', difficulty:'hard', type:'flip', source:'node-internals-deepdive.html#event-loop-diagram',
+    front:'Explain, as if to an interviewer, why Node.js can handle thousands of concurrent requests on a single thread.',
+    back:"Because Node is non-blocking: when a request triggers async work like a DB query, Node hands that work off to libuv/the OS and immediately moves on to handle other requests. The JS call stack never sits idle waiting — the event loop only runs your callback once the async work is done and the stack is free. Contrast with blocking languages (classic PHP/Python) where execution stops until the operation returns." },
+  { id:'ni10', topic:'node-internals', difficulty:'hard', type:'flip', source:'node-internals-deepdive.html#event-loop-warning',
+    front:'You accidentally write a synchronous loop that takes 5 seconds to finish inside a route handler. What happens to every other request hitting your server during those 5 seconds?',
+    back:'They all wait. Node runs your JavaScript on a single thread, so a long synchronous block monopolizes that thread completely — the event loop can\'t process any other callback, incoming request, or timer until the loop finishes. This is different from a slow DB query, which is async and doesn\'t block anything else.' },
+
+  // ================= PROXY PATTERN =================
+  { id:'px1', topic:'proxy', difficulty:'easy', type:'flip', source:'proxy-pattern.html#why-proxy-matters',
+    front:'Why should your frontend never call a third-party API directly when a secret key is involved?',
+    back:"Any key embedded in a browser bundle is visible to anyone who opens dev tools or views the page source — there's no way to truly hide a secret in client-side code. Routing the call through your own backend keeps the key in an environment variable on the server, where the browser can never see it." },
+  { id:'px2', topic:'proxy', difficulty:'easy', type:'mc', source:'proxy-pattern.html#key-stays-secret',
+    q:'In the proxy pattern, where does the third-party API key live?',
+    options:['In the React bundle','In an environment variable on your server','In a cookie','Hardcoded in the HTML'],
+    optionsAlt:['Bundled into the frontend JavaScript','Held server-side as an environment variable, never sent to the client','Stored inside a browser cookie','Written directly into a static HTML file'],
+    correct:1,
+    explain:'The key lives in an env var on your Express server and is attached server-side when forwarding the request — it never touches the browser.' },
+  { id:'px4', topic:'proxy', difficulty:'easy', type:'mc', source:'proxy-pattern.html#bonus-benefits',
+    q:'Which of these is NOT one of the "bonus benefits" of the proxy pattern beyond security?',
+    options:['Caching responses','Transforming/reshaping data before it reaches the client','Rate limiting','Automatically writing your database schema'],
+    optionsAlt:['Storing upstream responses temporarily to avoid refetching them','Reshaping or filtering the response before it reaches the frontend','Capping how often clients can hit an endpoint','Generating your database\'s schema for you'],
+    correct:3,
+    explain:'The real bonus benefits are caching, transformation, rate limiting, and graceful error handling — schema design has nothing to do with the proxy pattern.' },
+  { id:'px6', topic:'proxy', difficulty:'easy', type:'mc', source:'proxy-pattern.html#why-proxy-matters',
+    q:'What\'s the primary purpose of a backend proxy pattern when calling a third-party API?',
+    options:['To make the app look more complex','To keep secrets like API keys off the client and centralize control over outbound requests','To make requests faster by skipping validation','To avoid writing any backend code'],
+    optionsAlt:['Adding unnecessary layers of architecture','Keeping sensitive credentials off the client while giving you one place to control outgoing requests','Speeding things up by bypassing validation checks','Letting you skip writing a backend entirely'],
+    correct:1,
+    explain:'The proxy sits between your frontend and the third-party API so secrets stay server-side and you control what goes in and out.' },
+  { id:'px3', topic:'proxy', difficulty:'moderate', type:'flip', source:'proxy-pattern.html#request-lifecycle',
+    front:'Walk through the 5 hops of a proxied request (browser → your server → third-party API → back).',
+    back:'1) Browser → your server: React sends a request with no API key needed. 2) Your server → third-party API: your server attaches the secret key and forwards the request. 3) Third-party API processes the request and returns data. 4) Third-party API → your server: you can filter, transform, or cache the response here. 5) Your server → browser: the clean response goes back to React.' },
+  { id:'px5', topic:'proxy', difficulty:'moderate', type:'flip', source:'proxy-pattern.html#bonus-benefits',
+    front:'Besides hiding the key, name at least two other reasons to route third-party calls through your own backend.',
+    back:"Caching (avoid hitting rate limits / speed up repeat requests), transformation (strip or rename fields, merge multiple sources), rate limiting (protect your server and the upstream API), and error handling (return a graceful fallback if the upstream API is down instead of leaking a raw error to the browser)." },
+  { id:'px7', topic:'proxy', difficulty:'moderate', type:'mc', source:'proxy-pattern.html#bonus-benefits',
+    q:'Why might rate limiting live on your own proxy server rather than relying solely on the third-party API\'s rate limits?',
+    options:['It doesn\'t matter, they\'re equivalent','It protects your own server and your other users from being overwhelmed by one client\'s traffic, before you even reach the upstream limit','Third-party APIs never have rate limits','It makes the API key easier to find'],
+    correct:1,
+    explain:'Your own rate limiting is a first line of defense — it protects your server and your users independently of whatever limits the upstream API enforces.' },
+  { id:'px8', topic:'proxy', difficulty:'hard', type:'flip', source:'proxy-pattern.html#bonus-benefits',
+    front:'Your proxy caches third-party responses for 10 minutes to reduce load and avoid rate limits. A user updates data that should show up immediately elsewhere in the app. What\'s the risk, and how would you handle it?',
+    back:'The risk is serving stale cached data right after something changed — a classic cache invalidation problem. Options: shorten the cache window for volatile data, explicitly invalidate/bust the cache entry when a related write happens, or only cache clearly read-heavy/rarely-changing endpoints and skip caching ones tied to recent user actions.' },
+  { id:'px9', topic:'proxy', difficulty:'hard', type:'flip', source:'proxy-pattern.html#proxy-code-example',
+    front:'If your proxy blindly forwards every query parameter it receives from the client straight through to the upstream third-party API, what\'s the risk?',
+    back:'You lose control over what the upstream API can be asked to do on your server\'s behalf — a client could pass unexpected parameters that trigger expensive queries, unintended API features, or abuse of your account\'s quota/permissions with the upstream service. A proxy should validate and explicitly whitelist which parameters get forwarded, not blindly pass everything through.' },
+
+  // ================= FRONTEND TERMINOLOGY =================
+  { id:'ft1', topic:'frontend', difficulty:'easy', type:'mc', source:'frontend-terminology.html#ui-lib-vs-framework',
+    q:'What is the key difference between a UI library (React) and a UI framework (Vue/Angular)?',
+    options:['Libraries are always slower','Frameworks are more opinionated — routing, state, and structure are built in','Libraries can\'t use components','Frameworks don\'t run in the browser'],
+    optionsAlt:['Libraries perform worse at runtime, as a rule','Frameworks make more structural decisions for you, with routing and state management built in','Components are a framework-only concept','Frameworks are strictly server-side and never run client-side'],
+    correct:1,
+    explain:'A library like React only handles the UI layer — you choose your own router and state management. A framework makes more decisions for you out of the box.' },
+  { id:'ft2', topic:'frontend', difficulty:'easy', type:'mc', source:'frontend-terminology.html#meta-frameworks',
+    q:'What does a meta-framework like Next.js or Remix add on top of a UI library?',
+    options:['Nothing — it\'s just marketing','File-based routing, SSR, API routes, and build/deploy config','A new programming language','A replacement for npm'],
+    optionsAlt:['It\'s purely a branding term with no real technical difference','Routing based on your file structure, server rendering, backend API routes, and build tooling, all bundled in','A different language you write your app in','A tool that replaces your package manager'],
+    correct:1,
+    explain:'Meta-frameworks sit on top of a UI library and turn it into a complete application structure.' },
+  { id:'ft4', topic:'frontend', difficulty:'easy', type:'mc', source:'frontend-terminology.html#term-vite',
+    q:'Vite is best described as:',
+    options:['A UI framework like Vue','A meta-framework like Next.js','A build tool and dev server — no opinions on routing or rendering','A database ORM'],
+    optionsAlt:['An opinionated UI framework comparable to Vue','A full meta-framework in the same category as Next.js','A dev server and bundler with no stance on how you route or render your app','A tool for mapping database tables to JS objects'],
+    correct:2,
+    explain:'Vite compiles, bundles, and hot-reloads your code. Think of it as the engine room, not the application itself.' },
+  { id:'ft5', topic:'frontend', difficulty:'easy', type:'mc', source:'frontend-terminology.html#term-nextjs',
+    q:'Which UI library does Next.js build on top of?',
+    options:['Vue','React','Svelte','Angular'],
+    correct:1,
+    explain:'Next.js is the most popular React meta-framework, built by Vercel.' },
+  { id:'ft7', topic:'frontend', difficulty:'easy', type:'mc', source:'frontend-terminology.html#compare-table',
+    q:'Does React handle routing out of the box?',
+    options:['Yes, built in','No — you add something like React Router yourself','Only in SSR mode','Only with Vite'],
+    optionsAlt:['Yes, it ships with routing already wired up','No — routing is left to you, typically via a library like React Router','Only when server-side rendering is enabled','Only if you\'re using Vite specifically'],
+    correct:1,
+    explain:'React is a library, not a framework — routing is one of the things it deliberately leaves up to you.' },
+  { id:'ft3', topic:'frontend', difficulty:'moderate', type:'flip', source:'frontend-terminology.html#rendering-strategies',
+    front:'Explain the difference between CSR, SSR, and SSG in your own words.',
+    back:"CSR (client-side rendering): server sends a nearly empty HTML shell, the browser downloads JS and builds the UI — fast after first load, slower first paint (React+Vite default). SSR (server-side rendering): server generates full HTML per request, then React hydrates it — faster first paint, better SEO, good for dynamic per-user pages (Next.js, Remix). SSG (static site generation): HTML is generated once at build time, not per request — blazing fast but not suited to dynamic, user-specific data." },
+  { id:'ft6', topic:'frontend', difficulty:'moderate', type:'flip', source:'frontend-terminology.html#parks-app-decision',
+    front:'Why is SSG usually ruled out for a dynamic, user-specific web app (one with saved user data, auth, or real-time search)?',
+    back:'SSG generates HTML once at build time, which works great for content that rarely changes. But a dynamic, user-specific app needs the HTML to reflect per-user data on every request — saved items, login state, live search results — which SSG can\'t do since it doesn\'t run per request.' },
+  { id:'ft8', topic:'frontend', difficulty:'moderate', type:'mc', source:'frontend-terminology.html#meta-frameworks',
+    q:'A small team wants a single project that handles both the frontend and a lightweight backend, with file-based routing and SSR out of the box. What kind of tool are they looking for?',
+    options:['A UI library','A build tool','A meta-framework','A database ORM'],
+    correct:2,
+    explain:'Meta-frameworks like Next.js bundle routing, SSR, and API routes into one project — exactly this use case.' },
+  { id:'ft9', topic:'frontend', difficulty:'hard', type:'flip', source:'frontend-terminology.html#rendering-strategies',
+    front:'You\'re using SSR for a marketing page that shows identical content to every visitor and rarely changes. What\'s the performance downside of SSR here compared to SSG, and would you switch?',
+    back:'SSR re-renders the full HTML on the server for every single request, even though the output would be identical every time — that\'s wasted server work and added latency compared to serving a pre-built static file. For content that doesn\'t depend on the specific visitor and rarely changes, SSG (or SSR with heavy caching/ISR) is the better fit — yes, switch.' },
+  { id:'ft10', topic:'frontend', difficulty:'hard', type:'flip', source:'frontend-terminology.html#rendering-strategies',
+    front:'What problem does "hydration" solve in SSR, and what goes wrong if the server-rendered HTML doesn\'t match what React would render on the client?',
+    back:'Hydration lets React "attach" to server-rendered HTML and make it interactive without throwing away and re-rendering everything from scratch — you get the fast first paint of SSR plus the interactivity of client-side React. If the server HTML doesn\'t match what React expects on the client (a hydration mismatch), you get console warnings, visible content flicker as React patches the DOM, or in bad cases broken interactivity.' },
+
+  // ================= DATABASES & ORMS =================
+  { id:'db1', topic:'databases', difficulty:'easy', type:'mc', source:'databases-and-orms.html#db-categories',
+    q:'What is the core structural difference between MongoDB and PostgreSQL?',
+    options:['MongoDB stores documents with no enforced schema; PostgreSQL stores structured tables with enforced relationships','They are functionally identical','PostgreSQL doesn\'t support relationships','MongoDB requires SQL'],
+    optionsAlt:['MongoDB keeps flexible, schema-less documents while PostgreSQL enforces structured tables and relationships','There\'s no meaningful difference between the two','PostgreSQL has no concept of relationships between tables','MongoDB is queried using SQL like a relational database'],
+    correct:0,
+    explain:'MongoDB = document database, flexible/no schema. PostgreSQL = relational database, structured tables where relationships are enforced by the DB itself.' },
+  { id:'db2', topic:'databases', difficulty:'easy', type:'flip', source:'databases-and-orms.html#db-analogy',
+    front:'Explain the filing-cabinet vs spreadsheet-with-tabs analogy for MongoDB vs PostgreSQL.',
+    back:"MongoDB is like a filing cabinet of self-contained folders — everything you need for one record is in that folder, but if two folders reference the same person, updating one doesn't update the other. PostgreSQL is like a spreadsheet with tabs that reference each other — a person's name lives in one tab, every other tab points to that row, so updating it once updates everything that references it." },
+  { id:'db5', topic:'databases', difficulty:'easy', type:'mc', source:'databases-and-orms.html#orm-explainer',
+    q:'What does an ORM (Object-Relational Mapper) actually do?',
+    options:['Replaces your database entirely','Lets you query your database using JS objects/method calls instead of raw SQL, translating both ways','Only works with MongoDB','Removes the need for a schema'],
+    optionsAlt:['Eliminates the need for an actual database','Translates JS method calls into SQL and back again, so you interact with the DB through objects instead of raw queries','Is exclusively a MongoDB tool','Makes schema design unnecessary'],
+    correct:1,
+    explain:'An ORM sits between your app and your database, turning JS method calls into SQL and SQL results back into JS objects — like Prisma does for PostgreSQL.' },
+  { id:'db7', topic:'databases', difficulty:'easy', type:'mc', source:'databases-and-orms.html#mongoose-odm',
+    q:'Mongoose is technically called an ODM rather than an ORM. What does ODM stand for?',
+    options:['Object-Document Mapper','Online Data Manager','Object-Database Migration','Ordered Data Model'],
+    correct:0,
+    explain:'"ORM" technically applies to relational databases. Mongoose does the same job for MongoDB (a document database), so it\'s called an Object-Document Mapper.' },
+  { id:'db8', topic:'databases', difficulty:'easy', type:'mc', source:'databases-and-orms.html#orm-options',
+    q:'Which is NOT one of the three ORM/ODM options mentioned for Node.js + PostgreSQL?',
+    options:['Prisma','Drizzle','Sequelize','Passport'],
+    correct:3,
+    explain:'Prisma, Drizzle, and Sequelize are ORMs for relational databases. Passport is an authentication library — unrelated to database access.' },
+  { id:'db3', topic:'databases', difficulty:'moderate', type:'mc', source:'databases-and-orms.html#rel-many-to-many',
+    q:'A user can favorite many items, and an item can be favorited by many users. What kind of relationship is this, and what does it require?',
+    options:['One-to-one — merge into one table','One-to-many — a foreign key on one side','Many-to-many — a join table','No relationship needed'],
+    correct:2,
+    explain:'Many-to-many relationships need a join table because neither side can hold a simple foreign key to the other.' },
+  { id:'db9', topic:'databases', difficulty:'moderate', type:'mc', source:'databases-and-orms.html#data-model-diagram',
+    q:'What does a foreign key enforce that a plain integer column referencing another table\'s ID wouldn\'t?',
+    options:['Nothing extra, they\'re identical','Referential integrity — the database guarantees the referenced row actually exists and can restrict deleting/updating it out from under you','Faster read speed only','Automatic encryption of the column'],
+    correct:1,
+    explain:'A foreign key constraint is enforced by the database itself, not just a naming convention — it blocks orphaned references.' },
+  { id:'db10', topic:'databases', difficulty:'moderate', type:'flip', source:'databases-and-orms.html#rel-many-to-many',
+    front:'When would you split a one-to-one relationship into two separate tables instead of just merging the fields into one table?',
+    back:'When the two halves have different access patterns or sensitivity (e.g. rarely-accessed or sensitive profile data kept separate from frequently-queried core fields), when one side is optional and often absent, or when the two pieces of data have independent lifecycles. Otherwise, merging into one table is usually simpler.' },
+  { id:'db4', topic:'databases', difficulty:'hard', type:'flip', source:'databases-and-orms.html#join-table-explainer',
+    front:'Why does a join table need to exist at all — why not just store an array of related IDs on one side of a many-to-many relationship?',
+    back:'Because data that\'s specific to the connection — like the position of a song in a particular playlist, or the timestamp it was added — doesn\'t belong to the song or the playlist individually. It belongs to that specific pairing. The same song might be track #1 in one playlist and track #7 in another. That per-connection data has to live in the join table, not in either of the tables it connects.' },
+  { id:'db6', topic:'databases', difficulty:'hard', type:'flip', source:'databases-and-orms.html#db-decision',
+    front:'Interview-style: you have an app with shared reference data (e.g. a product catalog), meaningful relationships (users own orders, orders contain ordered items), and ordering/structure that matters. Why lean relational over document-based here?',
+    back:'Shared reference data (like products) benefits from being stored once and referenced, not duplicated across every document that touches it. Real relationships (ownership, containment) can be enforced by the database itself via foreign keys instead of your application code being solely responsible for consistency. And where order or structure matters — like line items in a specific sequence — a join table with an explicit order column handles it cleanly, versus managing arrays manually in a document.' },
+  { id:'db11', topic:'databases', difficulty:'hard', type:'flip', source:'databases-and-orms.html#db-categories',
+    front:'Your app is mostly reads with occasional writes to shared reference data, and most entities have flexible, varying fields. Would you lean relational or document-based, and why might the answer be less clear-cut than it first seems?',
+    back:'The "shared reference data" part points toward relational (avoid duplication, enforce consistency). The "flexible, varying fields" part points toward document-based (no rigid schema). In practice this is a real trade-off — some teams use PostgreSQL\'s JSONB columns to get flexible fields inside a relational database, getting both properties at once rather than picking one model purely. The honest answer is "it depends on which property matters more for the specific data" rather than a clean either/or.' },
+
+  // ================= AUTH =================
+  { id:'au1', topic:'auth', difficulty:'easy', type:'mc', source:'auth.html#stateless-problem',
+    q:'Why is authentication needed at all on the web?',
+    options:['Because HTTP is stateless — the server forgets you between requests','Because browsers require it','Because JavaScript can\'t store data','Because databases require passwords'],
+    optionsAlt:['Because HTTP has no built-in memory of previous requests — every request looks like the first one','Because it\'s a mandatory browser requirement','Because JS is incapable of persisting any data','Because every database mandates password protection'],
+    correct:0,
+    explain:'Every HTTP request is independent — the server has no memory of previous ones. Auth is the mechanism for proving identity again on each request.' },
+  { id:'au2', topic:'auth', difficulty:'easy', type:'flip', source:'auth.html#sessions-vs-jwt',
+    front:'Sessions vs JWTs: where does the user\'s data live in each approach?',
+    back:"Sessions: user data lives on the server (in memory or a DB); the browser only holds a random session ID — a claim ticket. JWTs: the user's data lives inside the token itself, signed and stored on the client; the server stores nothing and just verifies the signature." },
+  { id:'au3', topic:'auth', difficulty:'easy', type:'mc', source:'auth.html#auth-analogy',
+    q:'Which analogy matches JWTs?',
+    options:['The server holds your file in a cabinet and hands you a numbered ticket','The server hands you your file directly, stamped and signed — no cabinet needed','The server has no idea who you are, ever','The server emails you a new password every visit'],
+    optionsAlt:['You get a claim ticket while your actual file stays locked away with the server','You\'re handed the signed, stamped file itself — nothing stored back at the server','The server can never identify you under any circumstance','A fresh password gets emailed to you on every single visit'],
+    correct:1,
+    explain:'Sessions = claim ticket to a file in a cabinet. JWTs = the file itself, stamped and signed, carried by the client.' },
+  { id:'au7', topic:'auth', difficulty:'easy', type:'mc', source:'auth.html#oauth-step-3',
+    q:'In the OAuth flow, what does Google send back to your server after the user logs in?',
+    options:["The user's plaintext password","A short-lived authorization code, useless on its own","A permanent API key","Nothing — the flow ends there"],
+    optionsAlt:["The raw password the user typed into Google","A temporary code that only means something once exchanged for real credentials","A long-lived key meant for permanent use","Nothing at all — the process just stops"],
+    correct:1,
+    explain:'Google redirects back with a temporary code. Your server then exchanges that code for the user\'s info server-to-server — the browser and your app never see the password.' },
+  { id:'au9', topic:'auth', difficulty:'easy', type:'mc', source:'auth.html#passport-js',
+    q:'What is Passport.js used for?',
+    options:['Rendering HTML on the server','Handling OAuth strategies (Google, GitHub, etc.) so you don\'t implement the redirect/code exchange yourself','Managing database migrations','Bundling JavaScript'],
+    optionsAlt:['Generating server-rendered HTML','Providing pre-built OAuth "strategies" per provider so you skip hand-rolling the redirect and code exchange','Running schema migrations against your database','Packaging and bundling your JS files'],
+    correct:1,
+    explain:'Passport.js is the standard Node auth library with pluggable "strategies" per provider — you configure credentials and it handles the OAuth mechanics.' },
+  { id:'au4', topic:'auth', difficulty:'moderate', type:'flip', source:'auth.html#why-jwt-chosen',
+    front:'Why would a team choose JWTs over sessions specifically because their frontend and backend run on separate origins?',
+    back:'Sessions work best when frontend and backend share the same server — cookies travel automatically on the same domain. Once they\'re on separate origins, cookies require careful CORS configuration and hit browser restrictions. JWTs sidestep this entirely: the token is just a string, manually attached to an Authorization header — no domain matching required.' },
+  { id:'au5', topic:'auth', difficulty:'moderate', type:'mc', source:'auth.html#storage-localstorage',
+    q:'What is the main security problem with storing a JWT in localStorage?',
+    options:['It expires too quickly','It\'s readable by any JavaScript on the page, so an XSS attack can steal it','It can\'t be sent with fetch requests','localStorage doesn\'t support strings'],
+    correct:1,
+    explain:'localStorage is readable by any script running on the page. If an attacker injects malicious JS (XSS), they can read and steal the token.' },
+  { id:'au6', topic:'auth', difficulty:'moderate', type:'flip', source:'auth.html#storage-httponly',
+    front:'How does an HttpOnly cookie protect against the localStorage XSS problem?',
+    back:'An HttpOnly cookie can\'t be read by JavaScript on the page at all — only the browser can send it automatically with requests. An XSS attack can\'t steal what it can\'t see. It requires a bit more setup (credentials: "include" on fetch, CORS configured to allow credentials) but removes the attack surface entirely.' },
+  { id:'au8', topic:'auth', difficulty:'hard', type:'flip', source:'auth.html#oauth-flow',
+    front:'Walk through the full OAuth → JWT → HttpOnly cookie flow, start to finish, the way you\'d explain it on a whiteboard.',
+    back:'1) User clicks "Sign in with Google," gets redirected to Google. 2) Google authenticates the user — your app never sees the password. 3) Google redirects back with a temporary authorization code. 4) Your server exchanges that code for the user\'s info via a server-to-server call. 5) Your server finds or creates the user in your users table. 6) Your server issues a JWT and sets it as an HttpOnly cookie. 7) All future requests carry that cookie automatically; Express verifies the JWT to identify the user.' },
+  { id:'au10', topic:'auth', difficulty:'hard', type:'flip', source:'auth.html#jwt-tradeoffs-table',
+    front:'An attacker manages to steal a valid JWT via network sniffing (not XSS) before it expires. What can they do, and what design choices limit the damage?',
+    back:'They can impersonate the user for as long as the token remains valid — the server has no way to distinguish the attacker\'s copy from the real one. Mitigations: keep expiry short-lived, pair with a refresh-token flow so long-lived access isn\'t riding on one token, require HTTPS everywhere so sniffing a plaintext token over the wire isn\'t possible in the first place, and set secure/sameSite cookie flags. None of this eliminates the risk entirely — it\'s about shrinking the blast radius.' },
+  { id:'au11', topic:'auth', difficulty:'hard', type:'flip', source:'auth.html#sessions-vs-jwt',
+    front:'Why can\'t you truly "log out" a JWT-based session the same clean way you can end a session-based one?',
+    back:'A session can be deleted server-side instantly — the moment you remove that row from the session store, the user is logged out everywhere. A JWT is self-contained and stateless by design: the server never stored it, so there\'s nothing to delete. The token stays valid until it naturally expires unless you add back some server-side state — like a denylist of revoked token IDs — which brings back some of the statelessness/scaling trade-off JWTs were meant to avoid in the first place.' },
+
+  // ================= TERMINAL & SHELL =================
+  { id:'tm1', topic:'terminal', difficulty:'easy', type:'mc', source:'terminal-and-shell-basics.html#terminal-vs-shell',
+    q:'What\'s the actual difference between the terminal and the shell?',
+    options:['They\'re the same thing','The terminal is the display window; the shell is the program inside it that interprets commands','The shell only runs on Linux','The terminal writes files; the shell reads them'],
+    optionsAlt:['There\'s no real distinction between the two','The terminal is just the window you see; the shell is the actual program reading and interpreting what you type','Shells are exclusive to Linux systems','The terminal handles writing files while the shell only reads them'],
+    correct:1,
+    explain:'The terminal is just the display layer. The shell (zsh on modern Mac, bash on many Linux servers) reads what you type, figures out what to do, and shows you output.' },
+  { id:'tm2', topic:'terminal', difficulty:'easy', type:'flip', source:'terminal-and-shell-basics.html#terminal-shell-analogy',
+    front:'Explain the TV/channel analogy for terminal vs shell.',
+    back:'The terminal is the TV set — it just displays things. The shell is the channel playing on it — it decides what you\'re actually seeing/doing. You could swap the channel (run a different shell, like zsh vs bash) inside the same TV (terminal window).' },
+  { id:'tm3', topic:'terminal', difficulty:'easy', type:'mc', source:'terminal-and-shell-basics.html#path-explainer',
+    q:'What is PATH?',
+    options:['A single folder where all programs must live','An ordered list of directories the shell searches to find a command you typed','A Node.js built-in module','A type of environment variable only used by npm'],
+    optionsAlt:['One designated directory that holds every installed program','A sequence of directories the shell checks, in order, to locate the command you ran','Part of Node\'s built-in standard library','An environment variable exclusively used by npm'],
+    correct:1,
+    explain:'When you type a command, the shell searches PATH directories in order until it finds a match — like checking drawers one by one for a pen.' },
+  { id:'tm4', topic:'terminal', difficulty:'easy', type:'mc', source:'terminal-and-shell-basics.html#psql-meta-commands',
+    q:'Inside psql, which meta-command lists all tables in the current database?',
+    options:['\\l','\\dt','\\d','\\c'],
+    correct:1,
+    explain:'\\l lists databases, \\dt lists tables, \\d tablename describes a table, and \\c connects to a different database.' },
+  { id:'tm7', topic:'terminal', difficulty:'easy', type:'mc', source:'terminal-and-shell-basics.html#shell-cheat-sheet',
+    q:'Which keyboard shortcut kills a currently running process in the terminal (like a dev server)?',
+    options:['Ctrl + L','Ctrl + A','Ctrl + C','Tab'],
+    correct:2,
+    explain:'Ctrl+C kills the current process. Ctrl+L clears the screen, Ctrl+A jumps to the start of the line, and Tab autocompletes.' },
+  { id:'tm5', topic:'terminal', difficulty:'moderate', type:'flip', source:'terminal-and-shell-basics.html#npm-commands',
+    front:'What\'s the difference between npm install package and npm install -D package?',
+    back:'npm install package adds it as a regular dependency (needed in production). npm install -D package installs it as a devDependency — only needed during development, like a testing library or linter — and won\'t be required to run the app in production.' },
+  { id:'tm6', topic:'terminal', difficulty:'moderate', type:'mc', source:'terminal-and-shell-basics.html#package-json-fields',
+    q:'Setting "type": "module" in package.json means:',
+    options:['The project uses CommonJS require() syntax','The project uses ES modules — import/export syntax','The project can\'t use npm','The project is a TypeScript project'],
+    correct:1,
+    explain:'"type": "module" tells Node to treat .js files as ES modules (import/export). Omitting it or setting "commonjs" uses require()/module.exports instead.' },
+  { id:'tm8', topic:'terminal', difficulty:'moderate', type:'flip', source:'terminal-and-shell-basics.html#npm-commands',
+    front:'Why does node_modules never get committed to git, and what two files make sure a teammate can reproduce your exact dependency versions after cloning the repo?',
+    back:'node_modules can be huge and is fully derived from package.json — committing it just bloats the repo with regeneratable files. package.json lists your dependencies (usually with flexible version ranges), and package-lock.json pins the exact resolved versions of everything, including nested dependencies. Together, running npm install after cloning reproduces the same dependency tree a teammate had.' },
+  { id:'tm9', topic:'terminal', difficulty:'hard', type:'flip', source:'terminal-and-shell-basics.html#shell-cheat-sheet',
+    front:'A teammate clones your repo, runs npm start, and it crashes because an environment variable like DATABASE_URL is undefined. What would you check, in order, from the terminal to debug this?',
+    back:'First, echo $DATABASE_URL or printenv to see if it\'s actually set in that shell session. If it\'s not, check whether the project expects a .env file (common pattern) that isn\'t committed to git and needs to be copied locally — often from a .env.example. Then confirm whatever loads it (like a dotenv import) actually runs before the code that reads process.env.DATABASE_URL. Finally, double check you\'re in the right terminal session/window, since export only applies to the session it was run in.' },
+  { id:'tm10', topic:'terminal', difficulty:'hard', type:'mc', source:'terminal-and-shell-basics.html#shell-cheat-sheet',
+    q:'You export DATABASE_URL=... directly in your terminal session, versus putting it in a .env file loaded by your app. Which one would a completely separate tool like psql see automatically, without any extra configuration?',
+    options:['Only the .env file version','Only the exported terminal variable, since it\'s part of that shell\'s environment that any program launched from it inherits','Both, automatically, no difference','Neither — both require extra configuration'],
+    correct:1,
+    explain:'export makes a variable part of the shell\'s environment, which every program you launch from that shell session inherits automatically — including psql. A .env file is just a plain text file; nothing reads it automatically unless your specific app has code (like the dotenv package) that opens the file and loads its contents into process.env itself.' },
+
+  // ================= CROSS-TOPIC SYNTHESIS (ADVANCED) =================
+  { id:'adv1', topic:'synthesis', difficulty:'advanced', type:'flip', source:['auth.html#oauth-flow','node-express-onepager.html#request-journey'],
+    front:'Walk through everything that happens, layer by layer, from a user clicking "Sign in with Google" to their browser loading their personalized dashboard data.',
+    back:'Browser redirects to Google → Google authenticates the user (your app never sees the password) → Google redirects back with a short-lived authorization code → your server exchanges that code for the user\'s profile info server-to-server → your server finds or creates the user record → your server issues a JWT and sets it as an HttpOnly cookie → the browser sends that cookie automatically on the next request → Express middleware verifies the JWT → the route handler queries the database for that user\'s data → the response comes back and the frontend renders it.' },
+  { id:'adv2', topic:'synthesis', difficulty:'advanced', type:'flip', source:['node-internals-deepdive.html#event-loop-diagram','node-internals-deepdive.html#event-loop-warning'],
+    front:'A route handler queries a database and the query takes 3 seconds. Does this block other users\' requests? What if instead the handler ran a synchronous CPU-heavy calculation for 3 seconds?',
+    back:'The DB query is async I/O — Node hands it off to libuv/the OS and keeps handling other requests while it waits, so nobody else is blocked. A 3-second synchronous CPU-heavy calculation is completely different: it runs directly on Node\'s single JS thread, so the event loop can\'t do anything else until it finishes — every other request queues up and waits, even ones that have nothing to do with that calculation.' },
+  { id:'adv3', topic:'synthesis', difficulty:'advanced', type:'flip', source:['proxy-pattern.html#proxy-code-example','terminal-and-shell-basics.html#shell-cheat-sheet'],
+    front:'Where would you store a third-party API key so your Express server can use it at runtime, but it never gets committed to git? Describe the mechanism end to end.',
+    back:'Put it in a .env file in the project root (added to .gitignore so it\'s never committed), load it via a package like dotenv early in your app\'s startup so it lands in process.env, and reference it as process.env.API_KEY wherever your proxy route forwards the request to the third-party API. Teammates get a .env.example with the variable names (no real values) so they know what to fill in locally.' },
+  { id:'adv4', topic:'synthesis', difficulty:'advanced', type:'flip', source:['auth.html#sessions-vs-jwt','frontend-terminology.html#rendering-strategies'],
+    front:'A separate frontend (Vite/React) calls an API on a different origin using JWTs in HttpOnly cookies. A teammate wants to switch to traditional server-side sessions "to simplify things." What goes wrong?',
+    back:'Sessions rely on a cookie traveling automatically to the same server that issued it — that works cleanly when frontend and backend share an origin, but gets tangled with CORS and cross-site cookie restrictions once they\'re on separate origins. You\'d also need a shared session store (like Redis) if you ever run more than one backend instance, since an in-memory session on one server instance wouldn\'t be visible to another. JWTs sidestepped both problems by being stateless and explicit — this "simplification" would actually add infrastructure and cross-origin complexity back in.' },
+  { id:'adv5', topic:'synthesis', difficulty:'advanced', type:'flip', source:['auth.html#sessions-vs-jwt','auth.html#jwt-tradeoffs-table'],
+    front:'If you were using traditional sessions and needed to scale to multiple server instances behind a load balancer, what extra infrastructure would you need? How does the JWT approach sidestep that?',
+    back:'With sessions, each server instance needs to see the same session data no matter which instance handles a given request — that means adding a shared, centralized session store (like Redis) that every instance reads from, instead of keeping sessions in each server\'s own memory. JWTs sidestep this because the token itself carries everything needed to verify the user — any server instance can independently verify the signature without looking anything up, so there\'s nothing to share.' },
+  { id:'adv6', topic:'synthesis', difficulty:'advanced', type:'flip', source:['proxy-pattern.html#request-lifecycle','node-internals-deepdive.html#event-loop-warning'],
+    front:'A proxy endpoint fetches data from a slow third-party API and then runs some data transformation before responding. Under high traffic, which part is more likely to become the bottleneck — the network fetch or the transformation — and why?',
+    back:'The network fetch itself is async I/O — Node hands it off and keeps serving other requests while waiting, so it scales fine even if it\'s slow. The transformation step is where it can go wrong: if it\'s a heavy synchronous operation (large loops, expensive JSON manipulation, sorting big arrays) it runs on the single JS thread and blocks everything else while it executes. Under high traffic, that synchronous work is the real risk, not the network wait.' },
+  { id:'adv7', topic:'synthesis', difficulty:'advanced', type:'flip', source:['frontend-terminology.html#parks-app-decision','node-express-onepager.html#node-express-analogy'],
+    front:'A small team on a tight deadline is deciding between a meta-framework (like Next.js) and a separate frontend + Express backend. What\'s the trade-off, and how does the right answer change if they plan to hire specialized backend engineers later?',
+    back:'A meta-framework ships faster now — one project, file-based routing, SSR and API routes built in, less to configure. A separate frontend + backend means more setup upfront but a clean boundary between the two: it\'s easier to swap out or scale the backend independently, and it maps naturally onto separate frontend/backend hires later. If specialized backend engineers are coming, the separated architecture pays off sooner; if it\'s staying a small full-stack team indefinitely, the meta-framework\'s speed advantage matters more.' },
+  { id:'adv8', topic:'synthesis', difficulty:'advanced', type:'flip', source:['databases-and-orms.html#orm-explainer','node-express-onepager.html#request-journey'],
+    front:'Explain, end to end, what happens when a client sends a POST request to create a new resource in an Express + Prisma + PostgreSQL stack — from the HTTP request landing to the row existing in the database.',
+    back:'Express\'s http layer receives the request and parses it → middleware runs (body parsing turns the JSON body into req.body, auth middleware verifies the JWT) → the route handler calls something like prisma.resource.create() with the parsed data → Prisma translates that call into a parameterized SQL INSERT statement → PostgreSQL checks constraints (foreign keys, not-null, uniqueness) and either enforces them or returns the new row → Prisma converts that row back into a JS object → the handler sends it back as JSON in the response.' },
+  { id:'adv9', topic:'synthesis', difficulty:'advanced', type:'flip', source:['auth.html#jwt-tradeoffs-table','node-internals-deepdive.html#v8-section'],
+    front:'Verifying a JWT\'s signature is a synchronous, CPU-bound operation, unlike a session lookup which requires a database or store round-trip. When could JWT verification actually become a performance concern, and how does that compare to the session alternative?',
+    back:'JWT verification (checking an HMAC or RSA signature) is fast — microseconds — so at normal traffic it\'s rarely a bottleneck, and it\'s typically cheaper than a session approach that requires a network round-trip to a session store on every single request. It could start to matter at very high request volumes with expensive asymmetric signature algorithms and no caching of decoded results, but for most apps the trade-off favors JWTs on raw verification cost — the real downsides of JWTs are around revocation, not speed.' },
+  { id:'adv10', topic:'synthesis', difficulty:'advanced', type:'flip', source:['terminal-and-shell-basics.html#shell-cheat-sheet','proxy-pattern.html#proxy-code-example'],
+    front:'A teammate clones your repo, runs npm start, and the server immediately crashes because DATABASE_URL is undefined. Walk through what you\'d check, in order, from the terminal.',
+    back:'Start with echo $DATABASE_URL or printenv to confirm it\'s actually set in that shell session. If not, check whether the project expects a .env file — a common pattern that\'s gitignored on purpose, often with a .env.example showing which variables are needed but not their real values. Confirm whatever loads the .env file (like dotenv) actually runs before any code reads process.env.DATABASE_URL. If it\'s still failing, double-check node_modules exists (run npm install) and that you\'re in the right project directory and terminal session, since exported variables only apply to the session they were set in.' },
+  { id:'adv11', topic:'synthesis', difficulty:'advanced', type:'flip', source:['proxy-pattern.html#bonus-benefits','databases-and-orms.html#db-decision'],
+    front:'A proxy caches third-party responses in memory for a few minutes to reduce load, while permanent user data goes into PostgreSQL once they save it. Why do you need both, and what is each one actually protecting you from?',
+    back:'The cache protects you from hammering a slow or rate-limited upstream API with duplicate requests — it\'s fine if it\'s momentarily stale or even lost on a restart, because it\'s just a speed optimization for transient data. The database is the durable source of truth for anything the user has explicitly chosen to keep — losing that would mean losing real user data, which is not an acceptable failure mode. Same general idea (store data somewhere so you don\'t refetch it) but completely different tolerance for loss and staleness.' },
+  { id:'adv12', topic:'synthesis', difficulty:'advanced', type:'flip', source:['frontend-terminology.html#rendering-strategies','auth.html#storage-httponly'],
+    front:'Why does server-side rendering require extra care about where auth tokens are stored, compared to a purely client-rendered (CSR) app?',
+    back:'With SSR, the server needs to know who the user is while it\'s generating the HTML — before any client-side JavaScript has run. That means the identity proof has to be readable server-side at render time, like a cookie sent automatically with the request. A token stored in localStorage wouldn\'t help here — nothing has executed on the client yet to read it, so the server-rendered page would have no way to know who\'s asking. This is one more reason cookie-based auth (ideally HttpOnly) pairs naturally with SSR in a way that localStorage-based JWTs don\'t.' },
+
+  // ================= DATABASE PERFORMANCE =================
+  { id:'dp1', topic:'db-performance', difficulty:'easy', type:'mc', source:'db-performance.html#n-plus-one',
+    q:'What is the N+1 query problem?',
+    options:['Running one query then looping over the results with one extra query per item','Making N+1 requests to the same third-party API per second','A SQL syntax error involving the number 1','A caching strategy that stores N+1 versions of a value'],
+    correct:0,
+    explain:'One query fetches a list of N items; if you then loop over it and query once per item, you\'ve made N+1 total queries instead of 1 or 2.' },
+  { id:'dp2', topic:'db-performance', difficulty:'easy', type:'mc', source:'db-performance.html#indexes-explainer',
+    q:'What does a database index primarily speed up?',
+    options:['Writing new rows with INSERT','Looking up rows filtered in WHERE, JOIN, or ORDER BY clauses','Automatically migrating your schema','Hashing passwords before storage'],
+    correct:1,
+    explain:'An index is a separate, sorted lookup structure that lets the database skip a full table scan for columns used in WHERE/JOIN/ORDER BY.' },
+  { id:'dp3', topic:'db-performance', difficulty:'moderate', type:'flip', source:'db-performance.html#indexes-explainer',
+    front:'Why doesn\'t it make sense to just add an index to every column "to be safe"?',
+    back:'Every index speeds up reads but slows down writes — each INSERT/UPDATE now has to update the index too — and indexes cost disk space. The right move is indexing columns actually used in WHERE, JOIN, or ORDER BY, not indexing everything by default.' },
+  { id:'dp4', topic:'db-performance', difficulty:'moderate', type:'mc', source:'db-performance.html#n-plus-one',
+    q:'Which Prisma pattern avoids the N+1 problem when fetching trips along with their parks?',
+    options:['Looping over trips and calling prisma.park.findMany() separately inside the loop','Using include: { parks: true } in the original findMany call','Calling prisma.trip.findMany() twice in a row','Disabling Prisma\'s query engine'],
+    correct:1,
+    explain:'include tells Prisma to fetch the related rows as part of the same query plan, instead of issuing a new query per parent row.' },
+  { id:'dp5', topic:'db-performance', difficulty:'moderate', type:'flip', source:'db-performance.html#transactions-acid',
+    front:'What does ACID stand for, and which letter matters most for a money transfer between two accounts?',
+    back:'Atomicity, Consistency, Isolation, Durability. Atomicity matters most for a transfer — the debit from one account and the credit to the other must happen together or not at all, never partially.' },
+  { id:'dp6', topic:'db-performance', difficulty:'hard', type:'mc', source:'db-performance.html#indexes-explainer',
+    q:'You suspect a slow endpoint is missing an index. What\'s the correct way to confirm it rather than guessing?',
+    options:['Add indexes to every column and see if it gets faster','Run EXPLAIN ANALYZE on the query to check for a sequential scan','Rewrite the query in a different ORM','Add more RAM to the server'],
+    correct:1,
+    explain:'EXPLAIN ANALYZE shows the actual query plan — whether PostgreSQL used an index scan or fell back to scanning every row.' },
+  { id:'dp7', topic:'db-performance', difficulty:'hard', type:'flip', source:'db-performance.html#transactions-acid',
+    front:'Why do you need a transaction for a money transfer between two accounts, even though each individual UPDATE is already atomic on its own?',
+    back:'A single UPDATE is atomic by itself, but a transfer is two updates — a debit and a credit. Without wrapping both in a transaction, a crash or error between them could leave money debited from one account but never credited to the other. The transaction guarantees both happen together or neither does.' },
+  { id:'dp8', topic:'db-performance', difficulty:'hard', type:'mc', source:'db-performance.html#transactions-acid',
+    q:'What\'s the main risk of running two concurrent transactions without proper isolation?',
+    options:['Slower disk reads','One transaction seeing another\'s uncommitted, half-finished changes','Increased storage usage','Both transactions automatically rolling back'],
+    correct:1,
+    explain:'Isolation is what prevents concurrent transactions from seeing each other\'s in-progress, not-yet-committed work.' },
+
+  // ================= TESTING =================
+  { id:'ts1', topic:'testing', difficulty:'easy', type:'mc', source:'testing.html#testing-pyramid',
+    q:'In the testing pyramid, which type of test should you have the most of?',
+    options:['End-to-end tests','Integration tests','Unit tests','Manual QA passes'],
+    correct:2,
+    explain:'Unit tests are fast and cheap, so the pyramid shape favors having many of them, with fewer integration tests and the fewest end-to-end tests.' },
+  { id:'ts2', topic:'testing', difficulty:'easy', type:'mc', source:'testing.html#mocking-explainer',
+    q:'What is a "mock" in testing?',
+    options:['A type of bug','A fake stand-in for a real dependency, like a database or API','A production deployment step','A code linter rule'],
+    correct:1,
+    explain:'Mocking replaces a real dependency with a controllable fake so the test is fast, deterministic, and isolated.' },
+  { id:'ts9', topic:'testing', difficulty:'easy', type:'flip', source:'testing.html#testing-pyramid',
+    front:'What\'s the practical difference in speed and reliability between a unit test and an end-to-end test?',
+    back:'Unit tests run in milliseconds and are deterministic since dependencies are mocked. End-to-end tests are much slower and more prone to flakiness since they involve real infrastructure, timing, and sometimes a real browser.' },
+  { id:'ts3', topic:'testing', difficulty:'moderate', type:'flip', source:'testing.html#testing-pyramid',
+    front:'Explain the difference between a unit test and an integration test, using your own app as the example.',
+    back:'A unit test checks one function or module in isolation with dependencies mocked out — like testing a validation function alone. An integration test checks that pieces work together for real — hitting an actual Express route with a tool like supertest against a real test database, confirming the whole path works as one.' },
+  { id:'ts4', topic:'testing', difficulty:'moderate', type:'mc', source:'testing.html#mocking-explainer',
+    q:'Why mock the database in a unit test instead of using a real one?',
+    options:['Real databases are always broken','Mocking keeps the test fast, deterministic, and isolated from external infrastructure','Unit tests are technically incapable of connecting to databases','It\'s a hard requirement of every test framework'],
+    correct:1,
+    explain:'The whole point of a unit test is isolating the logic under test — mocking removes the unpredictability and slowness of a real dependency.' },
+  { id:'ts5', topic:'testing', difficulty:'moderate', type:'flip', source:'testing.html#what-to-test',
+    front:'You\'re asked to test a function that calculates a discount. What three categories of test cases should you mention?',
+    back:'The normal/happy path (valid typical input), edge cases (zero, negative numbers, empty input, boundary values), and error paths (what happens if a dependency throws or input is malformed). Naming all three signals real testing instinct, not just checking the obvious case.' },
+  { id:'ts6', topic:'testing', difficulty:'hard', type:'mc', source:'testing.html#tdd-cycle',
+    q:'What does the "red" step in the red-green-refactor TDD cycle mean?',
+    options:['Deleting broken code','Writing a failing test for behavior that doesn\'t exist yet','Marking a test as skipped','Reverting a bad commit'],
+    correct:1,
+    explain:'Red means you\'ve written a test for behavior you haven\'t built yet, so it fails — proving the test can actually detect the missing feature.' },
+  { id:'ts7', topic:'testing', difficulty:'hard', type:'flip', source:'testing.html#testing-pyramid',
+    front:'Why might a team with a large, brittle end-to-end test suite and almost no unit tests be in worse shape than the inverse, even if both suites report passing?',
+    back:'End-to-end tests are slow and often flaky, so a suite dominated by them is expensive to run and maintain, and failures are hard to localize — you know something\'s broken but not where. A pyramid with mostly fast unit tests gives quick, precise feedback on what broke; the few e2e tests just confirm the critical paths still work end to end. Passing tests don\'t tell you how expensive or fragile getting that green checkmark actually was.' },
+
+  // ================= SECURITY =================
+  { id:'sc1', topic:'security', difficulty:'easy', type:'mc', source:'security-fundamentals.html#input-validation',
+    q:'Why validate input at the API boundary using a schema library like Zod or Joi?',
+    options:['It makes the code run faster','It rejects malformed or untrusted data before it reaches your business logic','It replaces the need for a database','It automatically corrects bad input'],
+    correct:1,
+    explain:'Validating at the boundary means bad data never gets a chance to reach your logic or database in the first place.' },
+  { id:'sc2', topic:'security', difficulty:'easy', type:'mc', source:'security-fundamentals.html#sql-injection',
+    q:'What makes a SQL injection attack possible?',
+    options:['Using an ORM','User input being concatenated directly into a SQL query string','Using HTTPS','Storing passwords in plaintext'],
+    correct:1,
+    explain:'When input is pasted directly into a query string, malicious input can change the structure of the query itself, not just its data.' },
+  { id:'sc3', topic:'security', difficulty:'moderate', type:'flip', source:'security-fundamentals.html#sql-injection',
+    front:'Why do parameterized queries prevent SQL injection when string concatenation doesn\'t?',
+    back:'With parameterized queries, user input is always passed as data, never as part of the query\'s actual structure — the database treats a parameter as a value to compare against, not as SQL syntax to execute. With string concatenation, malicious input can rewrite the query itself, for example by closing a quote early and adding new SQL.' },
+  { id:'sc4', topic:'security', difficulty:'moderate', type:'mc', source:'security-fundamentals.html#csrf-explainer',
+    q:'What is CSRF (cross-site request forgery)?',
+    options:['Stealing a token via malicious JavaScript injected into a page','Tricking a logged-in user\'s browser into sending an unintended request using their existing session','Guessing passwords through repeated login attempts','Injecting SQL through a form field'],
+    correct:1,
+    explain:'CSRF relies on the victim\'s browser automatically attaching valid session credentials to a forged request from a malicious page.' },
+  { id:'sc5', topic:'security', difficulty:'moderate', type:'flip', source:'security-fundamentals.html#csrf-explainer',
+    front:'How does setting SameSite on your auth cookie help prevent CSRF?',
+    back:'SameSite tells the browser not to send that cookie along with requests originating from a different site. Since CSRF relies on the browser automatically attaching your session cookie to a forged cross-site request, blocking that attachment closes off most CSRF attacks without needing extra token infrastructure.' },
+  { id:'sc6', topic:'security', difficulty:'hard', type:'mc', source:'security-fundamentals.html#csrf-explainer',
+    q:'Which of these correctly describes an XSS attack, as distinct from CSRF?',
+    options:['Injected JavaScript running in the page reads and steals data like a token','A malicious page silently submits a form to your bank while you\'re logged in elsewhere','Guessing a password through repeated attempts','They\'re the same attack under two different names'],
+    correct:0,
+    explain:'XSS is about malicious script running inside your page reading/stealing data; CSRF is about the browser being tricked into sending a forged request using your existing session — no script injection required.' },
+  { id:'sc7', topic:'security', difficulty:'hard', type:'flip', source:'security-fundamentals.html#rate-limiting-headers',
+    front:'Why does helmet.js get recommended as a close-to-free security improvement for an Express app?',
+    back:'It sets a batch of well-established, sensible HTTP security headers — like preventing content-type sniffing and restricting where content can load from — with essentially one line of setup. You get a reasonable security baseline without researching and configuring each header individually.' },
+  { id:'sc8', topic:'security', difficulty:'hard', type:'mc', source:'security-fundamentals.html#rate-limiting-headers',
+    q:'Why is rate limiting valuable on an endpoint even when it doesn\'t call any third-party API?',
+    options:['It has no value without a third-party API involved','It protects against brute-force attempts and abusive traffic regardless of what the endpoint does internally','It only matters for GraphQL APIs','Express requires it in order to start'],
+    correct:1,
+    explain:'Rate limiting protects your own server and users from abuse — that value exists independent of whether the endpoint happens to call something else downstream.' },
+
+  // ================= SYSTEM DESIGN =================
+  { id:'sd1', topic:'system-design', difficulty:'easy', type:'mc', source:'system-design-basics.html#scaling-types',
+    q:'What\'s the difference between vertical and horizontal scaling?',
+    options:['Vertical = more servers, horizontal = a bigger single server','Vertical = a bigger, more powerful single server; horizontal = more servers sharing the load','They\'re the same thing described two ways','Vertical scaling only applies to databases'],
+    correct:1,
+    explain:'Vertical scaling adds power to one machine; horizontal scaling adds more machines sharing the work.' },
+  { id:'sd2', topic:'system-design', difficulty:'easy', type:'mc', source:'system-design-basics.html#load-balancing',
+    q:'What does a load balancer do?',
+    options:['Compiles your application code','Decides which server instance handles each incoming request','Encrypts your database connections','Writes application log files'],
+    correct:1,
+    explain:'A load balancer sits in front of multiple instances and routes each incoming request to one of them.' },
+  { id:'sd3', topic:'system-design', difficulty:'moderate', type:'flip', source:'system-design-basics.html#load-balancing',
+    front:'Why does horizontal scaling require stateless authentication (like JWTs) or a shared session store, when vertical scaling doesn\'t?',
+    back:'With horizontal scaling, any of several server instances might handle any given request, decided by a load balancer. If a user\'s session lived only in one instance\'s memory, a request routed to a different instance wouldn\'t recognize them. JWTs sidestep this since any instance can verify the token independently; traditional sessions need a shared store like Redis that every instance can read.' },
+  { id:'sd4', topic:'system-design', difficulty:'moderate', type:'mc', source:'system-design-basics.html#message-queues',
+    q:'What\'s the primary purpose of a message queue like BullMQ or SQS in a backend system?',
+    options:['Storing user session data','Decoupling slow work, like sending an email, from the request/response cycle so the user doesn\'t wait for it','Replacing your primary database','Load balancing incoming HTTP requests'],
+    correct:1,
+    explain:'A queue lets you respond to the user immediately while a separate worker handles the slow work asynchronously.' },
+  { id:'sd5', topic:'system-design', difficulty:'moderate', type:'flip', source:'system-design-basics.html#caching-layers',
+    front:'What\'s genuinely hard about caching, beyond just storing values in something like Redis?',
+    back:'Knowing when to invalidate or update a cached value once the underlying data changes. A cache serving stale data can be worse than no cache at all, so the real design challenge is deciding what triggers a refresh — not the storing part itself.' },
+  { id:'sd6', topic:'system-design', difficulty:'hard', type:'mc', source:'system-design-basics.html#cap-theorem',
+    q:'During a network partition in a distributed system, CAP theorem says you effectively have to choose between:',
+    options:['Consistency and Availability','Consistency and Partition tolerance','Speed and Partition tolerance','Availability and Speed'],
+    correct:0,
+    explain:'Partition tolerance is assumed for any distributed system; during an actual partition, the real trade-off left is Consistency vs. Availability.' },
+  { id:'sd7', topic:'system-design', difficulty:'hard', type:'flip', source:'system-design-basics.html#monolith-vs-microservices',
+    front:'A team wants to switch from a monolith to microservices mainly because "it\'s what big companies do." What would you push back on?',
+    back:'Microservices add real overhead — network calls between services, more complex deployment and monitoring, data consistency across service boundaries. That overhead only pays off once team size, independent scaling needs, or failure isolation actually justify it. Copying an architecture without the underlying problem (many teams stepping on each other, one component needing very different scaling) often just adds complexity without the corresponding benefit.' },
+  { id:'sd8', topic:'system-design', difficulty:'hard', type:'mc', source:'system-design-basics.html#scaling-decision-summary',
+    q:'Why is "start with what\'s actually slow" good advice at the beginning of a system design answer?',
+    options:['Because caching and queues should always be added regardless of the bottleneck','Because reaching for scaling solutions before identifying the real bottleneck risks solving the wrong problem','Because interviewers only care about hearing buzzwords','Because it\'s faster to say than to explain trade-offs'],
+    correct:1,
+    explain:'Naming a real bottleneck-first approach shows you\'d diagnose before prescribing a fix — a stronger signal than reciting a list of scaling techniques.' },
+
+  // ================= PRODUCTION & OPS =================
+  { id:'po1', topic:'production', difficulty:'easy', type:'mc', source:'production-ops.html#structured-logging',
+    q:'Why is structured (JSON) logging preferred over plain console.log strings in production?',
+    options:['It looks nicer in the terminal','It\'s searchable and machine-parseable, letting you query logs by field','It runs measurably faster than string logging','Node.js requires it'],
+    correct:1,
+    explain:'Structured logs let you filter and aggregate by specific fields — "every failed login for user 42" is a query, not a manual search.' },
+  { id:'po2', topic:'production', difficulty:'easy', type:'mc', source:'production-ops.html#env-and-health-checks',
+    q:'What does a /health endpoint let infrastructure, like a load balancer, do?',
+    options:['Automatically fix application bugs','Check whether an instance is actually working before routing traffic to it','Compile the application on demand','Generate API documentation'],
+    correct:1,
+    explain:'Load balancers and orchestration tools poll a health endpoint to decide whether to send traffic to an instance — or restart it.' },
+  { id:'po3', topic:'production', difficulty:'moderate', type:'flip', source:'production-ops.html#error-handling-patterns',
+    front:'What\'s the difference between an operational error and a programmer error, and why does the distinction matter?',
+    back:'Operational errors are expected failures in normal operation — bad input, a dropped DB connection — and should be handled gracefully with an appropriate response. Programmer errors are actual bugs — wrong types, typos — that usually mean something is broken and should be logged loudly rather than quietly caught and ignored. Treating a real bug as if it were just an expected error can hide it silently in production.' },
+  { id:'po4', topic:'production', difficulty:'moderate', type:'mc', source:'production-ops.html#graceful-shutdown',
+    q:'What does handling SIGTERM with a graceful shutdown accomplish?',
+    options:['Speeds up the deploy process itself','Lets in-flight requests finish and connections close cleanly before the process exits','Prevents any future deploys from happening','Automatically restarts the server on a schedule'],
+    correct:1,
+    explain:'Graceful shutdown stops accepting new requests but lets requests already in progress complete before the process actually exits.' },
+  { id:'po5', topic:'production', difficulty:'moderate', type:'flip', source:'production-ops.html#env-and-health-checks',
+    front:'Why do dev, staging, and production typically need different environment variables rather than one shared config file?',
+    back:'Each environment usually needs its own database URL, API keys, and log verbosity — sharing one config risks a dev API key touching production data, or staging accidentally emailing real users. Environment variables let the same codebase run safely and correctly across all three without code changes.' },
+  { id:'po6', topic:'production', difficulty:'hard', type:'mc', source:'production-ops.html#structured-logging',
+    q:'What problem does a request/correlation ID attached to every log line solve?',
+    options:['It speeds up database queries','It lets you trace one specific request\'s full journey through the logs, even across multiple services','It replaces the need for authentication','It compresses log file size'],
+    correct:1,
+    explain:'A correlation ID ties together every log line generated while handling one request, making it possible to reconstruct exactly what happened.' },
+  { id:'po7', topic:'production', difficulty:'hard', type:'flip', source:'production-ops.html#cicd-containers',
+    front:'Why is "it works on my machine" specifically the problem Docker addresses, rather than a testing or code-quality problem?',
+    back:'It\'s an environment consistency problem — differences in OS, installed versions of Node or system libraries, or configuration between a developer\'s machine and staging/production can cause code that works locally to fail elsewhere. Docker packages the app with its exact runtime environment, so the same container runs identically regardless of what\'s installed on the host machine.' },
+  { id:'po8', topic:'production', difficulty:'hard', type:'mc', source:'production-ops.html#error-handling-patterns',
+    q:'Where should centralized error-handling middleware be registered in an Express app?',
+    options:['Before all other middleware and routes','After all routes, as the last middleware in the chain','It doesn\'t matter where it\'s registered','Inside every individual route handler'],
+    correct:1,
+    explain:'Middleware runs in registration order — error-handling middleware has to come after your routes to catch whatever falls through them.' },
+
+  // ================= NEW CROSS-TOPIC SYNTHESIS (touching the 5 new areas) =================
+  { id:'adv13', topic:'synthesis', difficulty:'advanced', type:'flip', source:['db-performance.html#n-plus-one','system-design-basics.html#caching-layers'],
+    front:'A slow endpoint turns out to be doing an N+1 query and running with no caching at all. Which fix matters more first, and why?',
+    back:'Fix the N+1 query first — it\'s an inefficiency in how the code talks to the database, and it gets worse the more data there is, regardless of scale. Caching can mask a slow query by serving stale results faster, but it doesn\'t fix the underlying inefficiency and adds its own invalidation complexity. Fix the query pattern, then consider caching for genuinely expensive, rarely-changing data.' },
+  { id:'adv14', topic:'synthesis', difficulty:'advanced', type:'flip', source:['security-fundamentals.html#rate-limiting-headers','proxy-pattern.html#bonus-benefits'],
+    front:'Your team wants to add rate limiting to protect a login endpoint. Where should it live — Express middleware or the database layer — and why?',
+    back:'Express middleware (or an API gateway/proxy in front of it) is the right layer — you want to reject abusive requests before they ever reach your business logic or the database, which is the whole point of rate limiting. Putting it at the database layer would mean the expensive login-attempt processing already happened by the time anything gets limited.' },
+  { id:'adv15', topic:'synthesis', difficulty:'advanced', type:'flip', source:['testing.html#mocking-explainer','system-design-basics.html#message-queues'],
+    front:'How would you test a route that sends a welcome email via a background job queue, without your test suite actually sending real emails or waiting on a queue worker?',
+    back:'Mock the queue/email service in a unit test of the route handler — assert that it enqueued the right job with the right data, without needing the job to actually run. Separately, unit test the job-processing function itself (the thing that sends the email) with the email service mocked. An integration test could confirm a job actually gets enqueued against a test queue, while still avoiding the real email provider.' },
+  { id:'adv16', topic:'synthesis', difficulty:'advanced', type:'flip', source:['production-ops.html#graceful-shutdown','system-design-basics.html#load-balancing'],
+    front:'A deploy kills the old server instances immediately to bring up new ones. What goes wrong for users mid-request, and what two things fix it?',
+    back:'Users with in-flight requests get abruptly disconnected — a half-finished write, a response that never arrives. Graceful shutdown (handling SIGTERM, finishing in-flight requests before exiting) fixes the immediate cutoff. Combined with a load balancer that stops routing new traffic to an instance before it terminates, users get drained off cleanly instead of dropped.' },
+  { id:'adv17', topic:'synthesis', difficulty:'advanced', type:'flip', source:['system-design-basics.html#load-balancing','auth.html#sessions-vs-jwt'],
+    front:'Why does horizontal scaling make "where does session data live" a bigger question than it was on a single server?',
+    back:'On one server, in-memory session data is always available, since one process handles everything. Once you\'re behind a load balancer with multiple instances, a user\'s request might hit any instance — one with no memory of a session created on a different instance. That\'s why horizontal scaling pushes teams toward either a shared session store (Redis) every instance can read, or stateless auth like JWTs that don\'t need shared memory at all.' },
+
+  // ================= JAVASCRIPT FUNDAMENTALS =================
+  { id:'js1', topic:'javascript', difficulty:'easy', type:'mc', source:'javascript-fundamentals.html#closures',
+    q:'What is a closure in JavaScript?',
+    options:['A function that keeps access to variables from its outer scope, even after that outer function has finished running','A way to close a database connection','A syntax error caught at compile time','A built-in array method'],
+    correct:0,
+    explain:'A closure is a function bundled with a reference to the variables from where it was defined — like a backpack of variables it carries with it, accessible even after the outer function returns.' },
+  { id:'js2', topic:'javascript', difficulty:'easy', type:'mc', source:'javascript-fundamentals.html#this-keyword',
+    q:'What determines the value of `this` inside a regular (non-arrow) function?',
+    options:['Where the function is defined in the file','How the function is called, not where it\'s written','The variable name it\'s assigned to','It\'s always the global window object'],
+    correct:1,
+    explain:'Unlike most variables, `this` is set fresh based on the call site — obj.method() binds `this` to obj, but a detached reference to that same function loses the binding entirely.' },
+  { id:'js3', topic:'javascript', difficulty:'easy', type:'mc', source:'javascript-fundamentals.html#microtasks-vs-macrotasks',
+    q:'Which queue do Promise `.then()` callbacks go on?',
+    options:['The macrotask (timer) queue, same as setTimeout','The microtask queue, which fully drains before the next macrotask runs','Neither — they run synchronously immediately','A queue that only runs after the page closes'],
+    correct:1,
+    explain:'Promise callbacks are microtasks. The event loop fully drains the microtask queue after each macrotask finishes, before moving on to the next one — which is why a Promise "scheduled immediately" always beats a setTimeout(fn, 0).' },
+  { id:'js4', topic:'javascript', difficulty:'easy', type:'mc', source:'javascript-fundamentals.html#array-methods',
+    q:'What\'s the key difference between .map() and .filter() on an array?',
+    options:['map transforms each item into a new array of the same length; filter keeps only items matching a condition, possibly a shorter array','They are interchangeable in every case','filter mutates the original array; map does not','map only works on arrays of numbers'],
+    correct:0,
+    explain:'map() always returns an array the same length as the original, with each item transformed. filter() returns a possibly-shorter array containing only the items that passed a test — neither mutates the original.' },
+  { id:'js5', topic:'javascript', difficulty:'moderate', type:'flip', source:'javascript-fundamentals.html#closures',
+    front:'Why did using `let` instead of `var` in a for-loop fix a whole category of "every callback logs the same last value" bugs?',
+    back:'var is function-scoped, so every iteration of the loop shares the exact same variable — by the time an async callback runs, the loop has already finished and the variable holds its final value. let is block-scoped and creates a brand-new binding for each iteration, so each callback\'s closure captures its own separate copy of the loop variable instead of one shared one.' },
+  { id:'js6', topic:'javascript', difficulty:'moderate', type:'mc', source:'javascript-fundamentals.html#this-keyword',
+    q:'Why do arrow functions avoid the "lost this" problem that regular function callbacks have?',
+    options:['Arrow functions don\'t have their own `this` — they use whatever `this` was already in scope where they were defined, regardless of how they\'re later called','Arrow functions automatically bind to the global object','Arrow functions run on a separate thread','Arrow functions can\'t be passed as callbacks at all'],
+    correct:0,
+    explain:'An arrow function has no `this` of its own — it reads the enclosing scope\'s `this` at definition time and never changes it based on how it\'s invoked, which makes it the standard fix for callbacks that need to reference a surrounding class instance.' },
+  { id:'js7', topic:'javascript', difficulty:'moderate', type:'mc', source:'javascript-fundamentals.html#equality',
+    q:'What is the practical difference between == and === in JavaScript?',
+    options:['== coerces types before comparing; === requires matching type and value with no coercion','They behave identically in modern JavaScript','=== is slower and deprecated','== only works on strings'],
+    correct:0,
+    explain:'== ("loose equality") converts operands to a common type before comparing, so \'5\' == 5 is true. === ("strict equality") requires both value and type to match with no conversion, so \'5\' === 5 is false. The standard convention is to default to === everywhere.' },
+  { id:'js8', topic:'javascript', difficulty:'moderate', type:'flip', source:'javascript-fundamentals.html#async-patterns',
+    front:'When a function pauses on `await`, does that block the rest of the JavaScript engine from doing anything else?',
+    back:'No — `await` only pauses execution within that specific async function. Everything else — other requests, other timers, other code — keeps running normally while one function is paused waiting on a Promise to resolve. async/await is just cleaner syntax layered over Promises; the underlying non-blocking behavior is unchanged.' },
+  { id:'js9', topic:'javascript', difficulty:'hard', type:'mc', source:'javascript-fundamentals.html#microtasks-vs-macrotasks',
+    q:'Given: console.log(1); setTimeout(() => console.log(2), 0); Promise.resolve().then(() => console.log(3)); console.log(4); — what\'s the logged order?',
+    options:['1, 2, 3, 4','1, 4, 3, 2','1, 4, 2, 3','1, 3, 4, 2'],
+    correct:1,
+    explain:'Synchronous code runs first (1, 4), then the microtask queue fully drains (3, the Promise callback), and only then does the next macrotask run (2, the timer) — even though the timer was scheduled with a 0ms delay.' },
+  { id:'js10', topic:'javascript', difficulty:'hard', type:'flip', source:'javascript-fundamentals.html#prototypes',
+    front:'What is `class` syntax actually doing under the hood in JavaScript?',
+    back:'It\'s largely sugar over the existing prototype mechanism. Methods defined in a class body live on the class\'s prototype object, shared by every instance via the prototype chain, rather than being copied onto each individual object. Understanding this is what lets you explain why changing a method on the prototype affects every existing instance, and why property lookups walk up a chain when something isn\'t found directly on the object.' },
+  { id:'js11', topic:'javascript', difficulty:'hard', type:'flip', source:'javascript-fundamentals.html#equality',
+    front:'Name two well-known edge cases where === doesn\'t behave the way you might naively expect, and what fixes each.',
+    back:'NaN === NaN is false — NaN is defined to never equal anything, including itself, so you have to use Number.isNaN() to actually check for it. -0 === 0 is true despite being distinct values internally. Object.is() is the rarely-used strict-equality variant that gets both "right" (Object.is(NaN, NaN) is true), but outside niche cases, plain === is still the standard default.' },
+
+  // ================= AI / LLM FUNDAMENTALS =================
+  { id:'ai1', topic:'ai-llm', difficulty:'easy', type:'mc', source:'ai-llm-fundamentals.html#what-is-an-llm',
+    q:'At its core, what is an LLM actually doing when it generates a response?',
+    options:['Looking up facts in an internal database','Predicting the statistically most plausible next chunk of text, given everything so far','Running a web search in real time','Executing a fixed set of pre-written rules'],
+    correct:1,
+    explain:'An LLM is next-token prediction at scale — autocomplete trained on a huge amount of text. There\'s no separate "is this true" check built into that mechanism, which is exactly why hallucination is possible.' },
+  { id:'ai2', topic:'ai-llm', difficulty:'easy', type:'mc', source:'ai-llm-fundamentals.html#context-window',
+    q:'What happens to earlier parts of a conversation once it exceeds the model\'s context window?',
+    options:['They\'re automatically summarized and kept forever','They fall off and are forgotten unless explicitly re-included','They get saved to a permanent database automatically','Nothing changes — the model remembers everything indefinitely'],
+    correct:1,
+    explain:'The context window is short-term working memory, not permanent storage — like a desk, not a filing cabinet. Once material falls off the edge, the model has no memory of it unless it\'s explicitly supplied again.' },
+  { id:'ai3', topic:'ai-llm', difficulty:'easy', type:'mc', source:'ai-llm-fundamentals.html#prompting-vs-finetuning',
+    q:'Between prompting and fine-tuning, which one is generally the lower-cost, faster-to-iterate default?',
+    options:['Fine-tuning, since it changes the model permanently','Prompting, since it just means editing instructions and redeploying instantly','They cost exactly the same in practice','Neither — both require retraining the model'],
+    correct:1,
+    explain:'Prompting is cheap and instant to change. Fine-tuning requires a training dataset, compute, and a retraining pipeline — a real tool, but a much more expensive one, so it\'s not the default starting point.' },
+  { id:'ai4', topic:'ai-llm', difficulty:'easy', type:'mc', source:'ai-llm-fundamentals.html#agents-and-tools',
+    q:'Why give an LLM access to "tools" like a calculator function?',
+    options:['To make its responses shorter','Because LLMs are unreliable at precise arithmetic, real-time facts, and taking real actions — things a plain function call handles perfectly','To prevent it from ever hallucinating','Tools are only used for formatting output'],
+    correct:1,
+    explain:'Tool use lets the model request that real code run and return an actual result — like handing it a calculator instead of asking it to do long division from memory — for the exact things LLMs are weak at on their own.' },
+  { id:'ai5', topic:'ai-llm', difficulty:'moderate', type:'flip', source:'ai-llm-fundamentals.html#rag-and-embeddings',
+    front:'Walk through the RAG (retrieval-augmented generation) pipeline, start to finish.',
+    back:'Split source documents into chunks → embed each chunk ahead of time and store the embeddings in a vector database → at query time, embed the incoming question → search the vector database for the nearest stored chunks (an "open book" of relevant material) → hand those chunks to the LLM alongside the question, so it answers using what it was given rather than relying purely on memory.' },
+  { id:'ai6', topic:'ai-llm', difficulty:'moderate', type:'mc', source:'ai-llm-fundamentals.html#hallucination',
+    q:'Which of these actually helps reduce hallucination in an LLM response?',
+    options:['Simply instructing the model in the prompt to "not make things up"','Grounding the response in real retrieved source material and asking it to cite supporting passages','Increasing the randomness (temperature) setting','Avoiding retrieval entirely and relying only on the model\'s training data'],
+    correct:1,
+    explain:'Grounding via RAG plus citation requests changes what the model is actually working from. Just telling it to "be accurate" is an instruction about style, not a change to the underlying generation mechanism that produces the error.' },
+  { id:'ai7', topic:'ai-llm', difficulty:'moderate', type:'flip', source:'ai-llm-fundamentals.html#prompting-vs-finetuning',
+    front:'A product feature seems to need the model to "know about our data." Is that usually a fine-tuning problem or a retrieval problem?',
+    back:'Almost always a retrieval problem. Fine-tuning bakes patterns into the model\'s weights, but new specific facts get diluted and go stale — it\'s rarely the right tool for "the model doesn\'t know X." Retrieval (RAG) solves this far more cheaply by handing the model the relevant facts at request time instead of trying to permanently teach them to it.' },
+  { id:'ai8', topic:'ai-llm', difficulty:'moderate', type:'mc', source:'ai-llm-fundamentals.html#evals',
+    q:'Why can\'t you test an AI feature the same way you\'d write a normal unit test?',
+    options:['AI features can\'t be tested at all','Normal unit tests assert one exact expected output, but LLM output varies run to run — evals score whether output meets a bar instead of matching an exact string','Unit tests only work on frontend code','AI features are always deterministic, so no special testing is needed'],
+    correct:1,
+    explain:'Evals are the testing discipline built for non-deterministic output: a fixed set of representative inputs paired with a rule-based check, human rubric, or LLM-as-judge scoring, instead of an exact-match assertion.' },
+  { id:'ai9', topic:'ai-llm', difficulty:'hard', type:'flip', source:'ai-llm-fundamentals.html#context-window',
+    front:'By default, does an LLM remember anything from a completely separate, earlier conversation with the same user? What does this mean for building a product feature that needs to "remember" a user\'s preferences?',
+    back:'No — each new conversation starts on a completely clean context window, with zero memory of any prior conversation unless something outside the model re-supplies that history. Any product feature that needs persistence — remembering preferences, prior decisions, past interactions — has to explicitly store that information somewhere (a database) and re-inject the relevant parts into the prompt on each new request; the model itself provides no persistent memory across sessions.' },
+  { id:'ai10', topic:'ai-llm', difficulty:'hard', type:'flip', source:'ai-llm-fundamentals.html#agents-and-tools',
+    front:'What is the real trade-off of building an "agentic" loop (plan → call a tool → observe → repeat) instead of answering in one shot?',
+    back:'Every additional step adds latency, cost, and a new place for something to go wrong — a bad tool call, a misread result, an unnecessary extra round trip. Agentic loops are worth reaching for when a task genuinely needs multiple dependent steps or real actions taken along the way, not as a default architecture for anything that could be answered directly.' },
+  { id:'ai11', topic:'ai-llm', difficulty:'hard', type:'flip', source:'ai-llm-fundamentals.html#hallucination',
+    front:'Why is it more accurate to say hallucination is "the mechanism working as designed" rather than calling it a bug?',
+    back:'The model\'s only job is producing a statistically plausible continuation of the text so far — nothing in that process distinguishes "true and well-supported" from "sounds right." A confident, fluent, false answer is produced by the exact same mechanism as a confident, fluent, true one. That\'s why hallucination shows up most on things outside the model\'s training data (recent events, your internal data) — and why the fix is changing what the model is grounded in (retrieval), not asking it to try harder to be honest.' },
+
+  // ================= INFRASTRUCTURE AS CODE =================
+  { id:'iac1', topic:'infra-as-code', difficulty:'easy', type:'mc', source:'infra-as-code.html#declarative-vs-imperative',
+    q:'What\'s the core difference between declarative and imperative infrastructure?',
+    options:['Declarative describes the desired end state and lets a tool figure out the steps; imperative is a script of exact steps run in order','They\'re the same approach with different syntax','Imperative is always safer to re-run','Declarative only works for databases'],
+    correct:0,
+    explain:'Declarative config is a finished-dish photo — describe what you want, the tool computes what changes are needed. Imperative is a recipe — an ordered list of steps that may behave differently depending on the current state of things.' },
+  { id:'iac2', topic:'infra-as-code', difficulty:'easy', type:'mc', source:'infra-as-code.html#declarative-vs-imperative',
+    q:'What does "idempotent" mean in the context of infrastructure as code?',
+    options:['Running the same config repeatedly produces the same end result without duplicating or breaking things','The config can only ever be applied once','The infrastructure never needs updates','Idempotent configs run faster than others'],
+    correct:0,
+    explain:'A declarative, idempotent tool compares your config against what\'s actually deployed and only changes what\'s different — running it 10 times has the same effect as running it once.' },
+  { id:'iac3', topic:'infra-as-code', difficulty:'easy', type:'mc', source:'infra-as-code.html#serverless-vs-always-on',
+    q:'Which workload is generally the better fit for a serverless function rather than an always-on server?',
+    options:['A steady stream of high-frequency traffic where cold starts would be costly','A scheduled job that runs once a day and does a bounded amount of work','Anything requiring in-memory state to persist between every request','A process that must never have any startup latency'],
+    correct:1,
+    explain:'Serverless shines for spiky, infrequent, or scheduled work — you pay only when it actually runs. Steady, high-frequency traffic often favors an always-on process where there\'s no cold start and the "pay only when running" advantage disappears anyway.' },
+  { id:'iac4', topic:'infra-as-code', difficulty:'easy', type:'mc', source:'infra-as-code.html#iam-permission-layer',
+    q:'What is the "principle of least privilege" in the context of IAM roles?',
+    options:['Grant every role full admin access to simplify configuration','Grant only the specific permissions a piece of infrastructure actually needs, nothing broader "just in case"','Give the newest team member the fewest permissions','Rotate all credentials daily regardless of role'],
+    correct:1,
+    explain:'A role scoped tightly to exactly what\'s required has a much smaller blast radius if something goes wrong — a bug, a leaked credential, a bad request — than a role that can do everything.' },
+  { id:'iac5', topic:'infra-as-code', difficulty:'moderate', type:'flip', source:'infra-as-code.html#orchestration-and-dependency-graphs',
+    front:'How does an IaC tool know to create a database before a function that reads from it, if you never explicitly wrote out that ordering?',
+    back:'The tool inspects your entire declared config, sees that the function\'s definition references the database (e.g. through a permission grant or connection string), and builds a dependency graph from those references. It then works out a valid build order automatically — the database has to exist far enough along before the function\'s permissions can point at it — the same way a project manager reads a construction plan and knows framing has to happen before drywall.' },
+  { id:'iac6', topic:'infra-as-code', difficulty:'moderate', type:'mc', source:'infra-as-code.html#iam-permission-layer',
+    q:'Why are IAM roles described as being like key cards rather than passwords?',
+    options:['Because a role is checked at the "door" (the resource) every time, rather than requiring the requester to know and safely store a secret','Because IAM roles expire faster than passwords','Because key cards are a deprecated security model','There\'s no meaningful difference between the two'],
+    correct:0,
+    explain:'A piece of infrastructure is issued a role granting access to specific resources and actions; the platform checks that role at each access attempt, replacing "hand out a secret and hope it stays safe" with permissions enforced independent of the code itself.' },
+  { id:'iac7', topic:'infra-as-code', difficulty:'moderate', type:'flip', source:'infra-as-code.html#environments-and-promotion',
+    front:'What is "promotion" and why deploy through dev → staging → production instead of straight to production?',
+    back:'Promotion is moving a change through environments in order, verifying it at each stage before it reaches the next. It\'s the infrastructure equivalent of code review — each environment is a chance to catch a problem before real users are affected, and the cost of a missed issue grows the further along the chain it slips through undetected.' },
+  { id:'iac8', topic:'infra-as-code', difficulty:'moderate', type:'mc', source:'infra-as-code.html#rollback-and-drift',
+    q:'What is "drift" in an infrastructure-as-code context?',
+    options:['When the IaC tool runs slower than expected','When the actual deployed infrastructure no longer matches what the IaC config says it should be, usually from a manual out-of-band change','When a deploy takes longer than its scheduled maintenance window','A synonym for rollback'],
+    correct:1,
+    explain:'Drift typically happens when someone manually changes something directly (clicking around in a cloud console) instead of going through the declarative config — creating a real risk that the next IaC run "corrects" that manual change back, silently undoing it.' },
+  { id:'iac9', topic:'infra-as-code', difficulty:'hard', type:'flip', source:'infra-as-code.html#rollback-and-drift',
+    front:'Why is rolling back a bad deploy generally easier with declarative IaC than with a series of ad hoc manual changes?',
+    back:'A declarative tool tracks the last known deployed state, so rolling back is just reapplying the previous good config — the tool computes the diff back to that state the same way it computes any other change. With manual changes, "undo" depends on someone remembering and manually reversing whatever was clicked or typed, with no structured record of exactly what changed.' },
+  { id:'iac10', topic:'infra-as-code', difficulty:'hard', type:'flip', source:'infra-as-code.html#serverless-vs-always-on',
+    front:'A team\'s API has wildly unpredictable traffic — sometimes near zero, sometimes a sudden spike from a marketing push. Why might serverless still be a defensible choice here despite cold starts?',
+    back:'At near-zero traffic, an always-on server is paying for idle capacity the whole time, while serverless costs almost nothing when nothing is happening. Cold starts are a real cost, but they\'re paid only on the requests that hit a cold environment, not the entire idle period — for genuinely spiky, unpredictable load, that trade-off often favors serverless\'s pay-per-invocation model over provisioning (and paying for) enough always-on capacity to handle the peak.' },
+  { id:'iac11', topic:'infra-as-code', difficulty:'hard', type:'flip', source:'infra-as-code.html#orchestration-and-dependency-graphs',
+    front:'Before actually applying a change, many IaC tools can show you a "plan" or "diff." Why does reviewing that matter, beyond just convenience?',
+    back:'The plan shows exactly what would be created, changed, or destroyed by comparing the new config against the last known deployed state — before anything actually happens. This is the infrastructure equivalent of reviewing a code diff before merging: it catches unintended consequences (like a config change that would accidentally destroy and recreate a database, losing its data) while there\'s still a chance to stop and reconsider, rather than discovering the impact only after it\'s already been applied.' },
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const PROGRESS_KEY = 'sg-quiz-progress'; // { [questionId]: 'known' | 'review' }
+const ANSWERS_KEY  = 'sg-quiz-myanswers'; // { [questionId]: 'typed text' } — persists until deliberately cleared
+let progress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+let myAnswers = JSON.parse(localStorage.getItem(ANSWERS_KEY) || '{}');
+let activeTopic = 'all';
+let activeDifficulty = 'all';
+let viewMode = 'quiz'; // 'quiz' | 'list' (the flagged-for-review list view)
+let queue = [];
+let queueIndex = 0;
+let sessionAnswered = 0;
+let sessionCorrect = 0;
+
+function saveProgress() {
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+}
+
+function saveMyAnswers() {
+  localStorage.setItem(ANSWERS_KEY, JSON.stringify(myAnswers));
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQueue() {
+  const pool = QUESTIONS.filter(q =>
+    (activeTopic === 'all' || q.topic === activeTopic) &&
+    (activeDifficulty === 'all' || q.difficulty === activeDifficulty)
+  );
+  queue = shuffle(pool);
+  queueIndex = 0;
+  sessionAnswered = 0;
+  sessionCorrect = 0;
+}
+
+/* ============================================================
+   RENDER: FILTER CHIPS
+   ============================================================ */
+function renderFilters() {
+  const topicEl = document.getElementById('topicFilters');
+  const topicChips = [{ id: 'all', label: 'All topics', accent: null }, ...TOPICS];
+  topicEl.innerHTML = topicChips.map(t => {
+    const cls = t.accent ? `filter-chip chip-${t.accent}` : 'filter-chip';
+    const active = t.id === activeTopic ? ' active' : '';
+    return `<button class="${cls}${active}" data-topic="${t.id}">${t.label}</button>`;
+  }).join('');
+  topicEl.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeTopic = btn.getAttribute('data-topic');
+      viewMode = 'quiz';
+      renderFilters();
+      buildQueue();
+      renderQuestion();
+      renderStats();
+    });
+  });
+
+  const diffEl = document.getElementById('difficultyFilters');
+  const diffChips = [{ id: 'all', label: 'All levels' }, ...DIFFICULTIES];
+  diffEl.innerHTML = diffChips.map(d => {
+    const active = d.id === activeDifficulty ? ' active' : '';
+    return `<button class="filter-chip${active}" data-difficulty="${d.id}">${d.label}</button>`;
+  }).join('');
+  diffEl.querySelectorAll('.filter-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeDifficulty = btn.getAttribute('data-difficulty');
+      viewMode = 'quiz';
+      renderFilters();
+      buildQueue();
+      renderQuestion();
+      renderStats();
+    });
+  });
+}
+
+/* ============================================================
+   RENDER: STATS
+   ============================================================ */
+function renderStats() {
+  document.getElementById('statAnswered').textContent = sessionAnswered;
+  document.getElementById('statCorrect').textContent = sessionCorrect;
+  document.getElementById('statRemaining').textContent = Math.max(queue.length - queueIndex, 0);
+  const flagged = Object.values(progress).filter(v => v === 'review').length;
+  document.getElementById('statFlagged').textContent = flagged;
+  const reviewBtn = document.getElementById('reviewListBtn');
+  if (reviewBtn) reviewBtn.textContent = viewMode === 'list' ? 'Back to quiz' : 'View flagged list';
+}
+
+/* ============================================================
+   RENDER: QUESTION
+   ============================================================ */
+function topicMeta(topicId) {
+  return TOPICS.find(t => t.id === topicId);
+}
+
+function sourceLinksHtml(source) {
+  const sources = Array.isArray(source) ? source : [source];
+  return sources.map(src => `<button type="button" class="source-link" data-src="${src}">View in guide &rarr;</button>`).join('');
+}
+
+// Any element rendered via sourceLinksHtml gets wired up to open the modal
+// rather than navigating — call this once after any innerHTML assignment
+// that might contain .source-link buttons.
+function wireSourceLinks(root) {
+  root.querySelectorAll('.source-link').forEach(btn => {
+    btn.addEventListener('click', () => openSourceModal(btn.getAttribute('data-src')));
+  });
+}
+
+/* ============================================================
+   SOURCE MODAL
+   Opens the linked guide page (with its #anchor) inside an iframe
+   instead of a new tab, so looking something up mid-quiz doesn't
+   lose your place. "Open in new tab" stays available as an escape
+   hatch for anyone who prefers that instead.
+   ============================================================ */
+function openSourceModal(url) {
+  const overlay = document.getElementById('sourceModalOverlay');
+  const iframe = document.getElementById('sourceModalFrame');
+  const openNewTab = document.getElementById('modalOpenNewTab');
+  const label = document.getElementById('modalSourceLabel');
+
+  openNewTab.href = url;
+  label.textContent = url;
+
+  // Force a fresh load (rather than just changing the hash of an
+  // already-loaded document) so the anchor scroll always fires, even if
+  // you open a second source link pointing at a different anchor on the
+  // same page you just closed.
+  iframe.src = 'about:blank';
+  requestAnimationFrame(() => { iframe.src = url; });
+
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSourceModal() {
+  document.getElementById('sourceModalOverlay').classList.remove('open');
+  document.getElementById('sourceModalFrame').src = 'about:blank';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modalCloseBtn').addEventListener('click', closeSourceModal);
+document.getElementById('sourceModalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'sourceModalOverlay') closeSourceModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSourceModal();
+});
+
+function renderQuestion() {
+  const area = document.getElementById('quizArea');
+
+  if (queue.length === 0) {
+    area.innerHTML = `<div class="quiz-card"><div class="end-screen"><div class="end-sub">No questions match this filter combination.</div></div></div>`;
+    return;
+  }
+
+  if (queueIndex >= queue.length) {
+    renderEndScreen();
+    return;
+  }
+
+  const q = queue[queueIndex];
+  const meta = topicMeta(q.topic);
+  const accentStyle = `--card-accent: var(--${meta.accent})`;
+  const savedAnswer = myAnswers[q.id] || '';
+
+  let bodyHtml = '';
+  if (q.type === 'mc') {
+    // Some questions have an optionsAlt set — a differently-worded version
+    // of the same 4 answers, same index positions (so q.correct still lines
+    // up either way). Pick one at random each time this question is shown,
+    // then shuffle the DISPLAY order on top of that. data-idx always points
+    // at the original index into whichever set got picked.
+    const activeOptions = (q.optionsAlt && Math.random() < 0.5) ? q.optionsAlt : q.options;
+    const displayOrder = shuffle(activeOptions.map((opt, i) => i));
+    bodyHtml = `
+      <div class="mc-options" id="mcOptions">
+        ${displayOrder.map(origIdx => `<button class="mc-option" data-idx="${origIdx}">${activeOptions[origIdx]}</button>`).join('')}
+      </div>
+      <div id="explainSlot"></div>
+      <div class="card-footer-actions" id="footerActions">
+        <button class="btn-text" id="skipBtn" title="Skips without answering and flags this for review">Skip this question</button>
+      </div>
+    `;
+  } else {
+    bodyHtml = `
+      <div class="my-answer-block">
+        <label class="my-answer-label" for="myAnswerInput">Your answer (saved automatically, stays until you clear it)</label>
+        <textarea class="my-answer-input" id="myAnswerInput" placeholder="Type your answer here before revealing the official one...">${savedAnswer}</textarea>
+        <div class="my-answer-actions">
+          <span class="my-answer-status" id="myAnswerStatus">${savedAnswer ? 'Saved' : ''}</span>
+          <button class="btn-text" id="clearAnswerBtn">Clear saved answer</button>
+        </div>
+      </div>
+      <div id="flipSlot"></div>
+      <div class="card-footer-actions" id="footerActions">
+        <button class="btn btn-primary" id="showAnswerBtn">Show answer</button>
+        <button class="btn-text" id="skipBtn" title="Skips without answering and flags this for review">Skip this question</button>
+      </div>
+    `;
+  }
+
+  area.innerHTML = `
+    <div class="quiz-card" style="${accentStyle}">
+      <div class="quiz-meta">
+        <div class="quiz-tags">
+          <span class="quiz-topic-tag">${meta.label}</span>
+          <span class="diff-badge diff-${q.difficulty}">${q.difficulty}</span>
+        </div>
+        <div class="quiz-links">
+          ${sourceLinksHtml(q.source)}
+          <span class="quiz-progress-label">${queueIndex + 1} / ${queue.length}</span>
+        </div>
+      </div>
+      <div class="quiz-question">${q.type === 'mc' ? q.q : q.front}</div>
+      ${bodyHtml}
+    </div>
+  `;
+
+  if (q.type === 'mc') {
+    const optionButtons = area.querySelectorAll('.mc-option');
+    optionButtons.forEach(btn => {
+      btn.addEventListener('click', () => handleMcAnswer(q, parseInt(btn.getAttribute('data-idx'), 10), optionButtons));
+    });
+  } else {
+    document.getElementById('showAnswerBtn').addEventListener('click', () => showFlipAnswer(q));
+
+    const myAnswerInput = document.getElementById('myAnswerInput');
+    const myAnswerStatus = document.getElementById('myAnswerStatus');
+    myAnswerInput.addEventListener('input', () => {
+      const val = myAnswerInput.value;
+      if (val.trim() === '') {
+        delete myAnswers[q.id];
+      } else {
+        myAnswers[q.id] = val;
+      }
+      saveMyAnswers();
+      myAnswerStatus.textContent = val.trim() === '' ? '' : 'Saved';
+    });
+    document.getElementById('clearAnswerBtn').addEventListener('click', () => {
+      delete myAnswers[q.id];
+      saveMyAnswers();
+      myAnswerInput.value = '';
+      myAnswerStatus.textContent = '';
+      myAnswerInput.focus();
+    });
+  }
+
+  const skipBtn = document.getElementById('skipBtn');
+  if (skipBtn) skipBtn.addEventListener('click', () => handleSkip(q));
+
+  wireSourceLinks(area);
+  renderStats();
+}
+
+function handleSkip(q) {
+  progress[q.id] = 'review';
+  saveProgress();
+  renderStats();
+  nextQuestion();
+}
+
+function handleMcAnswer(q, chosenIdx, optionButtons) {
+  const correct = chosenIdx === q.correct;
+  optionButtons.forEach((btn) => {
+    const btnIdx = parseInt(btn.getAttribute('data-idx'), 10);
+    btn.disabled = true;
+    if (btnIdx === q.correct) btn.classList.add('correct');
+    else if (btnIdx === chosenIdx) btn.classList.add('incorrect');
+  });
+
+  progress[q.id] = correct ? 'known' : 'review';
+  saveProgress();
+  sessionAnswered++;
+  if (correct) sessionCorrect++;
+
+  document.getElementById('explainSlot').innerHTML = `<div class="explain-box">${q.explain}</div>`;
+  document.getElementById('footerActions').innerHTML = `<button class="btn btn-primary" id="nextBtn">Next &rarr;</button>`;
+  document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+
+  renderStats();
+}
+
+function showFlipAnswer(q) {
+  document.getElementById('flipSlot').innerHTML = `<div class="flip-back">${q.back}</div>`;
+  document.getElementById('footerActions').innerHTML = `
+    <button class="btn btn-good" id="knewItBtn">I knew it</button>
+    <button class="btn btn-bad" id="reviewBtn">Needs review</button>
+  `;
+  document.getElementById('knewItBtn').addEventListener('click', () => handleFlipGrade(q, true));
+  document.getElementById('reviewBtn').addEventListener('click', () => handleFlipGrade(q, false));
+}
+
+function handleFlipGrade(q, knew) {
+  progress[q.id] = knew ? 'known' : 'review';
+  saveProgress();
+  sessionAnswered++;
+  if (knew) sessionCorrect++;
+  renderStats();
+  nextQuestion();
+}
+
+function nextQuestion() {
+  queueIndex++;
+  renderQuestion();
+}
+
+function renderEndScreen() {
+  const area = document.getElementById('quizArea');
+  const pct = sessionAnswered > 0 ? Math.round((sessionCorrect / sessionAnswered) * 100) : 0;
+
+  const weakByTopic = {};
+  Object.entries(progress).forEach(([id, status]) => {
+    if (status !== 'review') return;
+    const q = QUESTIONS.find(x => x.id === id);
+    if (!q) return;
+    weakByTopic[q.topic] = (weakByTopic[q.topic] || 0) + 1;
+  });
+  const weakChips = Object.entries(weakByTopic)
+    .sort((a, b) => b[1] - a[1])
+    .map(([topicId, count]) => {
+      const meta = topicMeta(topicId);
+      return `<span class="filter-chip chip-${meta.accent}" style="cursor:default">${meta.label} &middot; ${count} to review</span>`;
+    }).join('');
+
+  area.innerHTML = `
+    <div class="quiz-card">
+      <div class="end-screen">
+        <div class="end-score">${pct}%</div>
+        <div class="end-sub">${sessionCorrect} of ${sessionAnswered} correct this round</div>
+        ${weakChips ? `<div class="weak-topics">${weakChips}</div>` : ''}
+        <div class="card-footer-actions" style="justify-content:center">
+          <button class="btn btn-primary" id="reviewOnlyBtn">Retry flagged only</button>
+          <button class="btn" id="runAgainBtn">Run again</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('runAgainBtn').addEventListener('click', () => { viewMode = 'quiz'; buildQueue(); renderQuestion(); });
+  document.getElementById('reviewOnlyBtn').addEventListener('click', () => {
+    viewMode = 'quiz';
+    const flaggedIds = Object.entries(progress).filter(([, v]) => v === 'review').map(([id]) => id);
+    const pool = QUESTIONS.filter(q =>
+      flaggedIds.includes(q.id) &&
+      (activeTopic === 'all' || q.topic === activeTopic) &&
+      (activeDifficulty === 'all' || q.difficulty === activeDifficulty)
+    );
+    queue = shuffle(pool);
+    queueIndex = 0;
+    sessionAnswered = 0;
+    sessionCorrect = 0;
+    renderQuestion();
+  });
+}
+
+/* ============================================================
+   RENDER: FLAGGED-FOR-REVIEW LIST
+   Shows every question currently marked 'review', regardless of the
+   active topic/difficulty filters, so nothing flagged ever gets lost.
+   ============================================================ */
+function renderReviewList() {
+  const area = document.getElementById('quizArea');
+  const flaggedIds = Object.entries(progress).filter(([, v]) => v === 'review').map(([id]) => id);
+  const items = QUESTIONS.filter(q => flaggedIds.includes(q.id));
+  renderStats();
+
+  if (items.length === 0) {
+    area.innerHTML = `
+      <div class="quiz-card">
+        <div class="end-screen">
+          <div class="end-sub">Nothing flagged right now. Anything you get wrong — or mark "needs review" on a flip card — shows up here.</div>
+          <div class="card-footer-actions" style="justify-content:center">
+            <button class="btn btn-primary" id="backToQuizBtn">Back to quiz</button>
+          </div>
+        </div>
+      </div>`;
+    document.getElementById('backToQuizBtn').addEventListener('click', () => { viewMode = 'quiz'; renderQuestion(); });
+    return;
+  }
+
+  const cardsHtml = items.map(q => {
+    const meta = topicMeta(q.topic);
+    const accentStyle = `--card-accent: var(--${meta.accent})`;
+    const questionText = q.type === 'mc' ? q.q : q.front;
+    const answerText = q.type === 'mc'
+      ? `<strong>${q.options[q.correct]}</strong><br><br>${q.explain}`
+      : q.back;
+    return `
+      <div class="quiz-card" style="${accentStyle}; margin-bottom:14px;">
+        <div class="quiz-meta">
+          <div class="quiz-tags">
+            <span class="quiz-topic-tag">${meta.label}</span>
+            <span class="diff-badge diff-${q.difficulty}">${q.difficulty}</span>
+          </div>
+          <div class="quiz-links">${sourceLinksHtml(q.source)}</div>
+        </div>
+        <div class="quiz-question" style="margin-bottom:14px;">${questionText}</div>
+        <div class="flip-back" style="margin-bottom:14px;">${answerText}</div>
+        <div class="card-footer-actions">
+          <button class="btn-text unflag-btn" data-id="${q.id}">Mark as known — remove from list</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  area.innerHTML = `
+    <div class="card-footer-actions" style="margin-bottom:16px;">
+      <button class="btn btn-primary" id="practiceFlaggedBtn">Practice these now</button>
+      <button class="btn" id="backToQuizBtn2">Back to quiz</button>
+      <button class="btn" id="clearFlagsBtn">Clear all flags</button>
+    </div>
+    ${cardsHtml}
+  `;
+
+  area.querySelectorAll('.unflag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      delete progress[id];
+      saveProgress();
+      renderReviewList();
+      renderStats();
+    });
+  });
+
+  wireSourceLinks(area);
+
+  document.getElementById('practiceFlaggedBtn').addEventListener('click', () => {
+    viewMode = 'quiz';
+    queue = shuffle(items);
+    queueIndex = 0;
+    sessionAnswered = 0;
+    sessionCorrect = 0;
+    renderQuestion();
+  });
+  document.getElementById('backToQuizBtn2').addEventListener('click', () => { viewMode = 'quiz'; renderQuestion(); });
+  document.getElementById('clearFlagsBtn').addEventListener('click', () => {
+    if (!confirm('Clear all flagged items? This just un-flags them, your answered/correct stats are unaffected.')) return;
+    items.forEach(q => delete progress[q.id]);
+    saveProgress();
+    renderReviewList();
+    renderStats();
+  });
+}
+
+/* ============================================================
+   RESTART / SHUFFLE / REVIEW LIST TOGGLE
+   ============================================================ */
+document.getElementById('shuffleBtn').addEventListener('click', () => { viewMode = 'quiz'; buildQueue(); renderQuestion(); });
+document.getElementById('restartBtn').addEventListener('click', () => {
+  viewMode = 'quiz';
+  progress = {};
+  saveProgress();
+  buildQueue();
+  renderQuestion();
+});
+document.getElementById('reviewListBtn').addEventListener('click', () => {
+  viewMode = viewMode === 'list' ? 'quiz' : 'list';
+  if (viewMode === 'list') {
+    renderReviewList();
+  } else {
+    renderQuestion();
+  }
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderFilters();
+buildQueue();
+renderQuestion();
+</script>
+</body>
+</html>

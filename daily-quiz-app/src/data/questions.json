@@ -2463,5 +2463,628 @@
       "system-design-basics.html#load-balancing",
       "auth.html#sessions-vs-jwt"
     ]
+  },
+  {
+    "questionId": "js1",
+    "topic": "javascript",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is a closure in JavaScript?",
+    "options": [
+      "A function that keeps access to variables from its outer scope, even after that outer function has finished running",
+      "A way to close a database connection",
+      "A syntax error caught at compile time",
+      "A built-in array method"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "A closure is a function bundled with a reference to the variables from where it was defined — like a backpack of variables it carries with it, accessible even after the outer function returns.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#closures"
+    ]
+  },
+  {
+    "questionId": "js2",
+    "topic": "javascript",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What determines the value of `this` inside a regular (non-arrow) function?",
+    "options": [
+      "Where the function is defined in the file",
+      "How the function is called, not where it's written",
+      "The variable name it's assigned to",
+      "It's always the global window object"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Unlike most variables, `this` is set fresh based on the call site — obj.method() binds `this` to obj, but a detached reference to that same function loses the binding entirely.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#this-keyword"
+    ]
+  },
+  {
+    "questionId": "js3",
+    "topic": "javascript",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which queue do Promise `.then()` callbacks go on?",
+    "options": [
+      "The macrotask (timer) queue, same as setTimeout",
+      "The microtask queue, which fully drains before the next macrotask runs",
+      "Neither — they run synchronously immediately",
+      "A queue that only runs after the page closes"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Promise callbacks are microtasks. The event loop fully drains the microtask queue after each macrotask finishes, before moving on to the next one — which is why a Promise \"scheduled immediately\" always beats a setTimeout(fn, 0).",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#microtasks-vs-macrotasks"
+    ]
+  },
+  {
+    "questionId": "js4",
+    "topic": "javascript",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What's the key difference between .map() and .filter() on an array?",
+    "options": [
+      "map transforms each item into a new array of the same length; filter keeps only items matching a condition, possibly a shorter array",
+      "They are interchangeable in every case",
+      "filter mutates the original array; map does not",
+      "map only works on arrays of numbers"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "map() always returns an array the same length as the original, with each item transformed. filter() returns a possibly-shorter array containing only the items that passed a test — neither mutates the original.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#array-methods"
+    ]
+  },
+  {
+    "questionId": "js5",
+    "topic": "javascript",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why did using `let` instead of `var` in a for-loop fix a whole category of \"every callback logs the same last value\" bugs?",
+    "back": "var is function-scoped, so every iteration of the loop shares the exact same variable — by the time an async callback runs, the loop has already finished and the variable holds its final value. let is block-scoped and creates a brand-new binding for each iteration, so each callback's closure captures its own separate copy of the loop variable instead of one shared one.",
+    "source": [
+      "javascript-fundamentals.html#closures"
+    ]
+  },
+  {
+    "questionId": "js6",
+    "topic": "javascript",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Why do arrow functions avoid the \"lost this\" problem that regular function callbacks have?",
+    "options": [
+      "Arrow functions don't have their own `this` — they use whatever `this` was already in scope where they were defined, regardless of how they're later called",
+      "Arrow functions automatically bind to the global object",
+      "Arrow functions run on a separate thread",
+      "Arrow functions can't be passed as callbacks at all"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "An arrow function has no `this` of its own — it reads the enclosing scope's `this` at definition time and never changes it based on how it's invoked, which makes it the standard fix for callbacks that need to reference a surrounding class instance.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#this-keyword"
+    ]
+  },
+  {
+    "questionId": "js7",
+    "topic": "javascript",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What is the practical difference between == and === in JavaScript?",
+    "options": [
+      "== coerces types before comparing; === requires matching type and value with no coercion",
+      "They behave identically in modern JavaScript",
+      "=== is slower and deprecated",
+      "== only works on strings"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "== (\"loose equality\") converts operands to a common type before comparing, so '5' == 5 is true. === (\"strict equality\") requires both value and type to match with no conversion, so '5' === 5 is false. The standard convention is to default to === everywhere.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#equality"
+    ]
+  },
+  {
+    "questionId": "js8",
+    "topic": "javascript",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "When a function pauses on `await`, does that block the rest of the JavaScript engine from doing anything else?",
+    "back": "No — `await` only pauses execution within that specific async function. Everything else — other requests, other timers, other code — keeps running normally while one function is paused waiting on a Promise to resolve. async/await is just cleaner syntax layered over Promises; the underlying non-blocking behavior is unchanged.",
+    "source": [
+      "javascript-fundamentals.html#async-patterns"
+    ]
+  },
+  {
+    "questionId": "js9",
+    "topic": "javascript",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Given: console.log(1); setTimeout(() => console.log(2), 0); Promise.resolve().then(() => console.log(3)); console.log(4); — what's the logged order?",
+    "options": [
+      "1, 2, 3, 4",
+      "1, 4, 3, 2",
+      "1, 4, 2, 3",
+      "1, 3, 4, 2"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Synchronous code runs first (1, 4), then the microtask queue fully drains (3, the Promise callback), and only then does the next macrotask run (2, the timer) — even though the timer was scheduled with a 0ms delay.",
+    "front": null,
+    "back": null,
+    "source": [
+      "javascript-fundamentals.html#microtasks-vs-macrotasks"
+    ]
+  },
+  {
+    "questionId": "js10",
+    "topic": "javascript",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What is `class` syntax actually doing under the hood in JavaScript?",
+    "back": "It's largely sugar over the existing prototype mechanism. Methods defined in a class body live on the class's prototype object, shared by every instance via the prototype chain, rather than being copied onto each individual object. Understanding this is what lets you explain why changing a method on the prototype affects every existing instance, and why property lookups walk up a chain when something isn't found directly on the object.",
+    "source": [
+      "javascript-fundamentals.html#prototypes"
+    ]
+  },
+  {
+    "questionId": "js11",
+    "topic": "javascript",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Name two well-known edge cases where === doesn't behave the way you might naively expect, and what fixes each.",
+    "back": "NaN === NaN is false — NaN is defined to never equal anything, including itself, so you have to use Number.isNaN() to actually check for it. -0 === 0 is true despite being distinct values internally. Object.is() is the rarely-used strict-equality variant that gets both \"right\" (Object.is(NaN, NaN) is true), but outside niche cases, plain === is still the standard default.",
+    "source": [
+      "javascript-fundamentals.html#equality"
+    ]
+  },
+  {
+    "questionId": "ai1",
+    "topic": "ai-llm",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "At its core, what is an LLM actually doing when it generates a response?",
+    "options": [
+      "Looking up facts in an internal database",
+      "Predicting the statistically most plausible next chunk of text, given everything so far",
+      "Running a web search in real time",
+      "Executing a fixed set of pre-written rules"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "An LLM is next-token prediction at scale — autocomplete trained on a huge amount of text. There's no separate \"is this true\" check built into that mechanism, which is exactly why hallucination is possible.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#what-is-an-llm"
+    ]
+  },
+  {
+    "questionId": "ai2",
+    "topic": "ai-llm",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What happens to earlier parts of a conversation once it exceeds the model's context window?",
+    "options": [
+      "They're automatically summarized and kept forever",
+      "They fall off and are forgotten unless explicitly re-included",
+      "They get saved to a permanent database automatically",
+      "Nothing changes — the model remembers everything indefinitely"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "The context window is short-term working memory, not permanent storage — like a desk, not a filing cabinet. Once material falls off the edge, the model has no memory of it unless it's explicitly supplied again.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#context-window"
+    ]
+  },
+  {
+    "questionId": "ai3",
+    "topic": "ai-llm",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Between prompting and fine-tuning, which one is generally the lower-cost, faster-to-iterate default?",
+    "options": [
+      "Fine-tuning, since it changes the model permanently",
+      "Prompting, since it just means editing instructions and redeploying instantly",
+      "They cost exactly the same in practice",
+      "Neither — both require retraining the model"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Prompting is cheap and instant to change. Fine-tuning requires a training dataset, compute, and a retraining pipeline — a real tool, but a much more expensive one, so it's not the default starting point.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#prompting-vs-finetuning"
+    ]
+  },
+  {
+    "questionId": "ai4",
+    "topic": "ai-llm",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Why give an LLM access to \"tools\" like a calculator function?",
+    "options": [
+      "To make its responses shorter",
+      "Because LLMs are unreliable at precise arithmetic, real-time facts, and taking real actions — things a plain function call handles perfectly",
+      "To prevent it from ever hallucinating",
+      "Tools are only used for formatting output"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Tool use lets the model request that real code run and return an actual result — like handing it a calculator instead of asking it to do long division from memory — for the exact things LLMs are weak at on their own.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#agents-and-tools"
+    ]
+  },
+  {
+    "questionId": "ai5",
+    "topic": "ai-llm",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Walk through the RAG (retrieval-augmented generation) pipeline, start to finish.",
+    "back": "Split source documents into chunks → embed each chunk ahead of time and store the embeddings in a vector database → at query time, embed the incoming question → search the vector database for the nearest stored chunks (an \"open book\" of relevant material) → hand those chunks to the LLM alongside the question, so it answers using what it was given rather than relying purely on memory.",
+    "source": [
+      "ai-llm-fundamentals.html#rag-and-embeddings"
+    ]
+  },
+  {
+    "questionId": "ai6",
+    "topic": "ai-llm",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Which of these actually helps reduce hallucination in an LLM response?",
+    "options": [
+      "Simply instructing the model in the prompt to \"not make things up\"",
+      "Grounding the response in real retrieved source material and asking it to cite supporting passages",
+      "Increasing the randomness (temperature) setting",
+      "Avoiding retrieval entirely and relying only on the model's training data"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Grounding via RAG plus citation requests changes what the model is actually working from. Just telling it to \"be accurate\" is an instruction about style, not a change to the underlying generation mechanism that produces the error.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#hallucination"
+    ]
+  },
+  {
+    "questionId": "ai7",
+    "topic": "ai-llm",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A product feature seems to need the model to \"know about our data.\" Is that usually a fine-tuning problem or a retrieval problem?",
+    "back": "Almost always a retrieval problem. Fine-tuning bakes patterns into the model's weights, but new specific facts get diluted and go stale — it's rarely the right tool for \"the model doesn't know X.\" Retrieval (RAG) solves this far more cheaply by handing the model the relevant facts at request time instead of trying to permanently teach them to it.",
+    "source": [
+      "ai-llm-fundamentals.html#prompting-vs-finetuning"
+    ]
+  },
+  {
+    "questionId": "ai8",
+    "topic": "ai-llm",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Why can't you test an AI feature the same way you'd write a normal unit test?",
+    "options": [
+      "AI features can't be tested at all",
+      "Normal unit tests assert one exact expected output, but LLM output varies run to run — evals score whether output meets a bar instead of matching an exact string",
+      "Unit tests only work on frontend code",
+      "AI features are always deterministic, so no special testing is needed"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Evals are the testing discipline built for non-deterministic output: a fixed set of representative inputs paired with a rule-based check, human rubric, or LLM-as-judge scoring, instead of an exact-match assertion.",
+    "front": null,
+    "back": null,
+    "source": [
+      "ai-llm-fundamentals.html#evals"
+    ]
+  },
+  {
+    "questionId": "ai9",
+    "topic": "ai-llm",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "By default, does an LLM remember anything from a completely separate, earlier conversation with the same user? What does this mean for building a product feature that needs to \"remember\" a user's preferences?",
+    "back": "No — each new conversation starts on a completely clean context window, with zero memory of any prior conversation unless something outside the model re-supplies that history. Any product feature that needs persistence — remembering preferences, prior decisions, past interactions — has to explicitly store that information somewhere (a database) and re-inject the relevant parts into the prompt on each new request; the model itself provides no persistent memory across sessions.",
+    "source": [
+      "ai-llm-fundamentals.html#context-window"
+    ]
+  },
+  {
+    "questionId": "ai10",
+    "topic": "ai-llm",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What is the real trade-off of building an \"agentic\" loop (plan → call a tool → observe → repeat) instead of answering in one shot?",
+    "back": "Every additional step adds latency, cost, and a new place for something to go wrong — a bad tool call, a misread result, an unnecessary extra round trip. Agentic loops are worth reaching for when a task genuinely needs multiple dependent steps or real actions taken along the way, not as a default architecture for anything that could be answered directly.",
+    "source": [
+      "ai-llm-fundamentals.html#agents-and-tools"
+    ]
+  },
+  {
+    "questionId": "ai11",
+    "topic": "ai-llm",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why is it more accurate to say hallucination is \"the mechanism working as designed\" rather than calling it a bug?",
+    "back": "The model's only job is producing a statistically plausible continuation of the text so far — nothing in that process distinguishes \"true and well-supported\" from \"sounds right.\" A confident, fluent, false answer is produced by the exact same mechanism as a confident, fluent, true one. That's why hallucination shows up most on things outside the model's training data (recent events, your internal data) — and why the fix is changing what the model is grounded in (retrieval), not asking it to try harder to be honest.",
+    "source": [
+      "ai-llm-fundamentals.html#hallucination"
+    ]
+  },
+  {
+    "questionId": "iac1",
+    "topic": "infra-as-code",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What's the core difference between declarative and imperative infrastructure?",
+    "options": [
+      "Declarative describes the desired end state and lets a tool figure out the steps; imperative is a script of exact steps run in order",
+      "They're the same approach with different syntax",
+      "Imperative is always safer to re-run",
+      "Declarative only works for databases"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "Declarative config is a finished-dish photo — describe what you want, the tool computes what changes are needed. Imperative is a recipe — an ordered list of steps that may behave differently depending on the current state of things.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#declarative-vs-imperative"
+    ]
+  },
+  {
+    "questionId": "iac2",
+    "topic": "infra-as-code",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does \"idempotent\" mean in the context of infrastructure as code?",
+    "options": [
+      "Running the same config repeatedly produces the same end result without duplicating or breaking things",
+      "The config can only ever be applied once",
+      "The infrastructure never needs updates",
+      "Idempotent configs run faster than others"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "A declarative, idempotent tool compares your config against what's actually deployed and only changes what's different — running it 10 times has the same effect as running it once.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#declarative-vs-imperative"
+    ]
+  },
+  {
+    "questionId": "iac3",
+    "topic": "infra-as-code",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which workload is generally the better fit for a serverless function rather than an always-on server?",
+    "options": [
+      "A steady stream of high-frequency traffic where cold starts would be costly",
+      "A scheduled job that runs once a day and does a bounded amount of work",
+      "Anything requiring in-memory state to persist between every request",
+      "A process that must never have any startup latency"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Serverless shines for spiky, infrequent, or scheduled work — you pay only when it actually runs. Steady, high-frequency traffic often favors an always-on process where there's no cold start and the \"pay only when running\" advantage disappears anyway.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#serverless-vs-always-on"
+    ]
+  },
+  {
+    "questionId": "iac4",
+    "topic": "infra-as-code",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is the \"principle of least privilege\" in the context of IAM roles?",
+    "options": [
+      "Grant every role full admin access to simplify configuration",
+      "Grant only the specific permissions a piece of infrastructure actually needs, nothing broader \"just in case\"",
+      "Give the newest team member the fewest permissions",
+      "Rotate all credentials daily regardless of role"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "A role scoped tightly to exactly what's required has a much smaller blast radius if something goes wrong — a bug, a leaked credential, a bad request — than a role that can do everything.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#iam-permission-layer"
+    ]
+  },
+  {
+    "questionId": "iac5",
+    "topic": "infra-as-code",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "How does an IaC tool know to create a database before a function that reads from it, if you never explicitly wrote out that ordering?",
+    "back": "The tool inspects your entire declared config, sees that the function's definition references the database (e.g. through a permission grant or connection string), and builds a dependency graph from those references. It then works out a valid build order automatically — the database has to exist far enough along before the function's permissions can point at it — the same way a project manager reads a construction plan and knows framing has to happen before drywall.",
+    "source": [
+      "infra-as-code.html#orchestration-and-dependency-graphs"
+    ]
+  },
+  {
+    "questionId": "iac6",
+    "topic": "infra-as-code",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Why are IAM roles described as being like key cards rather than passwords?",
+    "options": [
+      "Because a role is checked at the \"door\" (the resource) every time, rather than requiring the requester to know and safely store a secret",
+      "Because IAM roles expire faster than passwords",
+      "Because key cards are a deprecated security model",
+      "There's no meaningful difference between the two"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "A piece of infrastructure is issued a role granting access to specific resources and actions; the platform checks that role at each access attempt, replacing \"hand out a secret and hope it stays safe\" with permissions enforced independent of the code itself.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#iam-permission-layer"
+    ]
+  },
+  {
+    "questionId": "iac7",
+    "topic": "infra-as-code",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What is \"promotion\" and why deploy through dev → staging → production instead of straight to production?",
+    "back": "Promotion is moving a change through environments in order, verifying it at each stage before it reaches the next. It's the infrastructure equivalent of code review — each environment is a chance to catch a problem before real users are affected, and the cost of a missed issue grows the further along the chain it slips through undetected.",
+    "source": [
+      "infra-as-code.html#environments-and-promotion"
+    ]
+  },
+  {
+    "questionId": "iac8",
+    "topic": "infra-as-code",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What is \"drift\" in an infrastructure-as-code context?",
+    "options": [
+      "When the IaC tool runs slower than expected",
+      "When the actual deployed infrastructure no longer matches what the IaC config says it should be, usually from a manual out-of-band change",
+      "When a deploy takes longer than its scheduled maintenance window",
+      "A synonym for rollback"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Drift typically happens when someone manually changes something directly (clicking around in a cloud console) instead of going through the declarative config — creating a real risk that the next IaC run \"corrects\" that manual change back, silently undoing it.",
+    "front": null,
+    "back": null,
+    "source": [
+      "infra-as-code.html#rollback-and-drift"
+    ]
+  },
+  {
+    "questionId": "iac9",
+    "topic": "infra-as-code",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why is rolling back a bad deploy generally easier with declarative IaC than with a series of ad hoc manual changes?",
+    "back": "A declarative tool tracks the last known deployed state, so rolling back is just reapplying the previous good config — the tool computes the diff back to that state the same way it computes any other change. With manual changes, \"undo\" depends on someone remembering and manually reversing whatever was clicked or typed, with no structured record of exactly what changed.",
+    "source": [
+      "infra-as-code.html#rollback-and-drift"
+    ]
+  },
+  {
+    "questionId": "iac10",
+    "topic": "infra-as-code",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A team's API has wildly unpredictable traffic — sometimes near zero, sometimes a sudden spike from a marketing push. Why might serverless still be a defensible choice here despite cold starts?",
+    "back": "At near-zero traffic, an always-on server is paying for idle capacity the whole time, while serverless costs almost nothing when nothing is happening. Cold starts are a real cost, but they're paid only on the requests that hit a cold environment, not the entire idle period — for genuinely spiky, unpredictable load, that trade-off often favors serverless's pay-per-invocation model over provisioning (and paying for) enough always-on capacity to handle the peak.",
+    "source": [
+      "infra-as-code.html#serverless-vs-always-on"
+    ]
+  },
+  {
+    "questionId": "iac11",
+    "topic": "infra-as-code",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Before actually applying a change, many IaC tools can show you a \"plan\" or \"diff.\" Why does reviewing that matter, beyond just convenience?",
+    "back": "The plan shows exactly what would be created, changed, or destroyed by comparing the new config against the last known deployed state — before anything actually happens. This is the infrastructure equivalent of reviewing a code diff before merging: it catches unintended consequences (like a config change that would accidentally destroy and recreate a database, losing its data) while there's still a chance to stop and reconsider, rather than discovering the impact only after it's already been applied.",
+    "source": [
+      "infra-as-code.html#orchestration-and-dependency-graphs"
+    ]
   }
 ]

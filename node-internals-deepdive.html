@@ -56,6 +56,7 @@
     border-bottom: 1px solid var(--border);
   }
   .section-header h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  h1 { color: darkgoldenrod; }
 
   .analogy-box {
     background: var(--surface2);
@@ -124,14 +125,14 @@
   </button>
 </nav>
 
-  <div class="page-header">
+  <div class="page-header" id="layers-overview">
     <div class="eyebrow">Node.js internals · Deep dive</div>
     <h1>Under the hood:<br>V8, the event loop &amp; built-in modules</h1>
     <p class="intro">Node.js isn't just "JavaScript outside the browser." It's built from three distinct layers — each doing a very different job.</p>
   </div>
 
   <!-- V8 -->
-  <div class="content-section">
+  <div class="content-section" id="v8-section">
     <div class="section-header">
       <span class="section-num num-v8">1</span>
       <h2>V8 — the JavaScript engine</h2>
@@ -171,12 +172,12 @@
       <h2>libuv &amp; the event loop</h2>
       <span class="section-tag tag-loop">Node's superpower</span>
     </div>
-    <div class="analogy-box">
+    <div class="analogy-box" id="event-loop-analogy">
       <strong>The restaurant analogy</strong>
       Imagine one very fast waiter. Instead of standing at each table waiting for the kitchen, the waiter takes the order, submits it, and moves to the next table. When the kitchen calls "order up," the waiter delivers. One waiter. Many tables. Nothing blocks.
     </div>
     <div class="info-grid">
-      <div class="info-card">
+      <div class="info-card" id="libuv-card">
         <div class="card-label">libuv</div>
         <p>A C library that handles all async I/O — file reads, network requests, timers, DNS lookups. Talks to the OS's async APIs and manages a thread pool for operations that can't be done asynchronously at the OS level.</p>
       </div>
@@ -185,7 +186,7 @@
         <p>A scheduler that coordinates between your JavaScript and libuv. When async work finishes (a DB query returns), libuv notifies the event loop, which queues the callback and runs it when the JS call stack is empty.</p>
       </div>
     </div>
-    <div class="el-diagram">
+    <div class="el-diagram" id="event-loop-diagram">
       <div class="el-row">
         <div class="el-box"><div class="el-label">Your JS code</div>app.get('/parks', cb)</div>
         <div class="el-arrow">→</div>
@@ -213,7 +214,7 @@ db.<span class="cf">find</span>({}).<span class="cf">then</span>(parks => {
 <span class="cm">// $parks = $db->find([]);  ← execution STOPS until DB responds</span>
 <span class="cm">// echo json_encode($parks); ← nothing else happens during that wait</span></div>
     <div class="code-caption">Non-blocking vs blocking I/O — the core difference</div>
-    <div class="warning-box">
+    <div class="warning-box" id="event-loop-warning">
       <div class="icon">⚠</div>
       <div>
         <strong>When the analogy breaks down</strong>
@@ -237,7 +238,7 @@ db.<span class="cf">find</span>({}).<span class="cf">then</span>(parks => {
       <div class="module-pill"><div class="mp-name">http / https</div><div class="mp-desc">Create servers, make requests. The foundation Express is built on.</div></div>
       <div class="module-pill"><div class="mp-name">fs</div><div class="mp-desc">Read, write, delete, and watch files and directories on disk.</div></div>
       <div class="module-pill"><div class="mp-name">path</div><div class="mp-desc">Join, resolve, and normalize file paths safely across OS types.</div></div>
-      <div class="module-pill"><div class="mp-name">crypto</div><div class="mp-desc">Hashing, encryption, secure random numbers, HMAC signatures.</div></div>
+      <div class="module-pill" id="module-crypto"><div class="mp-name">crypto</div><div class="mp-desc">Hashing, encryption, secure random numbers, HMAC signatures.</div></div>
       <div class="module-pill"><div class="mp-name">stream</div><div class="mp-desc">Process data in chunks without loading everything into memory.</div></div>
       <div class="module-pill"><div class="mp-name">events</div><div class="mp-desc">The EventEmitter pattern — the backbone of Node's async model.</div></div>
       <div class="module-pill"><div class="mp-name">os</div><div class="mp-desc">CPU count, memory info, hostname — useful for scaling decisions.</div></div>
@@ -278,5 +279,6 @@ db.<span class="cf">find</span>({}).<span class="cf">then</span>(parks => {
 </div>
 
 <script src="theme.js"></script>
+<script src="notes.js"></script>
 </body>
 </html>

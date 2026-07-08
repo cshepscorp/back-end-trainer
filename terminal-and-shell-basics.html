@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Terminal, Shell & CLI Basics</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .info-card p + p { margin-top: 8px; }
+  .info-card strong { color: var(--ink); font-weight: 600; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  /* ── ANALOGY BOX ── */
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box p + p { margin-top: 8px; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  /* ── CHEAT SHEET TABLE ── */
+  .cheat-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; transition: var(--theme-transition); }
+  .cheat-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .cheat-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.5; }
+  .cheat-table tr:last-child td { border-bottom: none; }
+  .cheat-table td:first-child { font-family: var(--mono); font-size: 12px; color: var(--amber); white-space: nowrap; width: 220px; }
+  .cheat-table td:nth-child(2) { font-size: 13px; font-weight: 300; color: var(--subtle); }
+  .cheat-table td:nth-child(3) { font-size: 12px; font-weight: 300; color: var(--muted); }
+  .cheat-table .section-row td { background: var(--surface2); font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 8px 16px; }
+
+  /* ── PATH DIAGRAM ── */
+  .path-diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .path-flow { display: flex; flex-direction: column; gap: 0; }
+  .path-step { display: flex; gap: 14px; align-items: flex-start; }
+  .path-connector { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+  .path-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 10px; font-weight: 500; flex-shrink: 0; background: #6c8ef520; color: var(--blue); border: 1px solid #6c8ef540; }
+  .path-line { width: 1px; flex: 1; min-height: 14px; background: var(--border2); margin: 4px 0; }
+  .path-step:last-child .path-line { display: none; }
+  .path-content { padding-bottom: 16px; padding-top: 3px; flex: 1; }
+  .path-content .path-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .path-content .path-desc { font-family: var(--mono); font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+  .path-content .path-note { font-size: 12px; font-weight: 300; color: var(--muted); margin-top: 3px; }
+
+  /* ── NPM SECTION ── */
+  .npm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .npm-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; transition: var(--theme-transition); }
+  .npm-card .npm-cmd { font-family: var(--mono); font-size: 12px; color: var(--amber); margin-bottom: 5px; }
+  .npm-card .npm-desc { font-size: 12.5px; font-weight: 300; color: var(--subtle); line-height: 1.5; }
+
+  /* ── PACKAGE JSON ── */
+  .pkg-explainer { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; transition: var(--theme-transition); }
+  .pkg-header { padding: 14px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+  .pkg-rows { display: grid; grid-template-columns: 1fr 1fr; }
+  .pkg-row { display: contents; }
+  .pkg-key { font-family: var(--mono); font-size: 12px; color: var(--amber); padding: 10px 20px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); background: var(--surface); }
+  .pkg-val { font-size: 12.5px; font-weight: 300; color: var(--subtle); padding: 10px 20px; border-bottom: 1px solid var(--border); background: var(--surface); line-height: 1.5; }
+  .pkg-row:last-child .pkg-key,
+  .pkg-row:last-child .pkg-val { border-bottom: none; }
+
+  /* ── PSQL SECTION ── */
+  .psql-note { background: var(--surface2); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 20px; font-size: 13px; font-weight: 300; color: var(--subtle); line-height: 1.6; }
+  .psql-note strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Fundamentals · Reference</div>
+    <h1>Terminal, shell<br>&amp; CLI basics</h1>
+    <p class="intro">What the terminal actually is, how the shell works, what PATH means, and the commands you'll use every day as a backend developer.</p>
+  </div>
+
+
+  <!-- TERMINAL VS SHELL -->
+  <div class="content-section">
+    <div class="section-title">Terminal vs shell — not the same thing</div>
+    <div class="info-grid" id="terminal-vs-shell">
+      <div class="info-card">
+        <div class="accent-bar" style="background:var(--teal)"></div>
+        <div class="card-label">The window</div>
+        <h2>Terminal</h2>
+        <p>An application on your Mac that gives you a text-based interface to your computer. Instead of clicking icons, you type commands and see text output. On macOS it's called Terminal — you might also use iTerm2.</p>
+        <p>The terminal is just the <strong>display layer</strong>. It shows you what's happening but doesn't do the thinking itself.</p>
+      </div>
+      <div class="info-card">
+        <div class="accent-bar" style="background:var(--blue)"></div>
+        <div class="card-label">The interpreter</div>
+        <h2>Shell</h2>
+        <p>The program running <em>inside</em> your terminal. It reads what you type, figures out what to do with it, runs programs, and shows you the output. Your Mac uses <strong>zsh</strong> by default.</p>
+        <p>You might also hear about <strong>bash</strong> — an older shell, still common on Linux servers. The commands are mostly identical.</p>
+      </div>
+    </div>
+
+    <div class="analogy-box" id="terminal-shell-analogy">
+      <div class="label">The analogy</div>
+      <p><strong>The terminal is a TV set. The shell is the channel playing on it.</strong> The TV just displays things — the channel decides what you're watching. You could swap the channel (run a different shell) in the same terminal window.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-label">CLI — Command Line Interface</div>
+      <p>You'll also hear the term <strong>CLI</strong> — it just means any tool you interact with by typing commands instead of clicking a GUI. The terminal is a CLI. <code>psql</code> is a CLI. <code>npm</code> is a CLI. When someone says "run this in the CLI" they mean "type this in your terminal."</p>
+    </div>
+  </div>
+
+
+  <!-- PATH -->
+  <div class="content-section" id="path-explainer">
+    <div class="section-title">What PATH is and why it matters</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>When you type a command like <code>psql</code> or <code>node</code>, the shell doesn't magically know where that program lives on your computer. It searches through a list of directories called the <strong>PATH</strong> — in order — until it finds a match. If it finds it, it runs it. If not, you get "command not found."</p>
+      <p>This is why we added PostgreSQL to your PATH earlier. Without that line in <code>~/.zprofile</code>, typing <code>psql</code> would fail even though PostgreSQL was installed.</p>
+    </div>
+
+    <div class="path-diagram">
+      <div class="path-flow">
+        <div class="path-step">
+          <div class="path-connector"><div class="path-dot">1</div><div class="path-line"></div></div>
+          <div class="path-content">
+            <div class="path-title">You type a command</div>
+            <div class="path-desc">$ psql --version</div>
+          </div>
+        </div>
+        <div class="path-step">
+          <div class="path-connector"><div class="path-dot">2</div><div class="path-line"></div></div>
+          <div class="path-content">
+            <div class="path-title">Shell searches your PATH directories in order</div>
+            <div class="path-desc">/opt/homebrew/opt/postgresql@16/bin → found psql here ✓</div>
+            <div class="path-note">If not found, it keeps searching. If not found anywhere → "command not found"</div>
+          </div>
+        </div>
+        <div class="path-step">
+          <div class="path-connector"><div class="path-dot">3</div><div class="path-line"></div></div>
+          <div class="path-content">
+            <div class="path-title">Shell runs the program with your arguments</div>
+            <div class="path-desc">psql (PostgreSQL) 16.13</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="analogy-box" style="border-left-color:var(--teal)">
+      <div class="label">The analogy</div>
+      <p><strong>PATH is like a list of drawers the shell checks in order.</strong> You say "find me a pen." It opens drawer 1 — no pen. Drawer 2 — found one. It stops searching and hands it to you. If no drawer has a pen: "command not found."</p>
+    </div>
+
+    <div class="info-card">
+      <div class="card-label">~/.zprofile — your shell's config file</div>
+      <p>The file <code>~/.zprofile</code> runs every time you open a new terminal window. It's where you put things you always want set up — like PATH additions. The <code>~</code> is shorthand for your home directory (<code>/Users/christysheppard</code>). The dot prefix means it's a hidden file — Finder won't show it by default but the terminal can see it.</p>
+    </div>
+  </div>
+
+
+  <!-- EVERYDAY COMMANDS -->
+  <div class="content-section">
+    <div class="section-title">Everyday shell commands — cheat sheet</div>
+
+    <table class="cheat-table" id="shell-cheat-sheet">
+      <thead>
+        <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="3">Navigation</td></tr>
+        <tr>
+          <td>pwd</td>
+          <td>Print working directory — shows where you currently are</td>
+          <td>/Users/christysheppard/parks-api</td>
+        </tr>
+        <tr>
+          <td>ls</td>
+          <td>List files and folders in current directory</td>
+          <td>package.json  src/  node_modules/</td>
+        </tr>
+        <tr>
+          <td>ls -la</td>
+          <td>List all files including hidden ones, with details</td>
+          <td>Shows .env, .gitignore etc.</td>
+        </tr>
+        <tr>
+          <td>cd foldername</td>
+          <td>Change directory — move into a folder</td>
+          <td>cd parks-api</td>
+        </tr>
+        <tr>
+          <td>cd ..</td>
+          <td>Go up one level to the parent directory</td>
+          <td>parks-api → parent folder</td>
+        </tr>
+        <tr>
+          <td>cd ~</td>
+          <td>Go to your home directory from anywhere</td>
+          <td>/Users/christysheppard</td>
+        </tr>
+
+        <tr class="section-row"><td colspan="3">Files & folders</td></tr>
+        <tr>
+          <td>mkdir foldername</td>
+          <td>Make a new directory</td>
+          <td>mkdir parks-api</td>
+        </tr>
+        <tr>
+          <td>touch filename</td>
+          <td>Create a new empty file</td>
+          <td>touch index.js</td>
+        </tr>
+        <tr>
+          <td>cat filename</td>
+          <td>Print file contents to the terminal</td>
+          <td>cat package.json</td>
+        </tr>
+        <tr>
+          <td>rm filename</td>
+          <td>Delete a file — permanent, no trash</td>
+          <td>rm old-file.js</td>
+        </tr>
+        <tr>
+          <td>rm -rf foldername</td>
+          <td>Delete a folder and everything in it — use carefully</td>
+          <td>rm -rf node_modules</td>
+        </tr>
+        <tr>
+          <td>cp source dest</td>
+          <td>Copy a file</td>
+          <td>cp .env.example .env</td>
+        </tr>
+        <tr>
+          <td>mv source dest</td>
+          <td>Move or rename a file</td>
+          <td>mv old.js new.js</td>
+        </tr>
+
+        <tr class="section-row"><td colspan="3">Useful shortcuts</td></tr>
+        <tr>
+          <td>↑ arrow key</td>
+          <td>Cycle through previous commands</td>
+          <td>No retyping long commands</td>
+        </tr>
+        <tr>
+          <td>Tab</td>
+          <td>Autocomplete file/folder names</td>
+          <td>cd par → Tab → cd parks-api/</td>
+        </tr>
+        <tr>
+          <td>Ctrl + C</td>
+          <td>Kill the currently running process</td>
+          <td>Stop a running server</td>
+        </tr>
+        <tr>
+          <td>Ctrl + L</td>
+          <td>Clear the terminal screen</td>
+          <td>Same as typing "clear"</td>
+        </tr>
+        <tr>
+          <td>Ctrl + A</td>
+          <td>Jump to beginning of current line</td>
+          <td>Useful for editing long commands</td>
+        </tr>
+
+        <tr class="section-row"><td colspan="3">Process & environment</td></tr>
+        <tr>
+          <td>echo $VAR</td>
+          <td>Print the value of an environment variable</td>
+          <td>echo $PATH</td>
+        </tr>
+        <tr>
+          <td>export VAR=value</td>
+          <td>Set an environment variable for the current session</td>
+          <td>export NODE_ENV=development</td>
+        </tr>
+        <tr>
+          <td>which command</td>
+          <td>Show where in PATH a command lives</td>
+          <td>which node → /opt/homebrew/bin/node</td>
+        </tr>
+        <tr>
+          <td>command --version</td>
+          <td>Show version of an installed tool</td>
+          <td>node --version → v20.x.x</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- PSQL META-COMMANDS -->
+  <div class="content-section">
+    <div class="section-title">psql meta-commands — the backslash commands</div>
+
+    <div class="psql-note">
+      <strong>Why the backslash?</strong> Inside the psql shell, regular text gets sent to PostgreSQL as SQL. Backslash commands are handled by the shell itself before anything goes to the database — they're instructions to psql, not to PostgreSQL. SQL needs a semicolon to terminate. Backslash commands don't.
+    </div>
+
+    <table class="cheat-table" id="psql-meta-commands">
+      <thead>
+        <tr><th>Command</th><th>What it does</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>\l</td>
+          <td>List all databases</td>
+          <td>Shows owner, encoding, access privileges</td>
+        </tr>
+        <tr>
+          <td>\c dbname</td>
+          <td>Connect to a different database</td>
+          <td>\c parks_dev</td>
+        </tr>
+        <tr>
+          <td>\dt</td>
+          <td>List all tables in the current database</td>
+          <td>Use after \c to a database first</td>
+        </tr>
+        <tr>
+          <td>\d tablename</td>
+          <td>Describe a table — shows columns, types, constraints</td>
+          <td>\d users</td>
+        </tr>
+        <tr>
+          <td>\di</td>
+          <td>List all indexes</td>
+          <td>Useful for performance debugging</td>
+        </tr>
+        <tr>
+          <td>\dn</td>
+          <td>List schemas</td>
+          <td>Usually just "public" for simple apps</td>
+        </tr>
+        <tr>
+          <td>\timing</td>
+          <td>Toggle query execution time display</td>
+          <td>Handy for performance checks</td>
+        </tr>
+        <tr>
+          <td>\q</td>
+          <td>Quit psql and return to shell</td>
+          <td>Or Ctrl + D</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- NPM -->
+  <div class="content-section">
+    <div class="section-title">npm — Node Package Manager</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><strong>npm</strong> ships with Node.js and does two related things: it manages the packages (libraries) your project depends on, and it lets you run scripts defined in your <code>package.json</code>. When you install a package, npm downloads it into a <code>node_modules</code> folder and records it as a dependency in <code>package.json</code>.</p>
+    </div>
+
+    <div class="npm-grid" id="npm-commands">
+      <div class="npm-card">
+        <div class="npm-cmd">npm init -y</div>
+        <div class="npm-desc">Initialize a new Node.js project in the current folder. Creates package.json with defaults. The -y skips interactive questions.</div>
+      </div>
+      <div class="npm-card">
+        <div class="npm-cmd">npm install package</div>
+        <div class="npm-desc">Install a package and add it to dependencies in package.json. Short form: npm i package.</div>
+      </div>
+      <div class="npm-card">
+        <div class="npm-cmd">npm install -D package</div>
+        <div class="npm-desc">Install as a dev dependency — only needed during development, not in production. Example: testing libraries.</div>
+      </div>
+      <div class="npm-card">
+        <div class="npm-cmd">npm install</div>
+        <div class="npm-desc">Install all dependencies listed in package.json. Run this after cloning a repo — node_modules is never committed to git.</div>
+      </div>
+      <div class="npm-card">
+        <div class="npm-cmd">npm run scriptname</div>
+        <div class="npm-desc">Run a script defined in the "scripts" section of package.json. Example: npm run dev, npm run build.</div>
+      </div>
+      <div class="npm-card">
+        <div class="npm-cmd">npm uninstall package</div>
+        <div class="npm-desc">Remove a package and update package.json. Also removes it from node_modules.</div>
+      </div>
+    </div>
+
+
+    <!-- PACKAGE JSON EXPLAINER -->
+    <div class="section-title">What package.json actually contains</div>
+    <div class="pkg-explainer" id="package-json-fields">
+      <div class="pkg-header">package.json — your project's ID card</div>
+      <div class="pkg-rows">
+        <div class="pkg-row">
+          <div class="pkg-key">"name"</div>
+          <div class="pkg-val">The project name. Used if you ever publish to npm, otherwise just for identification.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"version"</div>
+          <div class="pkg-val">Semantic version number. Format is major.minor.patch — e.g. 1.0.0. Matters more for published packages.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"main"</div>
+          <div class="pkg-val">The entry point file — what runs when someone imports your package. For the parks API this will point to your Express server file.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"scripts"</div>
+          <div class="pkg-val">Shortcuts you define and run with npm run. You'll add "dev" to start your server and "start" for production.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"dependencies"</div>
+          <div class="pkg-val">Packages your app needs to run in production. Added automatically when you npm install a package.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"devDependencies"</div>
+          <div class="pkg-val">Packages only needed during development — testing tools, linters, type checkers. Added with npm install -D.</div>
+        </div>
+        <div class="pkg-row">
+          <div class="pkg-key">"type"</div>
+          <div class="pkg-val">Set to "module" for ES modules (import/export syntax) or "commonjs" for require() syntax. We'll use "module" for the parks API.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>Terminal, shell &amp; CLI basics · Fundamentals</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

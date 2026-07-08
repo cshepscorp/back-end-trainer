@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Apply saved theme before paint to avoid flash -->
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>Databases & ORMs</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  /* ── INFO CARDS ── */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; position: relative; transition: var(--theme-transition); }
+  .info-card .card-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.8px; color: var(--muted); margin-bottom: 8px; }
+  .info-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .info-card p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.6; }
+  .accent-bar { position: absolute; top: 0; left: 0; width: 100%; height: 3px; border-radius: 8px 8px 0 0; }
+  .mongo .accent-bar  { background: var(--green); }
+  .pg .accent-bar     { background: var(--blue); }
+
+  /* ── ANALOGY BOX ── */
+  .analogy-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    transition: var(--theme-transition);
+  }
+  .analogy-box .label { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .analogy-box p { font-size: 14px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .analogy-box strong { color: var(--ink); font-weight: 600; }
+
+  /* ── RELATIONSHIP TYPES ── */
+  .rel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .rel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; transition: var(--theme-transition); }
+  .rel-card .rel-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .rel-card .rel-example { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .rel-card p { font-size: 13px; font-weight: 300; color: var(--subtle); line-height: 1.55; }
+  .rel-card.highlight { border-color: #6c8ef540; background: #6c8ef508; }
+  .rel-card.highlight .rel-name { color: var(--blue); }
+
+  /* ── DATA MODEL DIAGRAM ── */
+  .data-model { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .tables-row { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 0; align-items: start; margin-bottom: 8px; }
+  .db-table { background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+  .db-table .table-header { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; padding: 8px 12px; border-bottom: 1px solid var(--border2); font-weight: 500; }
+  .db-table .table-row { font-family: var(--mono); font-size: 11px; padding: 5px 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .db-table .table-row:last-child { border-bottom: none; }
+  .db-table .table-row .pk { color: var(--amber); }
+  .db-table .table-row .fk { color: var(--blue); }
+  .db-table .table-row .field { color: var(--subtle); }
+  .table-header.users-h   { color: var(--teal); background: #2dd4bf0a; }
+  .table-header.trips-h   { color: var(--blue); background: #6c8ef50a; }
+  .table-header.jt-h      { color: var(--purple); background: #a78bfa0a; }
+  .table-header.parks-h   { color: var(--green); background: #4ade800a; }
+  .rel-arrow { display: flex; align-items: center; justify-content: center; padding: 0 6px; padding-top: 28px; color: var(--border2); font-size: 14px; white-space: nowrap; flex-direction: column; gap: 2px; }
+  .rel-arrow span { font-family: var(--mono); font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .data-caption { font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 12px; }
+
+  /* ── TRADE-OFF TABLE ── */
+  .tradeoff-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); font-size: 13px; margin-bottom: 24px; transition: var(--theme-transition); }
+  .tradeoff-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .tradeoff-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 300; line-height: 1.5; color: var(--subtle); }
+  .tradeoff-table tr:last-child td { border-bottom: none; }
+  .tradeoff-table td:first-child { font-weight: 600; color: var(--ink); white-space: nowrap; font-size: 13px; }
+  .tradeoff-table td.win { color: var(--green); font-weight: 400; }
+  .tradeoff-table td.lose { color: var(--muted); }
+
+  /* ── ORM SECTION ── */
+  .orm-explainer { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 22px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .orm-explainer h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .orm-explainer p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; margin-bottom: 10px; }
+  .orm-explainer p:last-child { margin-bottom: 0; }
+  .orm-explainer strong { color: var(--ink); font-weight: 600; }
+
+  .orm-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .orm-col .col-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+  .col-label.raw { color: var(--muted); }
+  .col-label.orm { color: var(--green); }
+
+  .orm-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+  .orm-option { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; transition: var(--theme-transition); }
+  .orm-option.recommended { border-color: #4ade8044; background: #4ade8008; }
+  .orm-option .opt-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .opt-name.rec { color: var(--green); }
+  .orm-option .opt-tag { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .orm-option p { font-size: 12.5px; font-weight: 300; color: var(--subtle); line-height: 1.5; }
+
+  /* ── DECISION BOX ── */
+  .decision-box { background: var(--surface2); border: 1px solid var(--border2); border-left: 3px solid var(--green); border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; transition: var(--theme-transition); }
+  .decision-box .db-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; }
+  .decision-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .decision-box ul { padding-left: 18px; }
+  .decision-box li { font-size: 13.5px; font-weight: 300; color: var(--subtle); margin-bottom: 6px; line-height: 1.55; }
+  .decision-box li strong { color: var(--ink); font-weight: 600; }
+
+  .content-section { margin-bottom: 40px; }
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+
+  /* ── CONCRETE EXAMPLE ── */
+  .concrete-example { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 20px; transition: var(--theme-transition); }
+  .example-intro { padding: 18px 20px 0; }
+  .example-intro p { font-size: 13.5px; font-weight: 300; color: var(--subtle); line-height: 1.65; margin-bottom: 10px; }
+  .example-intro strong { color: var(--ink); font-weight: 600; }
+  .example-table-wrap { overflow-x: auto; padding: 12px 20px 0; }
+  .example-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 0; }
+  .example-table th { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .example-table th.reading-col { color: var(--purple); }
+  .example-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .example-table tr:last-child td { border-bottom: none; }
+  .example-table td.val { font-family: var(--mono); font-size: 12px; color: var(--amber); text-align: center; }
+  .example-table td.null { color: var(--muted); }
+  .example-table td.reading { font-size: 12.5px; font-weight: 300; color: var(--subtle); font-style: italic; line-height: 1.5; }
+  .example-insight { background: var(--surface2); border-top: 1px solid var(--border); padding: 16px 20px; }
+  .example-insight .insight-label { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--purple); margin-bottom: 8px; }
+  .example-insight p { font-size: 13px; font-weight: 300; color: var(--subtle); line-height: 1.65; }
+  .example-insight strong { color: var(--ink); font-weight: 600; }
+  .example-insight em { color: var(--amber); font-style: normal; }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+    <button class="theme-toggle" aria-label="Switch to light mode">
+      <span class="toggle-icon">☀︎</span>
+      <span class="toggle-label">Light</span>
+    </button>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">Data &amp; storage · Decision guide</div>
+    <h1>Databases &amp; ORMs:<br>choosing the right tool</h1>
+    <p class="intro">Why the parks app uses PostgreSQL over MongoDB, how relational data actually works, and what an ORM does for you.</p>
+  </div>
+
+  <!-- THE TWO TYPES -->
+  <div class="content-section" id="db-categories">
+    <div class="section-title">The two broad categories</div>
+    <div class="info-grid">
+      <div class="info-card mongo">
+        <div class="accent-bar"></div>
+        <div class="card-label">Document database</div>
+        <h2>MongoDB</h2>
+        <p>Stores data as JSON-like documents. No enforced schema — each document can have different fields. Fast reads for self-contained data. Best when data doesn't overlap much between records and structure varies. You manage relationships yourself.</p>
+      </div>
+      <div class="info-card pg">
+        <div class="accent-bar"></div>
+        <div class="card-label">Relational database</div>
+        <h2>PostgreSQL</h2>
+        <p>Stores data in structured tables with rows and columns. Relationships between tables are enforced by the database. A single source of truth for shared data. Best when data is interconnected, structured, and needs to stay consistent.</p>
+      </div>
+    </div>
+
+    <div class="analogy-box" id="db-analogy">
+      <div class="label">The analogy</div>
+      <p><strong>MongoDB is like a filing cabinet full of folders.</strong> Each folder is self-contained — open it and everything you need is right there. But if two folders reference the same person, you've written their name in both. Update one, the other is out of date.<br><br>
+      <strong>PostgreSQL is like a spreadsheet with tabs that reference each other.</strong> A person's name lives in one tab. Every other tab points to that row. Update the name once, everything that references it is immediately correct.</p>
+    </div>
+  </div>
+
+  <!-- RELATIONSHIP TYPES -->
+  <div class="content-section">
+    <div class="section-title">Relationship types — know these terms</div>
+    <div class="rel-grid">
+      <div class="rel-card">
+        <div class="rel-name">One to many</div>
+        <div class="rel-example">User → Trips</div>
+        <p>One user owns many trips. Each trip belongs to exactly one user. Clear ownership on one side, multiple records on the other.</p>
+      </div>
+      <div class="rel-card highlight" id="rel-many-to-many">
+        <div class="rel-name">Many to many</div>
+        <div class="rel-example">Users ↔ Parks (favorites)</div>
+        <p>A user can favorite many parks. A park can be favorited by many users. Neither side owns the other. Requires a <strong style="color:var(--blue)">join table</strong> to connect them.</p>
+      </div>
+      <div class="rel-card">
+        <div class="rel-name">One to one</div>
+        <div class="rel-example">User → Profile</div>
+        <p>One user has exactly one profile. One profile belongs to exactly one user. Less common — often the data just gets merged into one table.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA MODEL -->
+  <div class="content-section">
+    <div class="section-title">The parks app — relational data model</div>
+    <div class="data-model" id="data-model-diagram">
+      <div class="tables-row">
+
+        <div class="db-table">
+          <div class="table-header users-h">users</div>
+          <div class="table-row"><span class="pk">id</span></div>
+          <div class="table-row"><span class="field">email</span></div>
+          <div class="table-row"><span class="field">name</span></div>
+          <div class="table-row"><span class="field">created_at</span></div>
+        </div>
+
+        <div class="rel-arrow">
+          <span>1</span>
+          →
+          <span>many</span>
+        </div>
+
+        <div class="db-table">
+          <div class="table-header trips-h">trips</div>
+          <div class="table-row"><span class="pk">id</span></div>
+          <div class="table-row"><span class="fk">user_id</span></div>
+          <div class="table-row"><span class="field">name</span></div>
+          <div class="table-row"><span class="field">created_at</span></div>
+        </div>
+
+        <div class="rel-arrow">
+          <span>1</span>
+          →
+          <span>many</span>
+        </div>
+
+        <div class="db-table">
+          <div class="table-header jt-h">trip_parks</div>
+          <div class="table-row"><span class="fk">trip_id</span></div>
+          <div class="table-row"><span class="fk">park_id</span></div>
+          <div class="table-row"><span class="field">stop_order</span></div>
+          <div class="table-row"><span class="field">drive_time_mins</span></div>
+        </div>
+
+        <div class="rel-arrow">
+          <span>many</span>
+          →
+          <span>1</span>
+        </div>
+
+        <div class="db-table">
+          <div class="table-header parks-h">parks</div>
+          <div class="table-row"><span class="pk">id</span></div>
+          <div class="table-row"><span class="field">nps_id</span></div>
+          <div class="table-row"><span class="field">name</span></div>
+          <div class="table-row"><span class="field">lat / lng</span></div>
+          <div class="table-row"><span class="field">state</span></div>
+        </div>
+
+      </div>
+      <div class="data-caption">
+        Yellow = primary key (unique ID for that row) · Blue = foreign key (points to another table's ID) · trip_parks is the join table connecting trips to parks
+      </div>
+    </div>
+
+    <div class="analogy-box" id="join-table-explainer" style="border-left-color: var(--purple)">
+      <div class="label">Why the join table exists</div>
+      <p>A trip contains many parks, and a park can appear in many trips — that's many-to-many. You can't store that cleanly in either the <code>trips</code> or <code>parks</code> table alone. The <strong>join table</strong> <code>trip_parks</code> sits between them and records each connection, plus the data that belongs to <em>that connection</em> specifically — like the stop order and drive time between stops.</p>
+    </div>
+
+    <div class="section-title">What a join table row is actually saying</div>
+    <div class="concrete-example">
+      <div class="example-intro">
+        <p>Take this saved trip: <strong>"Southwest Road Trip"</strong> with three stops in order — Zion → Bryce Canyon → Grand Canyon. In the database, that trip has <code>id = 1</code>, and those parks have <code>id = 10</code>, <code>id = 11</code>, <code>id = 12</code>.</p>
+        <p>Here's what the actual rows in <code>trip_parks</code> look like:</p>
+      </div>
+      <div class="example-table-wrap">
+        <table class="example-table">
+          <thead>
+            <tr>
+              <th>trip_id</th>
+              <th>park_id</th>
+              <th>stop_order</th>
+              <th>drive_time_mins</th>
+              <th class="reading-col">what this row is saying</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="val">1</td>
+              <td class="val">10</td>
+              <td class="val">1</td>
+              <td class="val null">null</td>
+              <td class="reading">"Zion is stop #1 on the Southwest Road Trip — no drive time because it's the first stop."</td>
+            </tr>
+            <tr>
+              <td class="val">1</td>
+              <td class="val">11</td>
+              <td class="val">2</td>
+              <td class="val">90</td>
+              <td class="reading">"Bryce Canyon is stop #2 — 90 minutes from the previous stop."</td>
+            </tr>
+            <tr>
+              <td class="val">1</td>
+              <td class="val">12</td>
+              <td class="val">3</td>
+              <td class="val">215</td>
+              <td class="reading">"Grand Canyon is stop #3 — 215 minutes from the previous stop."</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="example-insight">
+        <div class="insight-label">the key insight</div>
+        <p>The stop order and drive time don't belong to the trip, and they don't belong to the park. <strong>They belong to the relationship between them.</strong> Zion isn't always stop #1 — it's only stop #1 on <em>this specific trip</em>. A different user's trip might have Zion as stop #3. So that data has to live in the join table, not in either of the tables it connects.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY NOT MONGO -->
+  <div class="content-section">
+    <div class="section-title">Why not MongoDB for this app?</div>
+    <div class="tradeoff-table-wrapper">
+      <table class="tradeoff-table">
+        <thead>
+          <tr>
+            <th>Consideration</th>
+            <th>MongoDB</th>
+            <th>PostgreSQL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Park data used in many trips</td>
+            <td class="lose">Duplicated inside each trip document — update in many places</td>
+            <td class="win">Stored once in parks table — update in one place</td>
+          </tr>
+          <tr>
+            <td>Ordered stops with drive times</td>
+            <td class="lose">Array in document — order managed manually in JS</td>
+            <td class="win">stop_order column — database enforces and sorts it</td>
+          </tr>
+          <tr>
+            <td>User favorites (many-to-many)</td>
+            <td class="lose">Arrays of IDs in both documents — easy to get out of sync</td>
+            <td class="win">Clean join table — single source of truth</td>
+          </tr>
+          <tr>
+            <td>Data consistency</td>
+            <td class="lose">Your code is responsible for keeping data in sync</td>
+            <td class="win">Database enforces relationships via foreign keys</td>
+          </tr>
+          <tr>
+            <td>Flexible / varying structure</td>
+            <td class="win">Great — no schema required</td>
+            <td class="lose">Schema must be defined upfront — less flexible</td>
+          </tr>
+          <tr>
+            <td>Setup complexity</td>
+            <td class="win">Simpler to get started</td>
+            <td class="lose">More setup — schema, migrations, relationships</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ORM -->
+  <div class="content-section">
+    <div class="section-title">What is an ORM?</div>
+
+    <div class="orm-explainer" id="orm-explainer">
+      <h3>Object-Relational Mapper</h3>
+      <p>An ORM is a library that lets you talk to your database using JavaScript objects instead of raw SQL. It <strong>maps</strong> your database tables to JS classes, and rows in those tables to instances of those classes.</p>
+      <p>Think of it as a translator. Your database speaks SQL. Your application speaks JavaScript. The ORM sits between them and handles the translation both ways — turning your JS method calls into SQL queries, and turning SQL results back into JS objects you can work with.</p>
+    </div>
+
+    <div class="section-title">Raw SQL vs ORM — same operation</div>
+    <div class="orm-compare">
+      <div class="orm-col">
+        <div class="col-label raw">Without an ORM — raw SQL</div>
+        <div class="code-block"><span class="cm">// Find all trips for a user</span>
+<span class="ck">const</span> result = <span class="ck">await</span> db.<span class="cf">query</span>(
+  <span class="cs">`SELECT trips.*, users.name
+   FROM trips
+   JOIN users ON trips.user_id = users.id
+   WHERE trips.user_id = $1
+   ORDER BY trips.created_at DESC`</span>,
+  [userId]
+);
+<span class="ck">const</span> trips = result.rows;
+
+<span class="cm">// Insert a new trip</span>
+<span class="ck">await</span> db.<span class="cf">query</span>(
+  <span class="cs">`INSERT INTO trips (user_id, name)
+   VALUES ($1, $2) RETURNING *`</span>,
+  [userId, <span class="cs">'Southwest Road Trip'</span>]
+);</div>
+      </div>
+      <div class="orm-col">
+        <div class="col-label orm">With Prisma (ORM) — JavaScript objects</div>
+        <div class="code-block"><span class="cm">// Find all trips for a user</span>
+<span class="ck">const</span> trips = <span class="ck">await</span> prisma.trip.<span class="cf">findMany</span>({
+  where: { userId },
+  include: { user: <span class="ck">true</span> },
+  orderBy: { createdAt: <span class="cs">'desc'</span> }
+});
+
+<span class="cm">// Insert a new trip</span>
+<span class="ck">await</span> prisma.trip.<span class="cf">create</span>({
+  data: {
+    userId,
+    name: <span class="cs">'Southwest Road Trip'</span>
+  }
+});</div>
+      </div>
+    </div>
+
+    <div class="section-title">ORM options for PostgreSQL + Node.js</div>
+    <div class="orm-options" id="orm-options">
+      <div class="orm-option recommended">
+        <div class="opt-name rec">Prisma</div>
+        <div class="opt-tag">recommended for this project</div>
+        <p>Modern, type-safe, excellent developer experience. Auto-generates a schema from your models. Great docs. The best choice for a new Node.js + PostgreSQL project in 2025.</p>
+      </div>
+      <div class="orm-option">
+        <div class="opt-name">Drizzle</div>
+        <div class="opt-tag">newer, very fast</div>
+        <p>Lightweight and TypeScript-native. Gaining popularity quickly. Less magic than Prisma — closer to writing SQL but with JS syntax. Good alternative worth knowing about.</p>
+      </div>
+      <div class="orm-option">
+        <div class="opt-name">Sequelize</div>
+        <div class="opt-tag">older, widely used</div>
+        <p>The original Node.js ORM. Battle-tested and you'll see it in legacy codebases. More verbose and less modern than Prisma. You'll encounter it in interviews — worth recognizing.</p>
+      </div>
+    </div>
+
+    <div class="analogy-box" id="mongoose-odm" style="border-left-color:var(--green)">
+      <div class="label">Wait — didn't you mention Mongoose before?</div>
+      <p>Yes. Mongoose does for <strong>MongoDB</strong> roughly what Prisma does for <strong>PostgreSQL</strong> — it adds structure and a JS object interface on top of raw database calls. The term "ORM" technically applies to relational databases, so Mongoose is sometimes called an <strong>ODM</strong> (Object-Document Mapper) instead. But the concept is the same: a translator between your JS code and your database.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">The decision — why PostgreSQL for the parks app</div>
+  <div class="decision-box" id="db-decision">
+    <div class="db-label">Interview-ready reasoning</div>
+    <h3>PostgreSQL + Prisma</h3>
+    <ul>
+      <li><strong>Park data is shared reference data</strong> — many users and trips point to the same parks. Storing it relationally means one source of truth, no duplication.</li>
+      <li><strong>Real, meaningful relationships exist</strong> — users own trips, trips contain ordered parks, users favorite parks. PostgreSQL enforces these at the database level so your code doesn't have to.</li>
+      <li><strong>Order and structure matter</strong> — trip stops have a sequence and drive times between them. A join table handles this cleanly without manual array management.</li>
+      <li><strong>Many-to-many favorites</strong> — a join table is the correct and natural solution. Storing arrays of IDs in MongoDB documents is fragile and gets out of sync.</li>
+      <li><strong>Prisma as the ORM</strong> — gives us type-safe queries, auto-generated schema, and a clean JS interface without writing raw SQL for every operation.</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="page-footer">
+  <span>Databases &amp; ORMs · Data &amp; storage</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>
