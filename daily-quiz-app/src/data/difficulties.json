@@ -1,0 +1,18 @@
+[
+  {
+    "id": "easy",
+    "label": "Easy"
+  },
+  {
+    "id": "moderate",
+    "label": "Moderate"
+  },
+  {
+    "id": "hard",
+    "label": "Hard"
+  },
+  {
+    "id": "advanced",
+    "label": "Advanced"
+  }
+]

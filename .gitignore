@@ -1,0 +1,6 @@
+# AWS credential files — never commit these
+*accessKeys*.csv
+.aws/
+*.pem
+
+.DS_Store

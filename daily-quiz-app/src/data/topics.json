@@ -1,0 +1,77 @@
+[
+  {
+    "id": "node-express",
+    "label": "Node & Express",
+    "accent": "teal"
+  },
+  {
+    "id": "node-internals",
+    "label": "Node internals",
+    "accent": "blue"
+  },
+  {
+    "id": "proxy",
+    "label": "Proxy pattern",
+    "accent": "purple"
+  },
+  {
+    "id": "frontend",
+    "label": "Frontend terms",
+    "accent": "orange"
+  },
+  {
+    "id": "databases",
+    "label": "Databases & ORMs",
+    "accent": "green"
+  },
+  {
+    "id": "auth",
+    "label": "Auth",
+    "accent": "amber"
+  },
+  {
+    "id": "terminal",
+    "label": "Terminal & shell",
+    "accent": "coral"
+  },
+  {
+    "id": "db-performance",
+    "label": "DB performance",
+    "accent": "cyan"
+  },
+  {
+    "id": "testing",
+    "label": "Testing",
+    "accent": "lime"
+  },
+  {
+    "id": "security",
+    "label": "Security",
+    "accent": "rose"
+  },
+  {
+    "id": "system-design",
+    "label": "System design",
+    "accent": "indigo"
+  },
+  {
+    "id": "production",
+    "label": "Production & ops",
+    "accent": "slate"
+  },
+  {
+    "id": "javascript",
+    "label": "JavaScript fundamentals",
+    "accent": "gold"
+  },
+  {
+    "id": "ai-llm",
+    "label": "AI / LLM fundamentals",
+    "accent": "violet"
+  },
+  {
+    "id": "synthesis",
+    "label": "Cross-topic",
+    "accent": "synth"
+  }
+]

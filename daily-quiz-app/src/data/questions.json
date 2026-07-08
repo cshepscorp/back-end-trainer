@@ -1,0 +1,2467 @@
+[
+  {
+    "questionId": "ne1",
+    "topic": "node-express",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Express cannot run without which piece of software?",
+    "options": [
+      "A web browser",
+      "Node.js",
+      "A relational database",
+      "Docker"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Express is an npm library, not a runtime — it runs inside Node.js and has no execution engine of its own.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#info-express"
+    ]
+  },
+  {
+    "questionId": "ne2",
+    "topic": "node-express",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which built-in Node module does Express wrap under the hood?",
+    "options": [
+      "fs",
+      "http",
+      "crypto",
+      "path"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Express wraps Node's raw http module with a friendlier API — routing, middleware chaining, and response helpers.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#info-express"
+    ]
+  },
+  {
+    "questionId": "ne8",
+    "topic": "node-express",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which method call actually starts an Express server listening for incoming connections?",
+    "options": [
+      "app.listen(3000)",
+      "app.use(express.json())",
+      "app.get('/', handler)",
+      "require('express')"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "app.listen() binds the server to a port and starts accepting connections. The others configure middleware, define a route, or just load the library.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#code-comparison"
+    ]
+  },
+  {
+    "questionId": "ne6",
+    "topic": "node-express",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which of these is NOT a commonly cited alternative to Express?",
+    "options": [
+      "Fastify",
+      "Koa",
+      "Hono",
+      "Mongoose"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 3,
+    "explain": "Fastify, Koa, and Hono are alternative Node.js server libraries. Mongoose is an ODM for MongoDB — a completely different kind of tool.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#kp-alternatives"
+    ]
+  },
+  {
+    "questionId": "ne3",
+    "topic": "node-express",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "In your own words: what's the difference between a runtime and a library? Use Node/Express as the example.",
+    "back": "A runtime (Node.js) is the engine that actually executes JavaScript outside the browser — it bundles V8, the event loop, and system modules. A library (Express) runs on top of a runtime and adds convenience — it can't execute JS on its own. Analogy: Node is the engine, Express is the frame, steering wheel, and dashboard built on top of it.",
+    "source": [
+      "node-express-onepager.html#node-express-analogy"
+    ]
+  },
+  {
+    "questionId": "ne4",
+    "topic": "node-express",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "When a request hits an Express server, what happens right after Node's http module parses the raw TCP connection?",
+    "options": [
+      "The response is sent immediately",
+      "It passes through middleware (logging, auth, body parsing, CORS)",
+      "The database is queried directly",
+      "The client re-sends the request"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "The journey is: request arrives → Node parses it → middleware chain runs → route handler matches path+method → response is sent.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#request-journey"
+    ]
+  },
+  {
+    "questionId": "ne5",
+    "topic": "node-express",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What does middleware actually do, and how does execution order get decided?",
+    "back": "Middleware are functions that run between the request arriving and your route handler executing. Each one can read, modify, or short-circuit the request/response. They run in the order their app.use() calls appear in the code.",
+    "source": [
+      "node-express-onepager.html#kp-middleware"
+    ]
+  },
+  {
+    "questionId": "ne7",
+    "topic": "node-express",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Someone asks: \"why not just use Node's http module directly instead of Express?\" What's your answer?",
+    "back": "You could — but you'd be manually handling routing, body parsing, and error handling for every endpoint yourself. Express gives you that scaffolding (routing, middleware, response helpers) so you focus on your app logic instead of rebuilding plumbing every project.",
+    "source": [
+      "node-express-onepager.html#node-express-analogy"
+    ]
+  },
+  {
+    "questionId": "ne9",
+    "topic": "node-express",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "In Express 4, if an async route handler throws an error inside an awaited call (e.g. a failed DB query) without a try/catch, what happens by default?",
+    "options": [
+      "Express automatically forwards it to your error-handling middleware",
+      "The error is silently swallowed and the request just hangs",
+      "The whole server process crashes immediately",
+      "Express automatically retries the request"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "In Express 4 and earlier, unhandled promise rejections inside async route handlers are NOT automatically caught and forwarded to error middleware — you have to catch them yourself (or wrap routes in a helper) or the request just hangs. Express 5 changed this behavior.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-express-onepager.html#kp-middleware"
+    ]
+  },
+  {
+    "questionId": "ne10",
+    "topic": "node-express",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "You register your error-handling middleware (the one with 4 arguments: err, req, res, next) at the very top of your Express app, before any routes. What breaks, and why?",
+    "back": "Middleware and routes run in registration order. If error-handling middleware is registered before your routes, it's already been skipped by the time an error occurs further down the chain — Express won't loop back to it. Error-handling middleware has to be registered after all your routes so it's the last thing in the chain, ready to catch whatever falls through.",
+    "source": [
+      "node-express-onepager.html#kp-middleware"
+    ]
+  },
+  {
+    "questionId": "ni1",
+    "topic": "node-internals",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Node.js is built from three distinct layers. Which set is correct?",
+    "options": [
+      "V8, libuv/event loop, built-in modules",
+      "Express, Passport, Prisma",
+      "React, Vite, Node",
+      "HTTP, HTTPS, WebSockets"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "V8 runs your JS, libuv + the event loop handle non-blocking async I/O, and built-in modules expose OS-level capabilities.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#layers-overview"
+    ]
+  },
+  {
+    "questionId": "ni5",
+    "topic": "node-internals",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is libuv responsible for?",
+    "options": [
+      "Compiling JavaScript to machine code",
+      "Handling async I/O (file reads, network, timers, DNS) and talking to the OS",
+      "Rendering HTML on the server",
+      "Managing npm packages"
+    ],
+    "optionsAlt": [
+      "Turning your JavaScript into machine instructions the CPU runs",
+      "Managing all non-blocking I/O — reading files, hitting the network, timers, DNS — by talking directly to the operating system",
+      "Generating server-side HTML for each request",
+      "Installing and tracking your project's dependencies"
+    ],
+    "correctIndex": 1,
+    "explain": "libuv is a C library that handles all async I/O and manages a thread pool for operations the OS can't do asynchronously on its own.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#libuv-card"
+    ]
+  },
+  {
+    "questionId": "ni6",
+    "topic": "node-internals",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which built-in Node module would you use to hash a password?",
+    "options": [
+      "fs",
+      "os",
+      "crypto",
+      "stream"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 2,
+    "explain": "crypto handles hashing, encryption, secure random numbers, and HMAC signatures — all built in, no npm install needed.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#module-crypto"
+    ]
+  },
+  {
+    "questionId": "ni3",
+    "topic": "node-internals",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "In the restaurant/waiter analogy for the event loop, what does the \"kitchen calling order up\" represent?",
+    "options": [
+      "A new incoming HTTP request",
+      "Async work (e.g. a DB query) finishing",
+      "The server crashing",
+      "A middleware function running"
+    ],
+    "optionsAlt": [
+      "A brand-new request arriving at the server",
+      "A pending async operation — like a database call — completing and returning its result",
+      "An unhandled exception taking the process down",
+      "One of your app.use() functions executing"
+    ],
+    "correctIndex": 1,
+    "explain": "The waiter (event loop) doesn't wait at the table — it takes the order (starts async work) and moves on. When the kitchen (DB/OS) finishes, it notifies the event loop, which queues the callback.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#event-loop-analogy"
+    ]
+  },
+  {
+    "questionId": "ni8",
+    "topic": "node-internals",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Is Node.js single-threaded or multi-threaded?",
+    "options": [
+      "Fully single-threaded, no exceptions",
+      "Your JavaScript runs on a single thread, but libuv uses a thread pool behind the scenes for some async operations",
+      "Fully multi-threaded like a typical Java server",
+      "It depends only on how many CPU cores the machine has"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Your JS code always runs on one thread, but libuv can delegate certain operations (like some file system work) to a background thread pool so the main thread stays free.",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#event-loop-analogy"
+    ]
+  },
+  {
+    "questionId": "ni2",
+    "topic": "node-internals",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What does V8 actually do, and what is JIT compilation?",
+    "back": "V8 is Google's JS engine (written in C++) that parses your JavaScript, compiles it to machine code, manages memory, and runs garbage collection. JIT (Just-In-Time) compilation means V8 doesn't just interpret code line by line — it detects \"hot\" (frequently run) functions and compiles them to optimized machine code on the fly, which is why modern JS can handle huge request volumes.",
+    "source": [
+      "node-internals-deepdive.html#v8-section"
+    ]
+  },
+  {
+    "questionId": "ni4",
+    "topic": "node-internals",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What kind of work breaks the \"one waiter, many tables\" analogy — and why?",
+    "back": "CPU-heavy work — image/video processing, large encryption, heavy math loops. libuv can hand off async I/O to the OS, but pure computation has to run synchronously on the single JS thread, which blocks the event loop and stalls every other request. Node is great for I/O-heavy workloads (APIs, DB, file serving), not CPU-intensive computation.",
+    "source": [
+      "node-internals-deepdive.html#event-loop-warning"
+    ]
+  },
+  {
+    "questionId": "ni9",
+    "topic": "node-internals",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Which logs first: a Promise.then() callback scheduled right now, or a setTimeout(fn, 0) scheduled right now?",
+    "options": [
+      "The setTimeout callback, always",
+      "The Promise callback — microtasks run before the next macrotask",
+      "They always run in the exact order they were written",
+      "It's random and unpredictable"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Promise callbacks go on the microtask queue, which the event loop fully drains after the current synchronous code finishes but before it picks up the next macrotask (like a timer). So Promise.then() beats setTimeout(fn, 0) even though both were \"scheduled immediately.\"",
+    "front": null,
+    "back": null,
+    "source": [
+      "node-internals-deepdive.html#event-loop-diagram"
+    ]
+  },
+  {
+    "questionId": "ni7",
+    "topic": "node-internals",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain, as if to an interviewer, why Node.js can handle thousands of concurrent requests on a single thread.",
+    "back": "Because Node is non-blocking: when a request triggers async work like a DB query, Node hands that work off to libuv/the OS and immediately moves on to handle other requests. The JS call stack never sits idle waiting — the event loop only runs your callback once the async work is done and the stack is free. Contrast with blocking languages (classic PHP/Python) where execution stops until the operation returns.",
+    "source": [
+      "node-internals-deepdive.html#event-loop-diagram"
+    ]
+  },
+  {
+    "questionId": "ni10",
+    "topic": "node-internals",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "You accidentally write a synchronous loop that takes 5 seconds to finish inside a route handler. What happens to every other request hitting your server during those 5 seconds?",
+    "back": "They all wait. Node runs your JavaScript on a single thread, so a long synchronous block monopolizes that thread completely — the event loop can't process any other callback, incoming request, or timer until the loop finishes. This is different from a slow DB query, which is async and doesn't block anything else.",
+    "source": [
+      "node-internals-deepdive.html#event-loop-warning"
+    ]
+  },
+  {
+    "questionId": "px1",
+    "topic": "proxy",
+    "difficulty": "easy",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why should your frontend never call a third-party API directly when a secret key is involved?",
+    "back": "Any key embedded in a browser bundle is visible to anyone who opens dev tools or views the page source — there's no way to truly hide a secret in client-side code. Routing the call through your own backend keeps the key in an environment variable on the server, where the browser can never see it.",
+    "source": [
+      "proxy-pattern.html#why-proxy-matters"
+    ]
+  },
+  {
+    "questionId": "px2",
+    "topic": "proxy",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "In the proxy pattern, where does the third-party API key live?",
+    "options": [
+      "In the React bundle",
+      "In an environment variable on your server",
+      "In a cookie",
+      "Hardcoded in the HTML"
+    ],
+    "optionsAlt": [
+      "Bundled into the frontend JavaScript",
+      "Held server-side as an environment variable, never sent to the client",
+      "Stored inside a browser cookie",
+      "Written directly into a static HTML file"
+    ],
+    "correctIndex": 1,
+    "explain": "The key lives in an env var on your Express server and is attached server-side when forwarding the request — it never touches the browser.",
+    "front": null,
+    "back": null,
+    "source": [
+      "proxy-pattern.html#key-stays-secret"
+    ]
+  },
+  {
+    "questionId": "px4",
+    "topic": "proxy",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which of these is NOT one of the \"bonus benefits\" of the proxy pattern beyond security?",
+    "options": [
+      "Caching responses",
+      "Transforming/reshaping data before it reaches the client",
+      "Rate limiting",
+      "Automatically writing your database schema"
+    ],
+    "optionsAlt": [
+      "Storing upstream responses temporarily to avoid refetching them",
+      "Reshaping or filtering the response before it reaches the frontend",
+      "Capping how often clients can hit an endpoint",
+      "Generating your database's schema for you"
+    ],
+    "correctIndex": 3,
+    "explain": "The real bonus benefits are caching, transformation, rate limiting, and graceful error handling — schema design has nothing to do with the proxy pattern.",
+    "front": null,
+    "back": null,
+    "source": [
+      "proxy-pattern.html#bonus-benefits"
+    ]
+  },
+  {
+    "questionId": "px6",
+    "topic": "proxy",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What's the primary purpose of a backend proxy pattern when calling a third-party API?",
+    "options": [
+      "To make the app look more complex",
+      "To keep secrets like API keys off the client and centralize control over outbound requests",
+      "To make requests faster by skipping validation",
+      "To avoid writing any backend code"
+    ],
+    "optionsAlt": [
+      "Adding unnecessary layers of architecture",
+      "Keeping sensitive credentials off the client while giving you one place to control outgoing requests",
+      "Speeding things up by bypassing validation checks",
+      "Letting you skip writing a backend entirely"
+    ],
+    "correctIndex": 1,
+    "explain": "The proxy sits between your frontend and the third-party API so secrets stay server-side and you control what goes in and out.",
+    "front": null,
+    "back": null,
+    "source": [
+      "proxy-pattern.html#why-proxy-matters"
+    ]
+  },
+  {
+    "questionId": "px3",
+    "topic": "proxy",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Walk through the 5 hops of a proxied request (browser → your server → third-party API → back).",
+    "back": "1) Browser → your server: React sends a request with no API key needed. 2) Your server → third-party API: your server attaches the secret key and forwards the request. 3) Third-party API processes the request and returns data. 4) Third-party API → your server: you can filter, transform, or cache the response here. 5) Your server → browser: the clean response goes back to React.",
+    "source": [
+      "proxy-pattern.html#request-lifecycle"
+    ]
+  },
+  {
+    "questionId": "px5",
+    "topic": "proxy",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Besides hiding the key, name at least two other reasons to route third-party calls through your own backend.",
+    "back": "Caching (avoid hitting rate limits / speed up repeat requests), transformation (strip or rename fields, merge multiple sources), rate limiting (protect your server and the upstream API), and error handling (return a graceful fallback if the upstream API is down instead of leaking a raw error to the browser).",
+    "source": [
+      "proxy-pattern.html#bonus-benefits"
+    ]
+  },
+  {
+    "questionId": "px7",
+    "topic": "proxy",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Why might rate limiting live on your own proxy server rather than relying solely on the third-party API's rate limits?",
+    "options": [
+      "It doesn't matter, they're equivalent",
+      "It protects your own server and your other users from being overwhelmed by one client's traffic, before you even reach the upstream limit",
+      "Third-party APIs never have rate limits",
+      "It makes the API key easier to find"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Your own rate limiting is a first line of defense — it protects your server and your users independently of whatever limits the upstream API enforces.",
+    "front": null,
+    "back": null,
+    "source": [
+      "proxy-pattern.html#bonus-benefits"
+    ]
+  },
+  {
+    "questionId": "px8",
+    "topic": "proxy",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Your proxy caches third-party responses for 10 minutes to reduce load and avoid rate limits. A user updates data that should show up immediately elsewhere in the app. What's the risk, and how would you handle it?",
+    "back": "The risk is serving stale cached data right after something changed — a classic cache invalidation problem. Options: shorten the cache window for volatile data, explicitly invalidate/bust the cache entry when a related write happens, or only cache clearly read-heavy/rarely-changing endpoints and skip caching ones tied to recent user actions.",
+    "source": [
+      "proxy-pattern.html#bonus-benefits"
+    ]
+  },
+  {
+    "questionId": "px9",
+    "topic": "proxy",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "If your proxy blindly forwards every query parameter it receives from the client straight through to the upstream third-party API, what's the risk?",
+    "back": "You lose control over what the upstream API can be asked to do on your server's behalf — a client could pass unexpected parameters that trigger expensive queries, unintended API features, or abuse of your account's quota/permissions with the upstream service. A proxy should validate and explicitly whitelist which parameters get forwarded, not blindly pass everything through.",
+    "source": [
+      "proxy-pattern.html#proxy-code-example"
+    ]
+  },
+  {
+    "questionId": "ft1",
+    "topic": "frontend",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is the key difference between a UI library (React) and a UI framework (Vue/Angular)?",
+    "options": [
+      "Libraries are always slower",
+      "Frameworks are more opinionated — routing, state, and structure are built in",
+      "Libraries can't use components",
+      "Frameworks don't run in the browser"
+    ],
+    "optionsAlt": [
+      "Libraries perform worse at runtime, as a rule",
+      "Frameworks make more structural decisions for you, with routing and state management built in",
+      "Components are a framework-only concept",
+      "Frameworks are strictly server-side and never run client-side"
+    ],
+    "correctIndex": 1,
+    "explain": "A library like React only handles the UI layer — you choose your own router and state management. A framework makes more decisions for you out of the box.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#ui-lib-vs-framework"
+    ]
+  },
+  {
+    "questionId": "ft2",
+    "topic": "frontend",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does a meta-framework like Next.js or Remix add on top of a UI library?",
+    "options": [
+      "Nothing — it's just marketing",
+      "File-based routing, SSR, API routes, and build/deploy config",
+      "A new programming language",
+      "A replacement for npm"
+    ],
+    "optionsAlt": [
+      "It's purely a branding term with no real technical difference",
+      "Routing based on your file structure, server rendering, backend API routes, and build tooling, all bundled in",
+      "A different language you write your app in",
+      "A tool that replaces your package manager"
+    ],
+    "correctIndex": 1,
+    "explain": "Meta-frameworks sit on top of a UI library and turn it into a complete application structure.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#meta-frameworks"
+    ]
+  },
+  {
+    "questionId": "ft4",
+    "topic": "frontend",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Vite is best described as:",
+    "options": [
+      "A UI framework like Vue",
+      "A meta-framework like Next.js",
+      "A build tool and dev server — no opinions on routing or rendering",
+      "A database ORM"
+    ],
+    "optionsAlt": [
+      "An opinionated UI framework comparable to Vue",
+      "A full meta-framework in the same category as Next.js",
+      "A dev server and bundler with no stance on how you route or render your app",
+      "A tool for mapping database tables to JS objects"
+    ],
+    "correctIndex": 2,
+    "explain": "Vite compiles, bundles, and hot-reloads your code. Think of it as the engine room, not the application itself.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#term-vite"
+    ]
+  },
+  {
+    "questionId": "ft5",
+    "topic": "frontend",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which UI library does Next.js build on top of?",
+    "options": [
+      "Vue",
+      "React",
+      "Svelte",
+      "Angular"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Next.js is the most popular React meta-framework, built by Vercel.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#term-nextjs"
+    ]
+  },
+  {
+    "questionId": "ft7",
+    "topic": "frontend",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Does React handle routing out of the box?",
+    "options": [
+      "Yes, built in",
+      "No — you add something like React Router yourself",
+      "Only in SSR mode",
+      "Only with Vite"
+    ],
+    "optionsAlt": [
+      "Yes, it ships with routing already wired up",
+      "No — routing is left to you, typically via a library like React Router",
+      "Only when server-side rendering is enabled",
+      "Only if you're using Vite specifically"
+    ],
+    "correctIndex": 1,
+    "explain": "React is a library, not a framework — routing is one of the things it deliberately leaves up to you.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#compare-table"
+    ]
+  },
+  {
+    "questionId": "ft3",
+    "topic": "frontend",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain the difference between CSR, SSR, and SSG in your own words.",
+    "back": "CSR (client-side rendering): server sends a nearly empty HTML shell, the browser downloads JS and builds the UI — fast after first load, slower first paint (React+Vite default). SSR (server-side rendering): server generates full HTML per request, then React hydrates it — faster first paint, better SEO, good for dynamic per-user pages (Next.js, Remix). SSG (static site generation): HTML is generated once at build time, not per request — blazing fast but not suited to dynamic, user-specific data.",
+    "source": [
+      "frontend-terminology.html#rendering-strategies"
+    ]
+  },
+  {
+    "questionId": "ft6",
+    "topic": "frontend",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why is SSG usually ruled out for a dynamic, user-specific web app (one with saved user data, auth, or real-time search)?",
+    "back": "SSG generates HTML once at build time, which works great for content that rarely changes. But a dynamic, user-specific app needs the HTML to reflect per-user data on every request — saved items, login state, live search results — which SSG can't do since it doesn't run per request.",
+    "source": [
+      "frontend-terminology.html#parks-app-decision"
+    ]
+  },
+  {
+    "questionId": "ft8",
+    "topic": "frontend",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "A small team wants a single project that handles both the frontend and a lightweight backend, with file-based routing and SSR out of the box. What kind of tool are they looking for?",
+    "options": [
+      "A UI library",
+      "A build tool",
+      "A meta-framework",
+      "A database ORM"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 2,
+    "explain": "Meta-frameworks like Next.js bundle routing, SSR, and API routes into one project — exactly this use case.",
+    "front": null,
+    "back": null,
+    "source": [
+      "frontend-terminology.html#meta-frameworks"
+    ]
+  },
+  {
+    "questionId": "ft9",
+    "topic": "frontend",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "You're using SSR for a marketing page that shows identical content to every visitor and rarely changes. What's the performance downside of SSR here compared to SSG, and would you switch?",
+    "back": "SSR re-renders the full HTML on the server for every single request, even though the output would be identical every time — that's wasted server work and added latency compared to serving a pre-built static file. For content that doesn't depend on the specific visitor and rarely changes, SSG (or SSR with heavy caching/ISR) is the better fit — yes, switch.",
+    "source": [
+      "frontend-terminology.html#rendering-strategies"
+    ]
+  },
+  {
+    "questionId": "ft10",
+    "topic": "frontend",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What problem does \"hydration\" solve in SSR, and what goes wrong if the server-rendered HTML doesn't match what React would render on the client?",
+    "back": "Hydration lets React \"attach\" to server-rendered HTML and make it interactive without throwing away and re-rendering everything from scratch — you get the fast first paint of SSR plus the interactivity of client-side React. If the server HTML doesn't match what React expects on the client (a hydration mismatch), you get console warnings, visible content flicker as React patches the DOM, or in bad cases broken interactivity.",
+    "source": [
+      "frontend-terminology.html#rendering-strategies"
+    ]
+  },
+  {
+    "questionId": "db1",
+    "topic": "databases",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is the core structural difference between MongoDB and PostgreSQL?",
+    "options": [
+      "MongoDB stores documents with no enforced schema; PostgreSQL stores structured tables with enforced relationships",
+      "They are functionally identical",
+      "PostgreSQL doesn't support relationships",
+      "MongoDB requires SQL"
+    ],
+    "optionsAlt": [
+      "MongoDB keeps flexible, schema-less documents while PostgreSQL enforces structured tables and relationships",
+      "There's no meaningful difference between the two",
+      "PostgreSQL has no concept of relationships between tables",
+      "MongoDB is queried using SQL like a relational database"
+    ],
+    "correctIndex": 0,
+    "explain": "MongoDB = document database, flexible/no schema. PostgreSQL = relational database, structured tables where relationships are enforced by the DB itself.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#db-categories"
+    ]
+  },
+  {
+    "questionId": "db2",
+    "topic": "databases",
+    "difficulty": "easy",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain the filing-cabinet vs spreadsheet-with-tabs analogy for MongoDB vs PostgreSQL.",
+    "back": "MongoDB is like a filing cabinet of self-contained folders — everything you need for one record is in that folder, but if two folders reference the same person, updating one doesn't update the other. PostgreSQL is like a spreadsheet with tabs that reference each other — a person's name lives in one tab, every other tab points to that row, so updating it once updates everything that references it.",
+    "source": [
+      "databases-and-orms.html#db-analogy"
+    ]
+  },
+  {
+    "questionId": "db5",
+    "topic": "databases",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does an ORM (Object-Relational Mapper) actually do?",
+    "options": [
+      "Replaces your database entirely",
+      "Lets you query your database using JS objects/method calls instead of raw SQL, translating both ways",
+      "Only works with MongoDB",
+      "Removes the need for a schema"
+    ],
+    "optionsAlt": [
+      "Eliminates the need for an actual database",
+      "Translates JS method calls into SQL and back again, so you interact with the DB through objects instead of raw queries",
+      "Is exclusively a MongoDB tool",
+      "Makes schema design unnecessary"
+    ],
+    "correctIndex": 1,
+    "explain": "An ORM sits between your app and your database, turning JS method calls into SQL and SQL results back into JS objects — like Prisma does for PostgreSQL.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#orm-explainer"
+    ]
+  },
+  {
+    "questionId": "db7",
+    "topic": "databases",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Mongoose is technically called an ODM rather than an ORM. What does ODM stand for?",
+    "options": [
+      "Object-Document Mapper",
+      "Online Data Manager",
+      "Object-Database Migration",
+      "Ordered Data Model"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "\"ORM\" technically applies to relational databases. Mongoose does the same job for MongoDB (a document database), so it's called an Object-Document Mapper.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#mongoose-odm"
+    ]
+  },
+  {
+    "questionId": "db8",
+    "topic": "databases",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which is NOT one of the three ORM/ODM options mentioned for Node.js + PostgreSQL?",
+    "options": [
+      "Prisma",
+      "Drizzle",
+      "Sequelize",
+      "Passport"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 3,
+    "explain": "Prisma, Drizzle, and Sequelize are ORMs for relational databases. Passport is an authentication library — unrelated to database access.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#orm-options"
+    ]
+  },
+  {
+    "questionId": "db3",
+    "topic": "databases",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "A user can favorite many items, and an item can be favorited by many users. What kind of relationship is this, and what does it require?",
+    "options": [
+      "One-to-one — merge into one table",
+      "One-to-many — a foreign key on one side",
+      "Many-to-many — a join table",
+      "No relationship needed"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 2,
+    "explain": "Many-to-many relationships need a join table because neither side can hold a simple foreign key to the other.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#rel-many-to-many"
+    ]
+  },
+  {
+    "questionId": "db9",
+    "topic": "databases",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What does a foreign key enforce that a plain integer column referencing another table's ID wouldn't?",
+    "options": [
+      "Nothing extra, they're identical",
+      "Referential integrity — the database guarantees the referenced row actually exists and can restrict deleting/updating it out from under you",
+      "Faster read speed only",
+      "Automatic encryption of the column"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "A foreign key constraint is enforced by the database itself, not just a naming convention — it blocks orphaned references.",
+    "front": null,
+    "back": null,
+    "source": [
+      "databases-and-orms.html#data-model-diagram"
+    ]
+  },
+  {
+    "questionId": "db10",
+    "topic": "databases",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "When would you split a one-to-one relationship into two separate tables instead of just merging the fields into one table?",
+    "back": "When the two halves have different access patterns or sensitivity (e.g. rarely-accessed or sensitive profile data kept separate from frequently-queried core fields), when one side is optional and often absent, or when the two pieces of data have independent lifecycles. Otherwise, merging into one table is usually simpler.",
+    "source": [
+      "databases-and-orms.html#rel-many-to-many"
+    ]
+  },
+  {
+    "questionId": "db4",
+    "topic": "databases",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does a join table need to exist at all — why not just store an array of related IDs on one side of a many-to-many relationship?",
+    "back": "Because data that's specific to the connection — like the position of a song in a particular playlist, or the timestamp it was added — doesn't belong to the song or the playlist individually. It belongs to that specific pairing. The same song might be track #1 in one playlist and track #7 in another. That per-connection data has to live in the join table, not in either of the tables it connects.",
+    "source": [
+      "databases-and-orms.html#join-table-explainer"
+    ]
+  },
+  {
+    "questionId": "db6",
+    "topic": "databases",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Interview-style: you have an app with shared reference data (e.g. a product catalog), meaningful relationships (users own orders, orders contain ordered items), and ordering/structure that matters. Why lean relational over document-based here?",
+    "back": "Shared reference data (like products) benefits from being stored once and referenced, not duplicated across every document that touches it. Real relationships (ownership, containment) can be enforced by the database itself via foreign keys instead of your application code being solely responsible for consistency. And where order or structure matters — like line items in a specific sequence — a join table with an explicit order column handles it cleanly, versus managing arrays manually in a document.",
+    "source": [
+      "databases-and-orms.html#db-decision"
+    ]
+  },
+  {
+    "questionId": "db11",
+    "topic": "databases",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Your app is mostly reads with occasional writes to shared reference data, and most entities have flexible, varying fields. Would you lean relational or document-based, and why might the answer be less clear-cut than it first seems?",
+    "back": "The \"shared reference data\" part points toward relational (avoid duplication, enforce consistency). The \"flexible, varying fields\" part points toward document-based (no rigid schema). In practice this is a real trade-off — some teams use PostgreSQL's JSONB columns to get flexible fields inside a relational database, getting both properties at once rather than picking one model purely. The honest answer is \"it depends on which property matters more for the specific data\" rather than a clean either/or.",
+    "source": [
+      "databases-and-orms.html#db-categories"
+    ]
+  },
+  {
+    "questionId": "au1",
+    "topic": "auth",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Why is authentication needed at all on the web?",
+    "options": [
+      "Because HTTP is stateless — the server forgets you between requests",
+      "Because browsers require it",
+      "Because JavaScript can't store data",
+      "Because databases require passwords"
+    ],
+    "optionsAlt": [
+      "Because HTTP has no built-in memory of previous requests — every request looks like the first one",
+      "Because it's a mandatory browser requirement",
+      "Because JS is incapable of persisting any data",
+      "Because every database mandates password protection"
+    ],
+    "correctIndex": 0,
+    "explain": "Every HTTP request is independent — the server has no memory of previous ones. Auth is the mechanism for proving identity again on each request.",
+    "front": null,
+    "back": null,
+    "source": [
+      "auth.html#stateless-problem"
+    ]
+  },
+  {
+    "questionId": "au2",
+    "topic": "auth",
+    "difficulty": "easy",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Sessions vs JWTs: where does the user's data live in each approach?",
+    "back": "Sessions: user data lives on the server (in memory or a DB); the browser only holds a random session ID — a claim ticket. JWTs: the user's data lives inside the token itself, signed and stored on the client; the server stores nothing and just verifies the signature.",
+    "source": [
+      "auth.html#sessions-vs-jwt"
+    ]
+  },
+  {
+    "questionId": "au3",
+    "topic": "auth",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which analogy matches JWTs?",
+    "options": [
+      "The server holds your file in a cabinet and hands you a numbered ticket",
+      "The server hands you your file directly, stamped and signed — no cabinet needed",
+      "The server has no idea who you are, ever",
+      "The server emails you a new password every visit"
+    ],
+    "optionsAlt": [
+      "You get a claim ticket while your actual file stays locked away with the server",
+      "You're handed the signed, stamped file itself — nothing stored back at the server",
+      "The server can never identify you under any circumstance",
+      "A fresh password gets emailed to you on every single visit"
+    ],
+    "correctIndex": 1,
+    "explain": "Sessions = claim ticket to a file in a cabinet. JWTs = the file itself, stamped and signed, carried by the client.",
+    "front": null,
+    "back": null,
+    "source": [
+      "auth.html#auth-analogy"
+    ]
+  },
+  {
+    "questionId": "au7",
+    "topic": "auth",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "In the OAuth flow, what does Google send back to your server after the user logs in?",
+    "options": [
+      "The user's plaintext password",
+      "A short-lived authorization code, useless on its own",
+      "A permanent API key",
+      "Nothing — the flow ends there"
+    ],
+    "optionsAlt": [
+      "The raw password the user typed into Google",
+      "A temporary code that only means something once exchanged for real credentials",
+      "A long-lived key meant for permanent use",
+      "Nothing at all — the process just stops"
+    ],
+    "correctIndex": 1,
+    "explain": "Google redirects back with a temporary code. Your server then exchanges that code for the user's info server-to-server — the browser and your app never see the password.",
+    "front": null,
+    "back": null,
+    "source": [
+      "auth.html#oauth-step-3"
+    ]
+  },
+  {
+    "questionId": "au9",
+    "topic": "auth",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is Passport.js used for?",
+    "options": [
+      "Rendering HTML on the server",
+      "Handling OAuth strategies (Google, GitHub, etc.) so you don't implement the redirect/code exchange yourself",
+      "Managing database migrations",
+      "Bundling JavaScript"
+    ],
+    "optionsAlt": [
+      "Generating server-rendered HTML",
+      "Providing pre-built OAuth \"strategies\" per provider so you skip hand-rolling the redirect and code exchange",
+      "Running schema migrations against your database",
+      "Packaging and bundling your JS files"
+    ],
+    "correctIndex": 1,
+    "explain": "Passport.js is the standard Node auth library with pluggable \"strategies\" per provider — you configure credentials and it handles the OAuth mechanics.",
+    "front": null,
+    "back": null,
+    "source": [
+      "auth.html#passport-js"
+    ]
+  },
+  {
+    "questionId": "au4",
+    "topic": "auth",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why would a team choose JWTs over sessions specifically because their frontend and backend run on separate origins?",
+    "back": "Sessions work best when frontend and backend share the same server — cookies travel automatically on the same domain. Once they're on separate origins, cookies require careful CORS configuration and hit browser restrictions. JWTs sidestep this entirely: the token is just a string, manually attached to an Authorization header — no domain matching required.",
+    "source": [
+      "auth.html#why-jwt-chosen"
+    ]
+  },
+  {
+    "questionId": "au5",
+    "topic": "auth",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What is the main security problem with storing a JWT in localStorage?",
+    "options": [
+      "It expires too quickly",
+      "It's readable by any JavaScript on the page, so an XSS attack can steal it",
+      "It can't be sent with fetch requests",
+      "localStorage doesn't support strings"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "localStorage is readable by any script running on the page. If an attacker injects malicious JS (XSS), they can read and steal the token.",
+    "front": null,
+    "back": null,
+    "source": [
+      "auth.html#storage-localstorage"
+    ]
+  },
+  {
+    "questionId": "au6",
+    "topic": "auth",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "How does an HttpOnly cookie protect against the localStorage XSS problem?",
+    "back": "An HttpOnly cookie can't be read by JavaScript on the page at all — only the browser can send it automatically with requests. An XSS attack can't steal what it can't see. It requires a bit more setup (credentials: \"include\" on fetch, CORS configured to allow credentials) but removes the attack surface entirely.",
+    "source": [
+      "auth.html#storage-httponly"
+    ]
+  },
+  {
+    "questionId": "au8",
+    "topic": "auth",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Walk through the full OAuth → JWT → HttpOnly cookie flow, start to finish, the way you'd explain it on a whiteboard.",
+    "back": "1) User clicks \"Sign in with Google,\" gets redirected to Google. 2) Google authenticates the user — your app never sees the password. 3) Google redirects back with a temporary authorization code. 4) Your server exchanges that code for the user's info via a server-to-server call. 5) Your server finds or creates the user in your users table. 6) Your server issues a JWT and sets it as an HttpOnly cookie. 7) All future requests carry that cookie automatically; Express verifies the JWT to identify the user.",
+    "source": [
+      "auth.html#oauth-flow"
+    ]
+  },
+  {
+    "questionId": "au10",
+    "topic": "auth",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "An attacker manages to steal a valid JWT via network sniffing (not XSS) before it expires. What can they do, and what design choices limit the damage?",
+    "back": "They can impersonate the user for as long as the token remains valid — the server has no way to distinguish the attacker's copy from the real one. Mitigations: keep expiry short-lived, pair with a refresh-token flow so long-lived access isn't riding on one token, require HTTPS everywhere so sniffing a plaintext token over the wire isn't possible in the first place, and set secure/sameSite cookie flags. None of this eliminates the risk entirely — it's about shrinking the blast radius.",
+    "source": [
+      "auth.html#jwt-tradeoffs-table"
+    ]
+  },
+  {
+    "questionId": "au11",
+    "topic": "auth",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why can't you truly \"log out\" a JWT-based session the same clean way you can end a session-based one?",
+    "back": "A session can be deleted server-side instantly — the moment you remove that row from the session store, the user is logged out everywhere. A JWT is self-contained and stateless by design: the server never stored it, so there's nothing to delete. The token stays valid until it naturally expires unless you add back some server-side state — like a denylist of revoked token IDs — which brings back some of the statelessness/scaling trade-off JWTs were meant to avoid in the first place.",
+    "source": [
+      "auth.html#sessions-vs-jwt"
+    ]
+  },
+  {
+    "questionId": "tm1",
+    "topic": "terminal",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What's the actual difference between the terminal and the shell?",
+    "options": [
+      "They're the same thing",
+      "The terminal is the display window; the shell is the program inside it that interprets commands",
+      "The shell only runs on Linux",
+      "The terminal writes files; the shell reads them"
+    ],
+    "optionsAlt": [
+      "There's no real distinction between the two",
+      "The terminal is just the window you see; the shell is the actual program reading and interpreting what you type",
+      "Shells are exclusive to Linux systems",
+      "The terminal handles writing files while the shell only reads them"
+    ],
+    "correctIndex": 1,
+    "explain": "The terminal is just the display layer. The shell (zsh on modern Mac, bash on many Linux servers) reads what you type, figures out what to do, and shows you output.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#terminal-vs-shell"
+    ]
+  },
+  {
+    "questionId": "tm2",
+    "topic": "terminal",
+    "difficulty": "easy",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain the TV/channel analogy for terminal vs shell.",
+    "back": "The terminal is the TV set — it just displays things. The shell is the channel playing on it — it decides what you're actually seeing/doing. You could swap the channel (run a different shell, like zsh vs bash) inside the same TV (terminal window).",
+    "source": [
+      "terminal-and-shell-basics.html#terminal-shell-analogy"
+    ]
+  },
+  {
+    "questionId": "tm3",
+    "topic": "terminal",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is PATH?",
+    "options": [
+      "A single folder where all programs must live",
+      "An ordered list of directories the shell searches to find a command you typed",
+      "A Node.js built-in module",
+      "A type of environment variable only used by npm"
+    ],
+    "optionsAlt": [
+      "One designated directory that holds every installed program",
+      "A sequence of directories the shell checks, in order, to locate the command you ran",
+      "Part of Node's built-in standard library",
+      "An environment variable exclusively used by npm"
+    ],
+    "correctIndex": 1,
+    "explain": "When you type a command, the shell searches PATH directories in order until it finds a match — like checking drawers one by one for a pen.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#path-explainer"
+    ]
+  },
+  {
+    "questionId": "tm4",
+    "topic": "terminal",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Inside psql, which meta-command lists all tables in the current database?",
+    "options": [
+      "\\l",
+      "\\dt",
+      "\\d",
+      "\\c"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "\\l lists databases, \\dt lists tables, \\d tablename describes a table, and \\c connects to a different database.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#psql-meta-commands"
+    ]
+  },
+  {
+    "questionId": "tm7",
+    "topic": "terminal",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Which keyboard shortcut kills a currently running process in the terminal (like a dev server)?",
+    "options": [
+      "Ctrl + L",
+      "Ctrl + A",
+      "Ctrl + C",
+      "Tab"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 2,
+    "explain": "Ctrl+C kills the current process. Ctrl+L clears the screen, Ctrl+A jumps to the start of the line, and Tab autocompletes.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#shell-cheat-sheet"
+    ]
+  },
+  {
+    "questionId": "tm5",
+    "topic": "terminal",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What's the difference between npm install package and npm install -D package?",
+    "back": "npm install package adds it as a regular dependency (needed in production). npm install -D package installs it as a devDependency — only needed during development, like a testing library or linter — and won't be required to run the app in production.",
+    "source": [
+      "terminal-and-shell-basics.html#npm-commands"
+    ]
+  },
+  {
+    "questionId": "tm6",
+    "topic": "terminal",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Setting \"type\": \"module\" in package.json means:",
+    "options": [
+      "The project uses CommonJS require() syntax",
+      "The project uses ES modules — import/export syntax",
+      "The project can't use npm",
+      "The project is a TypeScript project"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "\"type\": \"module\" tells Node to treat .js files as ES modules (import/export). Omitting it or setting \"commonjs\" uses require()/module.exports instead.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#package-json-fields"
+    ]
+  },
+  {
+    "questionId": "tm8",
+    "topic": "terminal",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does node_modules never get committed to git, and what two files make sure a teammate can reproduce your exact dependency versions after cloning the repo?",
+    "back": "node_modules can be huge and is fully derived from package.json — committing it just bloats the repo with regeneratable files. package.json lists your dependencies (usually with flexible version ranges), and package-lock.json pins the exact resolved versions of everything, including nested dependencies. Together, running npm install after cloning reproduces the same dependency tree a teammate had.",
+    "source": [
+      "terminal-and-shell-basics.html#npm-commands"
+    ]
+  },
+  {
+    "questionId": "tm9",
+    "topic": "terminal",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A teammate clones your repo, runs npm start, and it crashes because an environment variable like DATABASE_URL is undefined. What would you check, in order, from the terminal to debug this?",
+    "back": "First, echo $DATABASE_URL or printenv to see if it's actually set in that shell session. If it's not, check whether the project expects a .env file (common pattern) that isn't committed to git and needs to be copied locally — often from a .env.example. Then confirm whatever loads it (like a dotenv import) actually runs before the code that reads process.env.DATABASE_URL. Finally, double check you're in the right terminal session/window, since export only applies to the session it was run in.",
+    "source": [
+      "terminal-and-shell-basics.html#shell-cheat-sheet"
+    ]
+  },
+  {
+    "questionId": "tm10",
+    "topic": "terminal",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "You export DATABASE_URL=... directly in your terminal session, versus putting it in a .env file loaded by your app. Which one would a completely separate tool like psql see automatically, without any extra configuration?",
+    "options": [
+      "Only the .env file version",
+      "Only the exported terminal variable, since it's part of that shell's environment that any program launched from it inherits",
+      "Both, automatically, no difference",
+      "Neither — both require extra configuration"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "export makes a variable part of the shell's environment, which every program you launch from that shell session inherits automatically — including psql. A .env file is just a plain text file; nothing reads it automatically unless your specific app has code (like the dotenv package) that opens the file and loads its contents into process.env itself.",
+    "front": null,
+    "back": null,
+    "source": [
+      "terminal-and-shell-basics.html#shell-cheat-sheet"
+    ]
+  },
+  {
+    "questionId": "adv1",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Walk through everything that happens, layer by layer, from a user clicking \"Sign in with Google\" to their browser loading their personalized dashboard data.",
+    "back": "Browser redirects to Google → Google authenticates the user (your app never sees the password) → Google redirects back with a short-lived authorization code → your server exchanges that code for the user's profile info server-to-server → your server finds or creates the user record → your server issues a JWT and sets it as an HttpOnly cookie → the browser sends that cookie automatically on the next request → Express middleware verifies the JWT → the route handler queries the database for that user's data → the response comes back and the frontend renders it.",
+    "source": [
+      "auth.html#oauth-flow",
+      "node-express-onepager.html#request-journey"
+    ]
+  },
+  {
+    "questionId": "adv2",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A route handler queries a database and the query takes 3 seconds. Does this block other users' requests? What if instead the handler ran a synchronous CPU-heavy calculation for 3 seconds?",
+    "back": "The DB query is async I/O — Node hands it off to libuv/the OS and keeps handling other requests while it waits, so nobody else is blocked. A 3-second synchronous CPU-heavy calculation is completely different: it runs directly on Node's single JS thread, so the event loop can't do anything else until it finishes — every other request queues up and waits, even ones that have nothing to do with that calculation.",
+    "source": [
+      "node-internals-deepdive.html#event-loop-diagram",
+      "node-internals-deepdive.html#event-loop-warning"
+    ]
+  },
+  {
+    "questionId": "adv3",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Where would you store a third-party API key so your Express server can use it at runtime, but it never gets committed to git? Describe the mechanism end to end.",
+    "back": "Put it in a .env file in the project root (added to .gitignore so it's never committed), load it via a package like dotenv early in your app's startup so it lands in process.env, and reference it as process.env.API_KEY wherever your proxy route forwards the request to the third-party API. Teammates get a .env.example with the variable names (no real values) so they know what to fill in locally.",
+    "source": [
+      "proxy-pattern.html#proxy-code-example",
+      "terminal-and-shell-basics.html#shell-cheat-sheet"
+    ]
+  },
+  {
+    "questionId": "adv4",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A separate frontend (Vite/React) calls an API on a different origin using JWTs in HttpOnly cookies. A teammate wants to switch to traditional server-side sessions \"to simplify things.\" What goes wrong?",
+    "back": "Sessions rely on a cookie traveling automatically to the same server that issued it — that works cleanly when frontend and backend share an origin, but gets tangled with CORS and cross-site cookie restrictions once they're on separate origins. You'd also need a shared session store (like Redis) if you ever run more than one backend instance, since an in-memory session on one server instance wouldn't be visible to another. JWTs sidestepped both problems by being stateless and explicit — this \"simplification\" would actually add infrastructure and cross-origin complexity back in.",
+    "source": [
+      "auth.html#sessions-vs-jwt",
+      "frontend-terminology.html#rendering-strategies"
+    ]
+  },
+  {
+    "questionId": "adv5",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "If you were using traditional sessions and needed to scale to multiple server instances behind a load balancer, what extra infrastructure would you need? How does the JWT approach sidestep that?",
+    "back": "With sessions, each server instance needs to see the same session data no matter which instance handles a given request — that means adding a shared, centralized session store (like Redis) that every instance reads from, instead of keeping sessions in each server's own memory. JWTs sidestep this because the token itself carries everything needed to verify the user — any server instance can independently verify the signature without looking anything up, so there's nothing to share.",
+    "source": [
+      "auth.html#sessions-vs-jwt",
+      "auth.html#jwt-tradeoffs-table"
+    ]
+  },
+  {
+    "questionId": "adv6",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A proxy endpoint fetches data from a slow third-party API and then runs some data transformation before responding. Under high traffic, which part is more likely to become the bottleneck — the network fetch or the transformation — and why?",
+    "back": "The network fetch itself is async I/O — Node hands it off and keeps serving other requests while waiting, so it scales fine even if it's slow. The transformation step is where it can go wrong: if it's a heavy synchronous operation (large loops, expensive JSON manipulation, sorting big arrays) it runs on the single JS thread and blocks everything else while it executes. Under high traffic, that synchronous work is the real risk, not the network wait.",
+    "source": [
+      "proxy-pattern.html#request-lifecycle",
+      "node-internals-deepdive.html#event-loop-warning"
+    ]
+  },
+  {
+    "questionId": "adv7",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A small team on a tight deadline is deciding between a meta-framework (like Next.js) and a separate frontend + Express backend. What's the trade-off, and how does the right answer change if they plan to hire specialized backend engineers later?",
+    "back": "A meta-framework ships faster now — one project, file-based routing, SSR and API routes built in, less to configure. A separate frontend + backend means more setup upfront but a clean boundary between the two: it's easier to swap out or scale the backend independently, and it maps naturally onto separate frontend/backend hires later. If specialized backend engineers are coming, the separated architecture pays off sooner; if it's staying a small full-stack team indefinitely, the meta-framework's speed advantage matters more.",
+    "source": [
+      "frontend-terminology.html#parks-app-decision",
+      "node-express-onepager.html#node-express-analogy"
+    ]
+  },
+  {
+    "questionId": "adv8",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain, end to end, what happens when a client sends a POST request to create a new resource in an Express + Prisma + PostgreSQL stack — from the HTTP request landing to the row existing in the database.",
+    "back": "Express's http layer receives the request and parses it → middleware runs (body parsing turns the JSON body into req.body, auth middleware verifies the JWT) → the route handler calls something like prisma.resource.create() with the parsed data → Prisma translates that call into a parameterized SQL INSERT statement → PostgreSQL checks constraints (foreign keys, not-null, uniqueness) and either enforces them or returns the new row → Prisma converts that row back into a JS object → the handler sends it back as JSON in the response.",
+    "source": [
+      "databases-and-orms.html#orm-explainer",
+      "node-express-onepager.html#request-journey"
+    ]
+  },
+  {
+    "questionId": "adv9",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Verifying a JWT's signature is a synchronous, CPU-bound operation, unlike a session lookup which requires a database or store round-trip. When could JWT verification actually become a performance concern, and how does that compare to the session alternative?",
+    "back": "JWT verification (checking an HMAC or RSA signature) is fast — microseconds — so at normal traffic it's rarely a bottleneck, and it's typically cheaper than a session approach that requires a network round-trip to a session store on every single request. It could start to matter at very high request volumes with expensive asymmetric signature algorithms and no caching of decoded results, but for most apps the trade-off favors JWTs on raw verification cost — the real downsides of JWTs are around revocation, not speed.",
+    "source": [
+      "auth.html#jwt-tradeoffs-table",
+      "node-internals-deepdive.html#v8-section"
+    ]
+  },
+  {
+    "questionId": "adv10",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A teammate clones your repo, runs npm start, and the server immediately crashes because DATABASE_URL is undefined. Walk through what you'd check, in order, from the terminal.",
+    "back": "Start with echo $DATABASE_URL or printenv to confirm it's actually set in that shell session. If not, check whether the project expects a .env file — a common pattern that's gitignored on purpose, often with a .env.example showing which variables are needed but not their real values. Confirm whatever loads the .env file (like dotenv) actually runs before any code reads process.env.DATABASE_URL. If it's still failing, double-check node_modules exists (run npm install) and that you're in the right project directory and terminal session, since exported variables only apply to the session they were set in.",
+    "source": [
+      "terminal-and-shell-basics.html#shell-cheat-sheet",
+      "proxy-pattern.html#proxy-code-example"
+    ]
+  },
+  {
+    "questionId": "adv11",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A proxy caches third-party responses in memory for a few minutes to reduce load, while permanent user data goes into PostgreSQL once they save it. Why do you need both, and what is each one actually protecting you from?",
+    "back": "The cache protects you from hammering a slow or rate-limited upstream API with duplicate requests — it's fine if it's momentarily stale or even lost on a restart, because it's just a speed optimization for transient data. The database is the durable source of truth for anything the user has explicitly chosen to keep — losing that would mean losing real user data, which is not an acceptable failure mode. Same general idea (store data somewhere so you don't refetch it) but completely different tolerance for loss and staleness.",
+    "source": [
+      "proxy-pattern.html#bonus-benefits",
+      "databases-and-orms.html#db-decision"
+    ]
+  },
+  {
+    "questionId": "adv12",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does server-side rendering require extra care about where auth tokens are stored, compared to a purely client-rendered (CSR) app?",
+    "back": "With SSR, the server needs to know who the user is while it's generating the HTML — before any client-side JavaScript has run. That means the identity proof has to be readable server-side at render time, like a cookie sent automatically with the request. A token stored in localStorage wouldn't help here — nothing has executed on the client yet to read it, so the server-rendered page would have no way to know who's asking. This is one more reason cookie-based auth (ideally HttpOnly) pairs naturally with SSR in a way that localStorage-based JWTs don't.",
+    "source": [
+      "frontend-terminology.html#rendering-strategies",
+      "auth.html#storage-httponly"
+    ]
+  },
+  {
+    "questionId": "dp1",
+    "topic": "db-performance",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is the N+1 query problem?",
+    "options": [
+      "Running one query then looping over the results with one extra query per item",
+      "Making N+1 requests to the same third-party API per second",
+      "A SQL syntax error involving the number 1",
+      "A caching strategy that stores N+1 versions of a value"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "One query fetches a list of N items; if you then loop over it and query once per item, you've made N+1 total queries instead of 1 or 2.",
+    "front": null,
+    "back": null,
+    "source": [
+      "db-performance.html#n-plus-one"
+    ]
+  },
+  {
+    "questionId": "dp2",
+    "topic": "db-performance",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does a database index primarily speed up?",
+    "options": [
+      "Writing new rows with INSERT",
+      "Looking up rows filtered in WHERE, JOIN, or ORDER BY clauses",
+      "Automatically migrating your schema",
+      "Hashing passwords before storage"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "An index is a separate, sorted lookup structure that lets the database skip a full table scan for columns used in WHERE/JOIN/ORDER BY.",
+    "front": null,
+    "back": null,
+    "source": [
+      "db-performance.html#indexes-explainer"
+    ]
+  },
+  {
+    "questionId": "dp3",
+    "topic": "db-performance",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why doesn't it make sense to just add an index to every column \"to be safe\"?",
+    "back": "Every index speeds up reads but slows down writes — each INSERT/UPDATE now has to update the index too — and indexes cost disk space. The right move is indexing columns actually used in WHERE, JOIN, or ORDER BY, not indexing everything by default.",
+    "source": [
+      "db-performance.html#indexes-explainer"
+    ]
+  },
+  {
+    "questionId": "dp4",
+    "topic": "db-performance",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Which Prisma pattern avoids the N+1 problem when fetching trips along with their parks?",
+    "options": [
+      "Looping over trips and calling prisma.park.findMany() separately inside the loop",
+      "Using include: { parks: true } in the original findMany call",
+      "Calling prisma.trip.findMany() twice in a row",
+      "Disabling Prisma's query engine"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "include tells Prisma to fetch the related rows as part of the same query plan, instead of issuing a new query per parent row.",
+    "front": null,
+    "back": null,
+    "source": [
+      "db-performance.html#n-plus-one"
+    ]
+  },
+  {
+    "questionId": "dp5",
+    "topic": "db-performance",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What does ACID stand for, and which letter matters most for a money transfer between two accounts?",
+    "back": "Atomicity, Consistency, Isolation, Durability. Atomicity matters most for a transfer — the debit from one account and the credit to the other must happen together or not at all, never partially.",
+    "source": [
+      "db-performance.html#transactions-acid"
+    ]
+  },
+  {
+    "questionId": "dp6",
+    "topic": "db-performance",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "You suspect a slow endpoint is missing an index. What's the correct way to confirm it rather than guessing?",
+    "options": [
+      "Add indexes to every column and see if it gets faster",
+      "Run EXPLAIN ANALYZE on the query to check for a sequential scan",
+      "Rewrite the query in a different ORM",
+      "Add more RAM to the server"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "EXPLAIN ANALYZE shows the actual query plan — whether PostgreSQL used an index scan or fell back to scanning every row.",
+    "front": null,
+    "back": null,
+    "source": [
+      "db-performance.html#indexes-explainer"
+    ]
+  },
+  {
+    "questionId": "dp7",
+    "topic": "db-performance",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why do you need a transaction for a money transfer between two accounts, even though each individual UPDATE is already atomic on its own?",
+    "back": "A single UPDATE is atomic by itself, but a transfer is two updates — a debit and a credit. Without wrapping both in a transaction, a crash or error between them could leave money debited from one account but never credited to the other. The transaction guarantees both happen together or neither does.",
+    "source": [
+      "db-performance.html#transactions-acid"
+    ]
+  },
+  {
+    "questionId": "dp8",
+    "topic": "db-performance",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "What's the main risk of running two concurrent transactions without proper isolation?",
+    "options": [
+      "Slower disk reads",
+      "One transaction seeing another's uncommitted, half-finished changes",
+      "Increased storage usage",
+      "Both transactions automatically rolling back"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Isolation is what prevents concurrent transactions from seeing each other's in-progress, not-yet-committed work.",
+    "front": null,
+    "back": null,
+    "source": [
+      "db-performance.html#transactions-acid"
+    ]
+  },
+  {
+    "questionId": "ts1",
+    "topic": "testing",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "In the testing pyramid, which type of test should you have the most of?",
+    "options": [
+      "End-to-end tests",
+      "Integration tests",
+      "Unit tests",
+      "Manual QA passes"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 2,
+    "explain": "Unit tests are fast and cheap, so the pyramid shape favors having many of them, with fewer integration tests and the fewest end-to-end tests.",
+    "front": null,
+    "back": null,
+    "source": [
+      "testing.html#testing-pyramid"
+    ]
+  },
+  {
+    "questionId": "ts2",
+    "topic": "testing",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What is a \"mock\" in testing?",
+    "options": [
+      "A type of bug",
+      "A fake stand-in for a real dependency, like a database or API",
+      "A production deployment step",
+      "A code linter rule"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Mocking replaces a real dependency with a controllable fake so the test is fast, deterministic, and isolated.",
+    "front": null,
+    "back": null,
+    "source": [
+      "testing.html#mocking-explainer"
+    ]
+  },
+  {
+    "questionId": "ts9",
+    "topic": "testing",
+    "difficulty": "easy",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What's the practical difference in speed and reliability between a unit test and an end-to-end test?",
+    "back": "Unit tests run in milliseconds and are deterministic since dependencies are mocked. End-to-end tests are much slower and more prone to flakiness since they involve real infrastructure, timing, and sometimes a real browser.",
+    "source": [
+      "testing.html#testing-pyramid"
+    ]
+  },
+  {
+    "questionId": "ts3",
+    "topic": "testing",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Explain the difference between a unit test and an integration test, using your own app as the example.",
+    "back": "A unit test checks one function or module in isolation with dependencies mocked out — like testing a validation function alone. An integration test checks that pieces work together for real — hitting an actual Express route with a tool like supertest against a real test database, confirming the whole path works as one.",
+    "source": [
+      "testing.html#testing-pyramid"
+    ]
+  },
+  {
+    "questionId": "ts4",
+    "topic": "testing",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "Why mock the database in a unit test instead of using a real one?",
+    "options": [
+      "Real databases are always broken",
+      "Mocking keeps the test fast, deterministic, and isolated from external infrastructure",
+      "Unit tests are technically incapable of connecting to databases",
+      "It's a hard requirement of every test framework"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "The whole point of a unit test is isolating the logic under test — mocking removes the unpredictability and slowness of a real dependency.",
+    "front": null,
+    "back": null,
+    "source": [
+      "testing.html#mocking-explainer"
+    ]
+  },
+  {
+    "questionId": "ts5",
+    "topic": "testing",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "You're asked to test a function that calculates a discount. What three categories of test cases should you mention?",
+    "back": "The normal/happy path (valid typical input), edge cases (zero, negative numbers, empty input, boundary values), and error paths (what happens if a dependency throws or input is malformed). Naming all three signals real testing instinct, not just checking the obvious case.",
+    "source": [
+      "testing.html#what-to-test"
+    ]
+  },
+  {
+    "questionId": "ts6",
+    "topic": "testing",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "What does the \"red\" step in the red-green-refactor TDD cycle mean?",
+    "options": [
+      "Deleting broken code",
+      "Writing a failing test for behavior that doesn't exist yet",
+      "Marking a test as skipped",
+      "Reverting a bad commit"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Red means you've written a test for behavior you haven't built yet, so it fails — proving the test can actually detect the missing feature.",
+    "front": null,
+    "back": null,
+    "source": [
+      "testing.html#tdd-cycle"
+    ]
+  },
+  {
+    "questionId": "ts7",
+    "topic": "testing",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why might a team with a large, brittle end-to-end test suite and almost no unit tests be in worse shape than the inverse, even if both suites report passing?",
+    "back": "End-to-end tests are slow and often flaky, so a suite dominated by them is expensive to run and maintain, and failures are hard to localize — you know something's broken but not where. A pyramid with mostly fast unit tests gives quick, precise feedback on what broke; the few e2e tests just confirm the critical paths still work end to end. Passing tests don't tell you how expensive or fragile getting that green checkmark actually was.",
+    "source": [
+      "testing.html#testing-pyramid"
+    ]
+  },
+  {
+    "questionId": "sc1",
+    "topic": "security",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Why validate input at the API boundary using a schema library like Zod or Joi?",
+    "options": [
+      "It makes the code run faster",
+      "It rejects malformed or untrusted data before it reaches your business logic",
+      "It replaces the need for a database",
+      "It automatically corrects bad input"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Validating at the boundary means bad data never gets a chance to reach your logic or database in the first place.",
+    "front": null,
+    "back": null,
+    "source": [
+      "security-fundamentals.html#input-validation"
+    ]
+  },
+  {
+    "questionId": "sc2",
+    "topic": "security",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What makes a SQL injection attack possible?",
+    "options": [
+      "Using an ORM",
+      "User input being concatenated directly into a SQL query string",
+      "Using HTTPS",
+      "Storing passwords in plaintext"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "When input is pasted directly into a query string, malicious input can change the structure of the query itself, not just its data.",
+    "front": null,
+    "back": null,
+    "source": [
+      "security-fundamentals.html#sql-injection"
+    ]
+  },
+  {
+    "questionId": "sc3",
+    "topic": "security",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why do parameterized queries prevent SQL injection when string concatenation doesn't?",
+    "back": "With parameterized queries, user input is always passed as data, never as part of the query's actual structure — the database treats a parameter as a value to compare against, not as SQL syntax to execute. With string concatenation, malicious input can rewrite the query itself, for example by closing a quote early and adding new SQL.",
+    "source": [
+      "security-fundamentals.html#sql-injection"
+    ]
+  },
+  {
+    "questionId": "sc4",
+    "topic": "security",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What is CSRF (cross-site request forgery)?",
+    "options": [
+      "Stealing a token via malicious JavaScript injected into a page",
+      "Tricking a logged-in user's browser into sending an unintended request using their existing session",
+      "Guessing passwords through repeated login attempts",
+      "Injecting SQL through a form field"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "CSRF relies on the victim's browser automatically attaching valid session credentials to a forged request from a malicious page.",
+    "front": null,
+    "back": null,
+    "source": [
+      "security-fundamentals.html#csrf-explainer"
+    ]
+  },
+  {
+    "questionId": "sc5",
+    "topic": "security",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "How does setting SameSite on your auth cookie help prevent CSRF?",
+    "back": "SameSite tells the browser not to send that cookie along with requests originating from a different site. Since CSRF relies on the browser automatically attaching your session cookie to a forged cross-site request, blocking that attachment closes off most CSRF attacks without needing extra token infrastructure.",
+    "source": [
+      "security-fundamentals.html#csrf-explainer"
+    ]
+  },
+  {
+    "questionId": "sc6",
+    "topic": "security",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Which of these correctly describes an XSS attack, as distinct from CSRF?",
+    "options": [
+      "Injected JavaScript running in the page reads and steals data like a token",
+      "A malicious page silently submits a form to your bank while you're logged in elsewhere",
+      "Guessing a password through repeated attempts",
+      "They're the same attack under two different names"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "XSS is about malicious script running inside your page reading/stealing data; CSRF is about the browser being tricked into sending a forged request using your existing session — no script injection required.",
+    "front": null,
+    "back": null,
+    "source": [
+      "security-fundamentals.html#csrf-explainer"
+    ]
+  },
+  {
+    "questionId": "sc7",
+    "topic": "security",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does helmet.js get recommended as a close-to-free security improvement for an Express app?",
+    "back": "It sets a batch of well-established, sensible HTTP security headers — like preventing content-type sniffing and restricting where content can load from — with essentially one line of setup. You get a reasonable security baseline without researching and configuring each header individually.",
+    "source": [
+      "security-fundamentals.html#rate-limiting-headers"
+    ]
+  },
+  {
+    "questionId": "sc8",
+    "topic": "security",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Why is rate limiting valuable on an endpoint even when it doesn't call any third-party API?",
+    "options": [
+      "It has no value without a third-party API involved",
+      "It protects against brute-force attempts and abusive traffic regardless of what the endpoint does internally",
+      "It only matters for GraphQL APIs",
+      "Express requires it in order to start"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Rate limiting protects your own server and users from abuse — that value exists independent of whether the endpoint happens to call something else downstream.",
+    "front": null,
+    "back": null,
+    "source": [
+      "security-fundamentals.html#rate-limiting-headers"
+    ]
+  },
+  {
+    "questionId": "sd1",
+    "topic": "system-design",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What's the difference between vertical and horizontal scaling?",
+    "options": [
+      "Vertical = more servers, horizontal = a bigger single server",
+      "Vertical = a bigger, more powerful single server; horizontal = more servers sharing the load",
+      "They're the same thing described two ways",
+      "Vertical scaling only applies to databases"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Vertical scaling adds power to one machine; horizontal scaling adds more machines sharing the work.",
+    "front": null,
+    "back": null,
+    "source": [
+      "system-design-basics.html#scaling-types"
+    ]
+  },
+  {
+    "questionId": "sd2",
+    "topic": "system-design",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does a load balancer do?",
+    "options": [
+      "Compiles your application code",
+      "Decides which server instance handles each incoming request",
+      "Encrypts your database connections",
+      "Writes application log files"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "A load balancer sits in front of multiple instances and routes each incoming request to one of them.",
+    "front": null,
+    "back": null,
+    "source": [
+      "system-design-basics.html#load-balancing"
+    ]
+  },
+  {
+    "questionId": "sd3",
+    "topic": "system-design",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does horizontal scaling require stateless authentication (like JWTs) or a shared session store, when vertical scaling doesn't?",
+    "back": "With horizontal scaling, any of several server instances might handle any given request, decided by a load balancer. If a user's session lived only in one instance's memory, a request routed to a different instance wouldn't recognize them. JWTs sidestep this since any instance can verify the token independently; traditional sessions need a shared store like Redis that every instance can read.",
+    "source": [
+      "system-design-basics.html#load-balancing"
+    ]
+  },
+  {
+    "questionId": "sd4",
+    "topic": "system-design",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What's the primary purpose of a message queue like BullMQ or SQS in a backend system?",
+    "options": [
+      "Storing user session data",
+      "Decoupling slow work, like sending an email, from the request/response cycle so the user doesn't wait for it",
+      "Replacing your primary database",
+      "Load balancing incoming HTTP requests"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "A queue lets you respond to the user immediately while a separate worker handles the slow work asynchronously.",
+    "front": null,
+    "back": null,
+    "source": [
+      "system-design-basics.html#message-queues"
+    ]
+  },
+  {
+    "questionId": "sd5",
+    "topic": "system-design",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What's genuinely hard about caching, beyond just storing values in something like Redis?",
+    "back": "Knowing when to invalidate or update a cached value once the underlying data changes. A cache serving stale data can be worse than no cache at all, so the real design challenge is deciding what triggers a refresh — not the storing part itself.",
+    "source": [
+      "system-design-basics.html#caching-layers"
+    ]
+  },
+  {
+    "questionId": "sd6",
+    "topic": "system-design",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "During a network partition in a distributed system, CAP theorem says you effectively have to choose between:",
+    "options": [
+      "Consistency and Availability",
+      "Consistency and Partition tolerance",
+      "Speed and Partition tolerance",
+      "Availability and Speed"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 0,
+    "explain": "Partition tolerance is assumed for any distributed system; during an actual partition, the real trade-off left is Consistency vs. Availability.",
+    "front": null,
+    "back": null,
+    "source": [
+      "system-design-basics.html#cap-theorem"
+    ]
+  },
+  {
+    "questionId": "sd7",
+    "topic": "system-design",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A team wants to switch from a monolith to microservices mainly because \"it's what big companies do.\" What would you push back on?",
+    "back": "Microservices add real overhead — network calls between services, more complex deployment and monitoring, data consistency across service boundaries. That overhead only pays off once team size, independent scaling needs, or failure isolation actually justify it. Copying an architecture without the underlying problem (many teams stepping on each other, one component needing very different scaling) often just adds complexity without the corresponding benefit.",
+    "source": [
+      "system-design-basics.html#monolith-vs-microservices"
+    ]
+  },
+  {
+    "questionId": "sd8",
+    "topic": "system-design",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Why is \"start with what's actually slow\" good advice at the beginning of a system design answer?",
+    "options": [
+      "Because caching and queues should always be added regardless of the bottleneck",
+      "Because reaching for scaling solutions before identifying the real bottleneck risks solving the wrong problem",
+      "Because interviewers only care about hearing buzzwords",
+      "Because it's faster to say than to explain trade-offs"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Naming a real bottleneck-first approach shows you'd diagnose before prescribing a fix — a stronger signal than reciting a list of scaling techniques.",
+    "front": null,
+    "back": null,
+    "source": [
+      "system-design-basics.html#scaling-decision-summary"
+    ]
+  },
+  {
+    "questionId": "po1",
+    "topic": "production",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "Why is structured (JSON) logging preferred over plain console.log strings in production?",
+    "options": [
+      "It looks nicer in the terminal",
+      "It's searchable and machine-parseable, letting you query logs by field",
+      "It runs measurably faster than string logging",
+      "Node.js requires it"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Structured logs let you filter and aggregate by specific fields — \"every failed login for user 42\" is a query, not a manual search.",
+    "front": null,
+    "back": null,
+    "source": [
+      "production-ops.html#structured-logging"
+    ]
+  },
+  {
+    "questionId": "po2",
+    "topic": "production",
+    "difficulty": "easy",
+    "type": "mc",
+    "prompt": "What does a /health endpoint let infrastructure, like a load balancer, do?",
+    "options": [
+      "Automatically fix application bugs",
+      "Check whether an instance is actually working before routing traffic to it",
+      "Compile the application on demand",
+      "Generate API documentation"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Load balancers and orchestration tools poll a health endpoint to decide whether to send traffic to an instance — or restart it.",
+    "front": null,
+    "back": null,
+    "source": [
+      "production-ops.html#env-and-health-checks"
+    ]
+  },
+  {
+    "questionId": "po3",
+    "topic": "production",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "What's the difference between an operational error and a programmer error, and why does the distinction matter?",
+    "back": "Operational errors are expected failures in normal operation — bad input, a dropped DB connection — and should be handled gracefully with an appropriate response. Programmer errors are actual bugs — wrong types, typos — that usually mean something is broken and should be logged loudly rather than quietly caught and ignored. Treating a real bug as if it were just an expected error can hide it silently in production.",
+    "source": [
+      "production-ops.html#error-handling-patterns"
+    ]
+  },
+  {
+    "questionId": "po4",
+    "topic": "production",
+    "difficulty": "moderate",
+    "type": "mc",
+    "prompt": "What does handling SIGTERM with a graceful shutdown accomplish?",
+    "options": [
+      "Speeds up the deploy process itself",
+      "Lets in-flight requests finish and connections close cleanly before the process exits",
+      "Prevents any future deploys from happening",
+      "Automatically restarts the server on a schedule"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Graceful shutdown stops accepting new requests but lets requests already in progress complete before the process actually exits.",
+    "front": null,
+    "back": null,
+    "source": [
+      "production-ops.html#graceful-shutdown"
+    ]
+  },
+  {
+    "questionId": "po5",
+    "topic": "production",
+    "difficulty": "moderate",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why do dev, staging, and production typically need different environment variables rather than one shared config file?",
+    "back": "Each environment usually needs its own database URL, API keys, and log verbosity — sharing one config risks a dev API key touching production data, or staging accidentally emailing real users. Environment variables let the same codebase run safely and correctly across all three without code changes.",
+    "source": [
+      "production-ops.html#env-and-health-checks"
+    ]
+  },
+  {
+    "questionId": "po6",
+    "topic": "production",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "What problem does a request/correlation ID attached to every log line solve?",
+    "options": [
+      "It speeds up database queries",
+      "It lets you trace one specific request's full journey through the logs, even across multiple services",
+      "It replaces the need for authentication",
+      "It compresses log file size"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "A correlation ID ties together every log line generated while handling one request, making it possible to reconstruct exactly what happened.",
+    "front": null,
+    "back": null,
+    "source": [
+      "production-ops.html#structured-logging"
+    ]
+  },
+  {
+    "questionId": "po7",
+    "topic": "production",
+    "difficulty": "hard",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why is \"it works on my machine\" specifically the problem Docker addresses, rather than a testing or code-quality problem?",
+    "back": "It's an environment consistency problem — differences in OS, installed versions of Node or system libraries, or configuration between a developer's machine and staging/production can cause code that works locally to fail elsewhere. Docker packages the app with its exact runtime environment, so the same container runs identically regardless of what's installed on the host machine.",
+    "source": [
+      "production-ops.html#cicd-containers"
+    ]
+  },
+  {
+    "questionId": "po8",
+    "topic": "production",
+    "difficulty": "hard",
+    "type": "mc",
+    "prompt": "Where should centralized error-handling middleware be registered in an Express app?",
+    "options": [
+      "Before all other middleware and routes",
+      "After all routes, as the last middleware in the chain",
+      "It doesn't matter where it's registered",
+      "Inside every individual route handler"
+    ],
+    "optionsAlt": null,
+    "correctIndex": 1,
+    "explain": "Middleware runs in registration order — error-handling middleware has to come after your routes to catch whatever falls through them.",
+    "front": null,
+    "back": null,
+    "source": [
+      "production-ops.html#error-handling-patterns"
+    ]
+  },
+  {
+    "questionId": "adv13",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A slow endpoint turns out to be doing an N+1 query and running with no caching at all. Which fix matters more first, and why?",
+    "back": "Fix the N+1 query first — it's an inefficiency in how the code talks to the database, and it gets worse the more data there is, regardless of scale. Caching can mask a slow query by serving stale results faster, but it doesn't fix the underlying inefficiency and adds its own invalidation complexity. Fix the query pattern, then consider caching for genuinely expensive, rarely-changing data.",
+    "source": [
+      "db-performance.html#n-plus-one",
+      "system-design-basics.html#caching-layers"
+    ]
+  },
+  {
+    "questionId": "adv14",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Your team wants to add rate limiting to protect a login endpoint. Where should it live — Express middleware or the database layer — and why?",
+    "back": "Express middleware (or an API gateway/proxy in front of it) is the right layer — you want to reject abusive requests before they ever reach your business logic or the database, which is the whole point of rate limiting. Putting it at the database layer would mean the expensive login-attempt processing already happened by the time anything gets limited.",
+    "source": [
+      "security-fundamentals.html#rate-limiting-headers",
+      "proxy-pattern.html#bonus-benefits"
+    ]
+  },
+  {
+    "questionId": "adv15",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "How would you test a route that sends a welcome email via a background job queue, without your test suite actually sending real emails or waiting on a queue worker?",
+    "back": "Mock the queue/email service in a unit test of the route handler — assert that it enqueued the right job with the right data, without needing the job to actually run. Separately, unit test the job-processing function itself (the thing that sends the email) with the email service mocked. An integration test could confirm a job actually gets enqueued against a test queue, while still avoiding the real email provider.",
+    "source": [
+      "testing.html#mocking-explainer",
+      "system-design-basics.html#message-queues"
+    ]
+  },
+  {
+    "questionId": "adv16",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "A deploy kills the old server instances immediately to bring up new ones. What goes wrong for users mid-request, and what two things fix it?",
+    "back": "Users with in-flight requests get abruptly disconnected — a half-finished write, a response that never arrives. Graceful shutdown (handling SIGTERM, finishing in-flight requests before exiting) fixes the immediate cutoff. Combined with a load balancer that stops routing new traffic to an instance before it terminates, users get drained off cleanly instead of dropped.",
+    "source": [
+      "production-ops.html#graceful-shutdown",
+      "system-design-basics.html#load-balancing"
+    ]
+  },
+  {
+    "questionId": "adv17",
+    "topic": "synthesis",
+    "difficulty": "advanced",
+    "type": "flip",
+    "prompt": null,
+    "options": null,
+    "optionsAlt": null,
+    "correctIndex": null,
+    "explain": null,
+    "front": "Why does horizontal scaling make \"where does session data live\" a bigger question than it was on a single server?",
+    "back": "On one server, in-memory session data is always available, since one process handles everything. Once you're behind a load balancer with multiple instances, a user's request might hit any instance — one with no memory of a session created on a different instance. That's why horizontal scaling pushes teams toward either a shared session store (Redis) every instance can read, or stateless auth like JWTs that don't need shared memory at all.",
+    "source": [
+      "system-design-basics.html#load-balancing",
+      "auth.html#sessions-vs-jwt"
+    ]
+  }
+]
