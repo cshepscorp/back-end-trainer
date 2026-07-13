@@ -23,7 +23,7 @@ const env = process.env as NodeJS.ProcessEnv & {
 };
 
 // Stable ordering so the rotation is deterministic and easy to reason about —
-// walk topics in this order, and within each topic, easy -> advanced.
+// walk topics in this order, and within each topic, easy -> moderate.
 const TOPIC_ORDER = [
   'node-express',
   'node-internals',
@@ -42,7 +42,16 @@ const TOPIC_ORDER = [
   'infra-as-code',
   'synthesis',
 ];
-const DIFFICULTY_ORDER = ['easy', 'moderate', 'hard', 'advanced'];
+// 'hard'/'advanced' deliberately excluded — the daily rotation only ever
+// generates easy/moderate sessions now. This also has a side effect worth
+// knowing: a topic only "clears" (and the rotation moves to the next topic)
+// once every difficulty listed here is marked complete, so dropping two
+// difficulties per topic means each topic clears twice as fast — this was
+// very likely also why the rotation felt stuck on one topic (node-internals)
+// for a long stretch: 'hard'/'advanced' sessions there probably weren't
+// clearing 80%, so the topic never finished and the rotation had nothing to
+// advance to.
+const DIFFICULTY_ORDER = ['easy', 'moderate'];
 const QUESTIONS_PER_DAY = 8;
 const MIN_QUESTIONS_FOR_A_SESSION = 3;
 
