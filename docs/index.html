@@ -125,6 +125,8 @@
   .card-gold   { --card-accent: #eab308; }
   .card-violet { --card-accent: #8b5cf6; }
   .card-sky    { --card-accent: #38bdf8; }
+  .card-pink   { --card-accent: #f472b6; }
+  .card-azure  { --card-accent: #2563eb; }
 
   .card-soon { opacity: 0.45; pointer-events: none; }
   .soon-badge { position: absolute; top: 14px; right: 14px; font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 2px 8px; border-radius: 20px; }
@@ -156,7 +158,7 @@
   <div class="cards" style="margin-bottom: 40px;">
     <a class="card card-blue" href="quiz.html">
       <div class="card-tag">Interview prep · All topics</div>
-      <div class="card-title">Quiz yourself — 163 questions</div>
+      <div class="card-title">Quiz yourself — 184 questions</div>
       <div class="card-desc">Easy through advanced, including cross-topic whiteboard scenarios. Filter by topic and difficulty, track your score, and retry whatever you flag for review.</div>
       <div class="card-footer">
         <div class="card-topics"><span class="topic-pill">4 difficulty levels</span><span class="topic-pill">flip cards</span><span class="topic-pill">topic filters</span></div>
@@ -285,6 +287,24 @@
       <div class="card-desc">Closures, what actually determines `this`, the microtask/macrotask split, prototypes, and the array methods that come up in every whiteboard exercise.</div>
       <div class="card-footer">
         <div class="card-topics"><span class="topic-pill">closures</span><span class="topic-pill">this</span><span class="topic-pill">event loop</span><span class="topic-pill">prototypes</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-pink" href="react-fundamentals.html">
+      <div class="card-tag">Frontend · React</div>
+      <div class="card-title">React fundamentals</div>
+      <div class="card-desc">The functional setState updater form, render vs. mount vs. unmount, cleanup timing, Strict Mode, Rules of Hooks, when memoization actually helps, and controlled vs. uncontrolled components.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">hooks</span><span class="topic-pill">useEffect</span><span class="topic-pill">useMemo</span><span class="topic-pill">controlled inputs</span></div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+    <a class="card card-azure" href="typescript-fundamentals.html">
+      <div class="card-tag">Language fundamentals</div>
+      <div class="card-title">TypeScript fundamentals</div>
+      <div class="card-desc">Generics — why `&lt;T&gt;` beats hardcoding a type or reaching for `any`, and how type inference keeps it from feeling clunky in practice. Growing as more comes up.</div>
+      <div class="card-footer">
+        <div class="card-topics"><span class="topic-pill">generics</span><span class="topic-pill">type inference</span></div>
         <div class="card-arrow">→</div>
       </div>
     </a>

@@ -21,6 +21,8 @@
     --gold: #eab308;
     --violet: #8b5cf6;
     --sky: #38bdf8;
+    --pink: #f472b6;
+    --azure: #2563eb;
   }
 
   .filter-row { margin-bottom: 18px; }
@@ -72,6 +74,8 @@
   .chip-gold   { --chip-accent: var(--gold); }
   .chip-violet { --chip-accent: var(--violet); }
   .chip-sky    { --chip-accent: var(--sky); }
+  .chip-pink   { --chip-accent: var(--pink); }
+  .chip-azure  { --chip-accent: var(--azure); }
 
   /* stats bar */
   .stats-bar {
@@ -354,7 +358,7 @@
   <div class="page-header">
     <div class="eyebrow">Self-test &middot; All topics &middot; 4 difficulty levels</div>
     <h1>Quiz yourself</h1>
-    <p class="intro">163 questions pulled from every page in this guide, from easy recall up through advanced whiteboard-style scenarios that combine multiple topics — including database performance, testing, security, system design, production ops, JavaScript fundamentals, AI/LLM fundamentals, and infrastructure as code. Filter by topic, difficulty, or both. Every question links back to the exact spot it came from.</p>
+    <p class="intro">184 questions pulled from every page in this guide, from easy recall up through advanced whiteboard-style scenarios that combine multiple topics — including database performance, testing, security, system design, production ops, JavaScript fundamentals, React, TypeScript, AI/LLM fundamentals, and infrastructure as code. Filter by topic, difficulty, or both. Every question links back to the exact spot it came from.</p>
   </div>
 
   <div class="filter-row">
@@ -383,7 +387,7 @@
 
   <div class="page-footer">
     <span>Backend fundamentals &middot; Quiz</span>
-    <span>163 questions &middot; 15 topics + cross-topic synthesis</span>
+    <span>184 questions &middot; 17 topics + cross-topic synthesis</span>
   </div>
 </div>
 
@@ -422,6 +426,8 @@ const TOPICS = [
   { id: 'javascript',     label: 'JavaScript',           accent: 'gold'   },
   { id: 'ai-llm',         label: 'AI / LLM',              accent: 'violet' },
   { id: 'infra-as-code',  label: 'Infra as code',         accent: 'sky'    },
+  { id: 'react',          label: 'React',                accent: 'pink'   },
+  { id: 'typescript',     label: 'TypeScript',           accent: 'azure'  },
   { id: 'synthesis',      label: 'Cross-topic',         accent: 'synth'  },
 ];
 
@@ -771,6 +777,79 @@ const QUESTIONS = [
     correct:1,
     explain:'export makes a variable part of the shell\'s environment, which every program you launch from that shell session inherits automatically — including psql. A .env file is just a plain text file; nothing reads it automatically unless your specific app has code (like the dotenv package) that opens the file and loads its contents into process.env itself.' },
 
+  // ================= REACT =================
+  { id:'rc1', topic:'react', difficulty:'moderate', type:'flip', source:'react-fundamentals.html#functional-updater',
+    front:'Why does calling setCount((prev) => prev + 1) twice in the same handler correctly add up to +2, while calling setCount(count + 1) twice does not?',
+    back:'prev isn\'t special to React — it\'s just a parameter name. setCount accepts either a plain value or a function; pass a function and React calls it with whatever\'s currently queued as pending state, so a second queued function-update gets fed the first one\'s result. setCount(count + 1) instead reads count as a frozen closure snapshot from this render — both calls see the identical stale value and compute the same result, since neither update is applied until React processes the queue afterward.' },
+  { id:'rc2', topic:'react', difficulty:'moderate', type:'mc', source:'react-fundamentals.html#render-mount-unmount',
+    q:'Which best describes when an effect with a dependency array actually re-runs?',
+    options:['After mount only, and separately again on every render after that','After any render where a listed dependency\'s value differs from the previous render — mount always qualifies since there\'s no previous render to compare against','Only when the component receives new props','Every time the browser repaints, regardless of dependencies'],
+    correct:1,
+    explain:'It\'s one rule, not two: React re-runs the effect after any render where a dependency changed from the prior render. Mount always triggers it because there\'s nothing to compare against yet, not because "mount" is a separate mechanism from "deps changed."' },
+  { id:'rc3', topic:'react', difficulty:'moderate', type:'flip', source:'react-fundamentals.html#cleanup-timing',
+    front:'A [count]-dependent effect logs "cleaning up" every single time you click a button that changes count, not just when the component disappears. Is that a bug?',
+    back:'No — that\'s correct behavior. The same cleanup function fires on two different triggers: right before the effect re-runs because a dependency changed (component still fully alive), and once for real when the component actually unmounts (nothing follows it). Clicking repeatedly is the re-run case; you\'d only see the true-unmount case by removing the component from the tree entirely.' },
+  { id:'rc4', topic:'react', difficulty:'hard', type:'mc', source:'react-fundamentals.html#strict-mode',
+    q:'In development, a component with a mount-logging effect shows "mounted / cleaning up / mounted" the very first time it appears, even though nothing unmounted it. What\'s going on?',
+    options:['A real bug in the cleanup function','React 18 Strict Mode intentionally mounts, cleans up, and mounts again in dev only, to surface effects with missing/broken cleanup','The component is being rendered twice by a router misconfiguration','Vite\'s dev server always double-invokes effects, even in production'],
+    correct:1,
+    explain:'Strict Mode deliberately does this in development to help catch effects that don\'t clean up properly — it only happens in dev; production mounts once as expected. It\'s a diagnostic feature, not a bug.' },
+  { id:'rc5', topic:'react', difficulty:'moderate', type:'mc', source:'react-fundamentals.html#effect-async-gotcha',
+    q:'Why can\'t the function passed directly to useEffect be marked async?',
+    options:['async functions run too slowly inside effects','Marking it async makes it implicitly return a Promise, which React would wrongly treat as the cleanup function — useEffect callbacks may only return nothing or a cleanup function','React doesn\'t support async/await syntax at all','It can be async, this is a myth'],
+    correct:1,
+    explain:'useEffect\'s callback contract only allows "nothing" or "a cleanup function" as the return value. An async function always returns a Promise, which breaks that contract silently. The fix is defining a separate inner async function and calling it, rather than marking the effect callback itself async.' },
+  { id:'rc6', topic:'react', difficulty:'easy', type:'mc', source:'react-fundamentals.html#render-mount-unmount',
+    q:'A component holding local state (count) is conditionally hidden via {isVisible && <Counter />}, then shown again. What happens to count?',
+    options:['It resets to its initial value — this is a brand-new mount, not a resumed one','It keeps whatever value it had before being hidden','It becomes undefined until the next click','It throws an error since the component was never truly removed'],
+    correct:0,
+    explain:'Conditionally rendering a component away and back is a genuine unmount followed by a genuine new mount — a different component instance with no memory of the torn-down one, so local state starts over at its initial value.' },
+  { id:'rc7', topic:'react', difficulty:'hard', type:'flip', source:'react-fundamentals.html#rules-of-hooks',
+    front:'A component has a bug from a conditionally-called hook. Someone "fixes" it by wrapping the whole useEffect call in the same if statement that was causing the problem. Does that work, and what\'s the actual correct fix?',
+    back:'No — that\'s the same bug, just moved to a different hook. React tracks hook state by call order, not by name, so conditionally calling ANY hook (useState, useEffect, anything) shifts every hook after it into the wrong slot once the condition changes between renders. The fix is always the same shape: call the hook unconditionally every render, and move the if check inside the hook\'s own body/callback instead — conditioning what you do with a hook\'s value is fine; conditioning whether it gets called is never allowed.' },
+  { id:'rc8', topic:'react', difficulty:'moderate', type:'mc', source:'react-fundamentals.html#usememo-vs-useeffect',
+    q:'Why does deriving a value like stats from filtered using useEffect + setState cause a visible flash of stale data, while useMemo doesn\'t?',
+    options:['useMemo is simply faster at running JavaScript','useEffect runs after React commits/paints the render, so the user sees the old value before the effect updates it and triggers a second render; useMemo runs synchronously during the render itself, before anything paints','useEffect only works with primitive values, not objects','There is no real difference, it\'s a common misconception'],
+    correct:1,
+    explain:'This is a timing difference, not a speed difference. useEffect fires after the browser has already painted the current render, so a stale value is visible first; the effect then updates state, forcing a second render. useMemo computes during the render itself, so the returned JSX already reflects the correct value on the first paint.' },
+  { id:'rc9', topic:'react', difficulty:'moderate', type:'flip', source:'react-fundamentals.html#usememo-vs-useeffect',
+    front:'Does useMemo have mount/unmount/cleanup phases the way useEffect does?',
+    back:'No — useMemo has no cleanup concept at all. useEffect needs cleanup because it can set up things (subscriptions, listeners, in-flight requests) that need tearing down; useMemo only computes and hands back a value, so nothing is ever left dangling once the render finishes. It does still recompute using the same "one rule" as useEffect\'s dependency check — whenever the current render\'s deps differ from the previous render\'s, including always on mount, since there\'s no previous render to compare against yet.' },
+  { id:'rc10', topic:'react', difficulty:'hard', type:'mc', source:'react-fundamentals.html#usememo-vs-useeffect',
+    q:'Is it safe to rely on useMemo to guarantee the exact same object reference is returned across renders as long as dependencies haven\'t changed, e.g. for a === identity check?',
+    options:['Yes, this is guaranteed by the React spec','No — useMemo is officially a performance hint, not a correctness guarantee; React is technically permitted to discard a memoized value and recompute it even when dependencies didn\'t change','Only in production builds, not development','Only if the value is a primitive, not an object'],
+    correct:1,
+    explain:'React\'s own docs are explicit that useMemo is a performance optimization, not a semantic guarantee — in rare cases (like memory pressure) React may discard and recompute a memoized value regardless of unchanged deps. It essentially never bites you in practice, but you should never write code whose correctness depends on useMemo returning the identical reference.' },
+  { id:'rc11', topic:'react', difficulty:'moderate', type:'mc', source:'react-fundamentals.html#usecallback-react-memo',
+    q:'A function is recreated on every render but is never passed to a React.memo-wrapped component and never appears in any dependency array. Does wrapping it in useCallback help?',
+    options:['Yes, it always reduces memory usage','No — useCallback only matters when something is actually comparing that function\'s identity between renders (a React.memo prop check or a dependency array); otherwise a fresh function every render is free and useCallback just adds overhead','Yes, but only for functions with more than one parameter','No, useCallback never has any effect regardless of usage'],
+    correct:1,
+    explain:'A new function reference every render is harmless by default — nothing compares "is this the same function as last time" unless React.memo\'s prop check or a dependency array is doing that comparison. Without one of those two consumers, useCallback stabilizes a reference nothing is looking at.' },
+  { id:'rc12', topic:'react', difficulty:'moderate', type:'flip', source:'react-fundamentals.html#usecallback-react-memo',
+    front:'A child component is wrapped in React.memo but still re-renders every time its parent does. The parent passes it a callback prop. What\'s the likely cause, and the fix?',
+    back:'The parent is almost certainly recreating that callback function on every render (a plain function defined inline, not wrapped in useCallback). React.memo compares props by identity — an unstable function reference looks "changed" every time even though the logic inside is identical, which defeats the memoization entirely. The fix is wrapping that callback in useCallback in the parent, with a dependency array matching what it actually closes over — memo does the comparing, useCallback is what makes that comparison actually succeed.' },
+  { id:'rc13', topic:'react', difficulty:'moderate', type:'flip', source:'react-fundamentals.html#controlled-components',
+    front:'What\'s the core difference between a controlled and an uncontrolled form input, and what\'s one input type that\'s forced to be uncontrolled no matter what?',
+    back:'A controlled input\'s displayed value is driven entirely by React state (value={state} plus an onChange that updates it) — React is the single source of truth. An uncontrolled input lets the DOM hold the current value; you read it only when needed, typically via a ref, and set an initial value with defaultValue instead of value. <input type="file"> can never be controlled — browsers disallow programmatically setting a file input\'s value for security reasons, so it\'s always read via a ref.' },
+  { id:'rc14', topic:'react', difficulty:'hard', type:'flip', source:'react-fundamentals.html#controlled-components',
+    front:'Given a Zustand store where filters starts as {}, and a <select value={filters.category || \'\'} onChange={(e) => setFilter(\'category\', e.target.value)}> — walk through exactly what makes the select show "All Categories" selected initially, and what happens when the user picks "Marketing."',
+    back:'Initially: filters.category is undefined (empty object has no category key) → undefined || \'\' evaluates to \'\' → the select\'s value is \'\', which matches the empty-string "All Categories" option, so that one displays as selected. When "Marketing" is picked: onChange fires → setFilter(\'category\', \'marketing\') → the store updates to { category: \'marketing\' } → the component re-renders → filters.category || \'\' now evaluates to \'marketing\' → the select updates to show it. At no point does the DOM itself hold the "real" value — every change flows user action → onChange → state update → re-render → JSX reflecting the new state, which is the actual mechanism behind the word "controlled."' },
+
+  // ================= TYPESCRIPT =================
+  { id:'tsx1', topic:'typescript', difficulty:'moderate', type:'mc', source:'typescript-fundamentals.html#generics',
+    q:'A hook needs to work with any data shape (strings, numbers, objects) while still being type-safe. Why not just type its parameter as `any` instead of using a generic <T>?',
+    options:['any is reusable across types, but TypeScript stops checking anything about the result — you lose the type safety that\'s the entire reason to use TypeScript','any and generics behave identically in every case','any is slower at runtime than a generic','TypeScript doesn\'t allow any as a parameter type'],
+    correct:0,
+    explain:'any technically makes a function reusable across types, but it throws away type-checking on the result entirely — nothing warns you if you later treat the value as the wrong shape. A generic <T> keeps the same reusability while having TypeScript track exactly which type was used at each call site.' },
+  { id:'tsx2', topic:'typescript', difficulty:'hard', type:'flip', source:'typescript-fundamentals.html#generics',
+    front:'In `function useDebounce<T>(value: T, delayMs: number): T`, what does <T> actually mean, and do you have to write useDebounce<string>(\'hello\', 300) yourself to use it with a string?',
+    back:'<T> declares a type variable — a placeholder for a type the same way a function parameter is a placeholder for a value. TypeScript doesn\'t know what T is when the function is defined; it gets determined per call site based on whatever\'s actually passed in. T then gets reused everywhere it needs to line up: the value parameter is T, and the return type is declared T too, so TypeScript can guarantee the output type matches the input type. You do NOT have to write useDebounce<string>(\'hello\', 300) — TypeScript infers T automatically from the argument you pass (this is called type inference), which is why generics don\'t feel as clunky in practice as the <T> syntax suggests.' },
+  { id:'tsx3', topic:'typescript', difficulty:'moderate', type:'mc', source:'typescript-fundamentals.html#generics',
+    q:'In `function useDebounce<T>(value: T, delayMs: number): T { const [debouncedValue, setDebouncedValue] = useState(value); ... return debouncedValue; }`, why does the return type stay accurate no matter what type is passed in?',
+    options:['Because TypeScript re-checks the return value at runtime','Because T is a single placeholder reused across the parameter, the internal useState, and the return type — whatever concrete type gets substituted for T at the call site applies consistently everywhere T appears','Because useState always returns the same type as its initial value regardless of generics','Because the function has an implicit any return type that gets narrowed later'],
+    correct:1,
+    explain:'Generics work by substituting one concrete type for every occurrence of T within that call. Since value, the internal useState(value), and the return type are all declared as the same T, whichever type is inferred from the argument automatically applies everywhere T shows up — that\'s what keeps the return type accurate without manual annotation.' },
+
   // ================= CROSS-TOPIC SYNTHESIS (ADVANCED) =================
   { id:'adv1', topic:'synthesis', difficulty:'advanced', type:'flip', source:['auth.html#oauth-flow','node-express-onepager.html#request-journey'],
     front:'Walk through everything that happens, layer by layer, from a user clicking "Sign in with Google" to their browser loading their personalized dashboard data.',
@@ -1052,6 +1131,22 @@ const QUESTIONS = [
   { id:'js11', topic:'javascript', difficulty:'hard', type:'flip', source:'javascript-fundamentals.html#equality',
     front:'Name two well-known edge cases where === doesn\'t behave the way you might naively expect, and what fixes each.',
     back:'NaN === NaN is false — NaN is defined to never equal anything, including itself, so you have to use Number.isNaN() to actually check for it. -0 === 0 is true despite being distinct values internally. Object.is() is the rarely-used strict-equality variant that gets both "right" (Object.is(NaN, NaN) is true), but outside niche cases, plain === is still the standard default.' },
+  { id:'js12', topic:'javascript', difficulty:'easy', type:'mc', source:'javascript-fundamentals.html#http-clients',
+    q:'Does the native fetch() API reject its promise when the server responds with a 404 or 500 status code?',
+    options:['Yes, just like axios does','No — fetch only rejects on a genuine network-level failure; a 404/500 is still a "successful" fetch, so you have to check response.ok yourself','Only for POST requests','Only if the response body is empty'],
+    correct:1,
+    explain:'fetch()\'s promise only rejects on things like a DNS failure, no connection, or an aborted request. A 404 or 500 still resolves normally — the request itself succeeded, it just carries an error status — so checking response.ok (or response.status) is on you. This is the single most common fetch-vs-axios gotcha in interviews.' },
+  { id:'js13', topic:'javascript', difficulty:'moderate', type:'flip', source:'javascript-fundamentals.html#http-clients',
+    front:'Someone asks why a codebase reaches for axios instead of the native fetch() API. What\'s a solid answer?',
+    back:'axios auto-rejects its promise on any non-2xx response (fetch doesn\'t — you have to check response.ok yourself), auto-parses JSON response bodies (fetch needs a separate .json() call), and supports request/response interceptors, which are handy for attaching things like an auth token to every outgoing request in one place instead of repeating it at every call site. The tradeoff: fetch costs nothing to use since it\'s native, but requires more manual plumbing (status checks, parsing, AbortController for cancellation); axios costs an added dependency but removes that plumbing.' },
+  { id:'js14', topic:'javascript', difficulty:'moderate', type:'mc', source:'javascript-fundamentals.html#module-exports',
+    q:'What\'s the practical difference between a named export and a default export when importing it elsewhere?',
+    options:['A named export must be imported by its exact name in braces; a default export fills one reserved slot and can be imported without braces under any name you choose','They behave identically — braces are just a style preference','Default exports are faster to load at runtime','Named exports can only export functions, never values'],
+    correct:0,
+    explain:'A module is really an object of exported bindings. export function Counter(){} puts a property literally named Counter on that object, so import { Counter } must match that name exactly. A default export instead fills one special reserved key called default, which is why import AnythingYouWant works — you\'re naming a local variable, not matching a key.' },
+  { id:'js15', topic:'javascript', difficulty:'hard', type:'flip', source:'javascript-fundamentals.html#module-exports',
+    front:'If you run `import * as mod from \'./Counter\'` and log `mod`, what do you actually get back — and is it a plain JS object?',
+    back:'You get every export attached as properties — named exports under their own names, plus a default export (if any) under the key `default`, e.g. { Counter: [Function], default: [Function: Panel] }. But it isn\'t a plain object: it\'s a "module namespace object" — its prototype is null (which is why Node logs it as [Module: null prototype]) and its properties are read-only, live bindings rather than copied values, so if the module later reassigned an exported `let`, every importer\'s view of that key would update automatically.' },
 
   // ================= AI / LLM FUNDAMENTALS =================
   { id:'ai1', topic:'ai-llm', difficulty:'easy', type:'mc', source:'ai-llm-fundamentals.html#what-is-an-llm',

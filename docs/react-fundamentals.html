@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>React Fundamentals</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">React · Interview essentials</div>
+    <h1>React fundamentals</h1>
+    <p class="intro">Hooks mechanics that go deeper than "here's how you use useState" — the functional updater form, what mount/render/unmount actually mean, why cleanup fires on more than just unmount, the Rules of Hooks, when memoization actually helps, and controlled vs. uncontrolled components.</p>
+  </div>
+
+  <!-- FUNCTIONAL UPDATER FORM -->
+  <div class="content-section" id="functional-updater">
+    <div class="section-title">The functional setState updater form</div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// Broken — only ends up +1, not +2</span>
+<span class="ck">function</span> handleClick() {
+  setCount(count + <span class="cs">1</span>);
+  setCount(count + <span class="cs">1</span>);
+}</div>
+      <div class="code-block dim-right"><span class="cm">// Fixed — correctly +2</span>
+<span class="ck">function</span> handleClick() {
+  setCount((prev) => prev + <span class="cs">1</span>);
+  setCount((prev) => prev + <span class="cs">1</span>);
+}</div>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>prev</code> isn't special to React — it's just a parameter name you chose, the same as any function parameter. <code>setCount</code> accepts either a plain value or a function. Pass a value, and React just uses it directly. Pass a function, and React calls it with whatever's currently queued as the pending state, using <em>that</em> result as the new value — which means a second queued function-update in the same handler gets fed the output of the first one, not a stale snapshot.</p>
+    </div>
+    <div class="info-card">
+      <p>Contrast that with <code>setCount(count + 1)</code>: <code>count</code> there is a plain variable captured from this render's closure — a frozen snapshot of what count was when this render happened. Calling it twice in the same handler reads that identical frozen value both times, so both calls compute the exact same result. It's not that the first update "got lost" — neither call updates anything immediately; both were queued using identical input before either was ever applied, and React processes the queue down to one net change.</p>
+    </div>
+  </div>
+
+  <!-- RENDER / MOUNT / UNMOUNT -->
+  <div class="content-section" id="render-mount-unmount">
+    <div class="section-title">Render vs. mount vs. unmount</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>A render is the curtain going up — could be the premiere, could be the 50th performance.</strong> Mount is specifically the premiere: the one-time event where the component didn't exist yet and now it does. Every mount is a render, but only the very first render of a component's lifetime counts as its mount.</p>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>The dependency array isn't really "runs after mount, and separately again when deps change" — that's two mechanisms where there's actually only one: React re-runs an effect after any render where a listed dependency's value differs from what it was on the previous render. Mount always qualifies, for a simple reason — there is no previous render to compare against yet, so React treats that as "everything changed" by default.</p>
+    </div>
+    <div class="info-card">
+      <p><strong>Unmount</strong> is the component being removed from the DOM entirely — conditionally rendered away (<code>{isVisible && &lt;Counter /&gt;}</code>), navigated off, or its <code>key</code> changed. If that same component comes back later, that's a brand-new mount, not a resumed one — fresh state, fresh effects, no memory of before. Concretely: unhiding a conditionally-rendered <code>&lt;Counter /&gt;</code> resets its count back to 0, every time, because it's a different component instance than the one that existed before it was hidden.</p>
+    </div>
+  </div>
+
+  <!-- CLEANUP TIMING -->
+  <div class="content-section" id="cleanup-timing">
+    <div class="section-title">Cleanup fires on a re-run AND on a true unmount — same function, two triggers</div>
+    <div class="code-block"><span class="ck">useEffect</span>(() => {
+  console.log(<span class="cs">'Effect running for count:'</span>, count);
+  <span class="ck">return</span> () => {
+    console.log(<span class="cs">'Cleanup — count was:'</span>, count);
+  };
+}, [count]);</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Clicking a button that changes <code>count</code> logs "Cleanup" on <em>every single click</em> — and that's correct, not a bug. When a dependency changes, React calls the previous run's cleanup right before the effect re-runs, then runs it again with the new value. The component is still fully alive through this — nothing was unmounted. Cleanup's job is to undo whatever the previous run set up, before the next run starts, regardless of whether "next" means "a fresh render with new deps" or "gone forever."</p>
+    </div>
+    <div class="info-card">
+      <p>You'd only see the <em>true</em> unmount trigger by actually removing the component from the tree (toggling <code>{isVisible && &lt;Counter /&gt;}</code> off) — that fires cleanup exactly once, with nothing following it. This is exactly why an <code>AbortController</code> cleanup in a data-fetching effect matters: if a dependency like <code>url</code> changes mid-fetch, cleanup aborts the stale in-flight request before the effect re-runs and kicks off a new one for the new value — same mechanism as the console.log example, just with a network call instead of a log line.</p>
+    </div>
+  </div>
+
+  <!-- STRICT MODE -->
+  <div class="content-section" id="strict-mode">
+    <div class="section-title">React 18 Strict Mode's double-invoke (dev only)</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Vite's <code>react-ts</code> template wraps your app in <code>&lt;React.StrictMode&gt;</code> by default. In development only, Strict Mode intentionally mounts a component, immediately runs its cleanup, then mounts it again — specifically to help surface effects with missing or broken cleanup, by making the mount/unmount/remount cycle happen on purpose rather than waiting for you to stumble into it.</p>
+    </div>
+    <div class="info-card">
+      <p>So a logging effect on mount often shows a rapid <code>"mounted" / "cleaning up" / "mounted"</code> pattern the very first time a component appears — that's Strict Mode doing its job, not a bug in your code. It only happens in development; production builds mount once, exactly as you'd expect. If your cleanup function is missing or incomplete, this double-invoke is what makes that obvious early, in dev, instead of silently leaking in production.</p>
+    </div>
+  </div>
+
+  <!-- EFFECT ASYNC GOTCHA -->
+  <div class="content-section" id="effect-async-gotcha">
+    <div class="section-title">Why the useEffect callback itself can never be async</div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// Wrong — implicitly returns a Promise</span>
+useEffect(<span class="ck">async</span> () => {
+  <span class="ck">const</span> res = <span class="ck">await</span> fetch(url);
+  <span class="cm">// ...</span>
+}, [url]);</div>
+      <div class="code-block dim-right"><span class="cm">// Right — inner async function, called immediately</span>
+useEffect(() => {
+  <span class="ck">async function</span> load() {
+    <span class="ck">const</span> res = <span class="ck">await</span> fetch(url);
+  }
+  load();
+}, [url]);</div>
+    </div>
+    <div class="info-card">
+      <p>The function passed directly to <code>useEffect</code> is only allowed to return either nothing, or a cleanup function. Marking that outer function <code>async</code> makes it implicitly return a Promise instead — that's just how <code>async</code> functions work in JS — and React would then try to treat that Promise as the cleanup function, which breaks things silently. The fix is always the same shape: define a separate inner async function and call it, rather than making the effect callback itself async. A plain synchronous effect (a console.log with no <code>await</code> anywhere) never runs into this at all — the rule only bites once real async work is involved.</p>
+    </div>
+  </div>
+
+  <!-- RULES OF HOOKS -->
+  <div class="content-section" id="rules-of-hooks">
+    <div class="section-title">Rules of Hooks: condition the value, never the call</div>
+    <div class="code-block"><span class="ck">function</span> Fixed({ showExtra }) {
+  <span class="ck">const</span> [name, setName] = useState(<span class="cs">'Alice'</span>);
+  <span class="ck">const</span> [age, setAge] = useState(<span class="cs">30</span>);   <span class="cm">// always called → always same slot → always correct</span>
+  <span class="ck">const</span> [email, setEmail] = useState(<span class="cs">'a@example.com'</span>);
+
+  <span class="ck">return</span> &lt;div&gt;{name} / {showExtra ? age : <span class="ck">null</span>} / {email}&lt;/div&gt;;
+}</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>That's the entire fix for a conditional-hooks bug — full stop, no <code>useEffect</code> required. <code>showExtra ? age : null</code> is completely fine: conditioning what you <em>do</em> with a hook's returned value is normal, ordinary React. What's never allowed is conditioning whether the hook gets <em>called</em> at all. React tracks hook state by the order hooks are called in, not by name — so wrapping a hook call itself in an <code>if</code> shifts every hook after it into the wrong slot the moment that condition changes between renders.</p>
+    </div>
+    <div class="info-card">
+      <p>This applies identically to every hook, not just <code>useState</code> — wrapping <code>useEffect</code> itself in <code>if (showExtra) { useEffect(...) }</code> is just as broken, same slot-shifting disease, different hook. The fix is always the same shape: call the hook unconditionally, and move the <code>if</code> check <em>inside</em> its body/callback instead — e.g. <code>useEffect(() => { if (!showExtra) return; ... }, [showExtra])</code>.</p>
+    </div>
+  </div>
+
+  <!-- USEMEMO VS USEEFFECT -->
+  <div class="content-section" id="usememo-vs-useeffect">
+    <div class="section-title">useMemo vs. useEffect for a derived value</div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// useEffect version — costs a stale flash + extra render</span>
+<span class="ck">const</span> [stats, setStats] = useState({ total: <span class="cs">0</span> });
+useEffect(() => {
+  <span class="ck">const</span> total = filtered.reduce(...);
+  setStats({ total });
+}, [filtered]);</div>
+      <div class="code-block dim-right"><span class="cm">// useMemo version — no flash, no extra render</span>
+<span class="ck">const</span> stats = useMemo(() => {
+  <span class="ck">const</span> total = filtered.reduce(...);
+  <span class="ck">return</span> { total };
+}, [filtered]);</div>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Walking the <code>useEffect</code> version step by step: <code>filtered</code> changes → component re-renders, but <code>stats</code> is still whatever it was before (effects run <em>after</em> a render commits to the screen, not during it) → the user visibly sees stale numbers painted → the effect then runs, computes the real values, and calls <code>setStats(...)</code> → that state update triggers a <em>second</em> re-render, only now showing the correct numbers. Two full render cycles, plus a piece of state that exists only to hold something 100% derivable from <code>filtered</code>.</p>
+    </div>
+    <div class="info-card">
+      <p><code>useMemo</code> instead runs synchronously <em>during</em> the render itself — by the time this component's JSX is returned, <code>stats</code> already reflects the current <code>filtered</code>. No catch-up step, no flash, no extra state. The generalizable principle: <code>useEffect</code> exists to synchronize with something <em>outside</em> React (subscriptions, fetches, DOM APIs). Deriving one in-hand value from another isn't synchronizing with anything external — it's just a calculation, and calculations belong directly in the render body, with <code>useMemo</code> layered on only once that calculation is expensive enough to be worth caching. (You could skip <code>useMemo</code> entirely too — plain inline calculation, no hook at all — and still avoid the flash; the hook only earns its keep past a real cost.)</p>
+    </div>
+  </div>
+
+  <!-- USECALLBACK + REACT.MEMO -->
+  <div class="content-section" id="usecallback-react-memo">
+    <div class="section-title">useMemo, useCallback, React.memo — what actually connects them</div>
+    <div class="analogy-box">
+      <div class="label">The foundational thing to understand first</div>
+      <p>Every time a component re-renders, any function or object created <em>inside</em> that render is a brand-new value in memory, even if it does exactly the same thing as last time: <code>const fn1 = outer(); const fn2 = outer(); fn1 === fn2</code> is <code>false</code>. Normally this is completely harmless — React just calls whatever function is there, and never checks whether it's "the same one as before." <strong>It only becomes a problem the moment something else starts comparing that value's identity between renders</strong> — which is exactly what <code>React.memo</code> and dependency arrays do.</p>
+    </div>
+    <div class="code-block"><span class="cm">// useMemo — caches a computed VALUE</span>
+<span class="ck">const</span> stats = useMemo(() => expensiveCalc(filtered), [filtered]);
+
+<span class="cm">// useCallback — caches a FUNCTION REFERENCE</span>
+<span class="ck">const</span> handleFilterChange = useCallback((key, value) => {
+  setFilter(key, value);
+}, [setFilter]);
+
+<span class="cm">// React.memo — skips a re-render when props are shallowly unchanged</span>
+<span class="ck">export const</span> DataTable = React.memo(<span class="ck">function</span> DataTable() { <span class="cm">/* ... */</span> });</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><strong><code>useCallback</code> only matters when something is actually comparing that function's identity between renders.</strong> There are exactly two real cases: the function is passed as a prop to a <code>React.memo</code>-wrapped child (<code>memo</code>'s whole job is comparing new props to old, and an unstable function reference always looks "changed" even when the logic is identical, defeating the memoization) — or the function is used inside another hook's dependency array elsewhere, same problem, different consumer of the comparison. If neither applies, a fresh function every render is free, and <code>useCallback</code> is pure overhead.</p>
+    </div>
+    <div class="info-card">
+      <p>That's also the catch tying <code>React.memo</code> back to <code>useCallback</code>: <code>memo</code> only helps if the props it's comparing are actually stable. A parent passing a freshly-created callback every render defeats a memoized child's whole purpose — the prop check reports "changed" regardless. <code>memo</code> does the comparing; <code>useCallback</code> is what makes that comparison actually succeed. <strong>Honest caveat for all three:</strong> they exist to fix a <em>measured</em> re-render problem, not something to reach for by default — using them without a real performance issue just adds complexity for no benefit. And specifically for <code>useMemo</code>: it's officially a performance <em>hint</em>, not a guarantee — React is technically permitted to discard a memoized value and recompute it in rare cases (e.g. memory pressure), so never rely on it for correctness (like preserving object identity for a <code>===</code> check), only for performance.</p>
+    </div>
+  </div>
+
+  <!-- CONTROLLED VS UNCONTROLLED -->
+  <div class="content-section" id="controlled-components">
+    <div class="section-title">Controlled vs. uncontrolled components</div>
+    <div class="code-block"><span class="cm">// Controlled — value comes from state, every change routes back into it</span>
+<span class="ck">const</span> { filters, setFilter } = useDataStore(); <span class="cm">// filters starts as {}</span>
+
+&lt;select
+  value={filters.category || <span class="cs">''</span>}
+  onChange={(e) => setFilter(<span class="cs">'category'</span>, e.target.value)}
+&gt;
+  &lt;option value=<span class="cs">""</span>&gt;All Categories&lt;/option&gt;
+  &lt;option value=<span class="cs">"marketing"</span>&gt;Marketing&lt;/option&gt;
+&lt;/select&gt;</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Tracing the chain: <code>filters</code> starts as <code>{}</code>, so <code>filters.category</code> is <code>undefined</code> → <code>undefined || ''</code> evaluates to <code>''</code> → the select's value is <code>''</code>, matching "All Categories," which is why that one shows selected initially. Pick "Marketing": <code>onChange</code> fires → <code>setFilter('category', 'marketing')</code> → the store updates to <code>{ category: 'marketing' }</code> → the component re-renders → <code>filters.category || ''</code> now evaluates to <code>'marketing'</code> → the select updates to show it. <strong>The DOM never "owns" the value at any point in that chain</strong> — every change flows user action → <code>onChange</code> → state update → re-render → JSX reflects the new state. That round trip, not just "value comes from a variable," is what "controlled" means in practice.</p>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>An <strong>uncontrolled</strong> component instead lets the DOM hold the current value; React doesn't track it on every keystroke. You read it only when needed — typically via a <code>ref</code> (<code>inputRef.current.value</code>) — and set an initial value with <code>defaultValue</code> rather than <code>value</code>. Controlled gives you live validation, easy programmatic resets, and one source of truth across related inputs, at the cost of a re-render per keystroke (rarely an actual problem). Uncontrolled is simpler for "just grab the value at submit time" and skips that per-keystroke render, but makes live validation or an external reset harder, since the value isn't known until you go look at the DOM for it.</p>
+    </div>
+    <div class="info-card">
+      <p>Two things worth having cold: <code>&lt;input type="file"&gt;</code> <strong>cannot</strong> be controlled — browsers disallow programmatically setting a file input's value for security reasons (a page shouldn't be able to fake a file selection), so it's always uncontrolled, read via a <code>ref</code>. And the classic warning, <em>"A component is changing an uncontrolled input to be controlled"</em>, happens when state starts as <code>undefined</code> (React treats the input as uncontrolled on the first render) and later gets a real value, flipping it to controlled mid-life — React doesn't allow switching modes. The fix: always initialize state to a defined value (<code>''</code>, not <code>undefined</code>), so the input is controlled from the very first render onward.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>Naming these concepts under pressure</h3>
+    <ul>
+      <li><strong>Functional updater:</strong> "the plain-value form reads a frozen closure snapshot; the function form gets fed whatever's actually pending" — that's why two `setCount(prev => prev + 1)` calls stack and two `setCount(count + 1)` calls don't.</li>
+      <li><strong>Mount vs. render:</strong> "mount is just the name for a component's first render" — the dependency array is one rule (rerun when a dep differs from last render), not two separate mechanisms.</li>
+      <li><strong>Cleanup:</strong> "the same cleanup function fires before a re-run AND on a true unmount" — know the difference by whether the component is still alive afterward.</li>
+      <li><strong>Rules of Hooks:</strong> "condition the value, never the call" — hooks track state by call order, not by name.</li>
+      <li><strong>useMemo vs. useEffect:</strong> "useEffect synchronizes with something outside React; deriving a value from data you already have is just a calculation" — and know it's a performance hint, not a correctness guarantee.</li>
+      <li><strong>useCallback:</strong> "only matters when something compares function identity between renders" — `React.memo`'s prop check or a dependency array, nothing else.</li>
+      <li><strong>Controlled vs. uncontrolled:</strong> "does the DOM own the value, or does state?" — and know file inputs are always forced uncontrolled.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>React · Interview essentials</span>
+  <span>Reference — not exhaustive</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

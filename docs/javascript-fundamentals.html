@@ -154,6 +154,54 @@ nums.every(n => n > 0);            <span class="cm">// true — do all items mat
     </div>
   </div>
 
+  <!-- HTTP CLIENTS -->
+  <div class="content-section" id="http-clients">
+    <div class="section-title">fetch() vs. axios</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>fetch()</code> is the native, built-in way to make HTTP requests — no install required, available in every modern browser and in Node 18+. <code>axios</code> is a popular third-party library that wraps HTTP requests with a more batteries-included API. Both are promise-based, but they disagree on what counts as a "successful" request.</p>
+    </div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// fetch — the 404 is NOT rejected</span>
+<span class="ck">const</span> res = <span class="ck">await</span> fetch(<span class="cs">'/api/thing'</span>);
+<span class="cm">// res.ok is false, but no error was thrown</span>
+<span class="ck">if</span> (!res.ok) <span class="ck">throw new</span> Error(res.status);
+<span class="ck">const</span> data = <span class="ck">await</span> res.json(); <span class="cm">// manual parse step</span></div>
+      <div class="code-block dim-right"><span class="cm">// axios — the 404 IS rejected</span>
+<span class="ck">try</span> {
+  <span class="ck">const</span> { data } = <span class="ck">await</span> axios.get(<span class="cs">'/api/thing'</span>);
+  <span class="cm">// data is already parsed JSON</span>
+} <span class="ck">catch</span> (err) {
+  <span class="cm">// non-2xx lands here automatically</span>
+}</div>
+    </div>
+    <div class="info-card">
+      <p>The single most common interview gotcha: <code>fetch()</code>'s promise only rejects on a genuine network-level failure (DNS failure, no connection, request aborted) — a 404 or 500 response is still a "successful" fetch as far as the promise is concerned, so you have to check <code>response.ok</code> yourself before trusting the body. <code>axios</code> auto-rejects on any non-2xx status, auto-parses JSON response bodies (no separate <code>.json()</code> call), and supports request/response interceptors — handy for things like attaching an auth token to every outgoing request in one place rather than repeating it per call site. The tradeoff is exactly what you'd expect: <code>fetch</code> costs nothing to use but requires more manual plumbing; <code>axios</code> costs a dependency but removes that plumbing.</p>
+    </div>
+  </div>
+
+  <!-- MODULE EXPORTS -->
+  <div class="content-section" id="module-exports">
+    <div class="section-title">Named exports vs. default exports</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>A module is really just an object of exported bindings under the hood.</strong> <code>export function Counter() {}</code> puts a property literally named <code>Counter</code> on that object. A <em>named</em> export has to be imported by that exact name (in braces); a <em>default</em> export just fills one reserved slot — called <code>default</code> — on that same object, which is why it can be imported without braces and renamed freely on the way in.</p>
+    </div>
+    <div class="code-block"><span class="cm">// Counter.tsx</span>
+<span class="ck">export function</span> Counter() { ... }        <span class="cm">// named export</span>
+<span class="ck">export default function</span> Panel() { ... }   <span class="cm">// default export</span>
+
+<span class="cm">// importing it elsewhere</span>
+<span class="ck">import</span> { Counter } <span class="ck">from</span> <span class="cs">'./Counter'</span>;   <span class="cm">// must match the name, braces required</span>
+<span class="ck">import</span> AnythingYouWant <span class="ck">from</span> <span class="cs">'./Counter'</span>; <span class="cm">// grabs .default, name is up to you</span>
+
+<span class="cm">// proving the "object of bindings" model directly:</span>
+<span class="ck">import</span> * <span class="ck">as</span> mod <span class="ck">from</span> <span class="cs">'./Counter'</span>;
+console.log(mod); <span class="cm">// { Counter: [Function], default: [Function: Panel] }</span></div>
+    <div class="info-card">
+      <p>A file can mix both — one default export plus any number of named exports alongside it. In practice, named exports tend to play nicer with tooling (auto-import, "find all usages," and rename-refactors all work more reliably when the name is fixed and searchable), which is part of why plenty of modern style guides — Vite's own React template included — lean toward named exports even for single-component files. What <code>import * as mod</code> actually returns isn't a plain object, either: it's a <strong>module namespace object</strong> — its prototype is <code>null</code> (hence <code>[Module: null prototype]</code> in Node's console output) and its properties are read-only, live bindings rather than copied values.</p>
+    </div>
+  </div>
+
   <!-- DECISION SUMMARY -->
   <div class="section-title">Interview-ready reasoning</div>
   <div class="decision-box">
@@ -165,6 +213,8 @@ nums.every(n => n > 0);            <span class="cm">// true — do all items mat
       <li><strong>Microtasks vs. macrotasks:</strong> "Promises always drain before the next timer fires, even if both were scheduled at the same moment" — the classic <code>console.log</code> ordering question tests exactly this.</li>
       <li><strong>Prototypes:</strong> "classes are sugar over the same prototype-chain lookup mechanism" — shows you understand what <code>class</code> is actually doing underneath.</li>
       <li><strong>Default to <code>===</code></strong> and be ready to name the <code>NaN</code>/<code>-0</code> edge cases if pushed on equality specifically.</li>
+      <li><strong>fetch vs. axios:</strong> "fetch only rejects on a network failure, not a 4xx/5xx — you have to check <code>response.ok</code> yourself" is the one fact worth having cold.</li>
+      <li><strong>Named vs. default exports:</strong> "a module is really an object of bindings — named exports are keys matching their name, default export just fills one reserved <code>default</code> key" — the <code>import * as mod</code> trick is how you'd prove it live.</li>
     </ul>
   </div>
 </div>

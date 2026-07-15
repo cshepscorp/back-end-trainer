@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){var t=localStorage.getItem('sg-theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
+</script>
+<title>TypeScript Fundamentals</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { padding-top: 48px; }
+
+  code { font-family: var(--mono); font-size: 11.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--subtle); }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+  <nav class="page-nav">
+    <a class="back-link" href="index.html">← back to topics</a>
+  </nav>
+
+  <div class="page-header">
+    <div class="eyebrow">TypeScript · Interview essentials</div>
+    <h1>TypeScript fundamentals</h1>
+    <p class="intro">A small, growing set of TypeScript-specific concepts — starting with generics, the feature that looks like syntax noise until you see exactly what problem it solves.</p>
+  </div>
+
+  <!-- GENERICS -->
+  <div class="content-section" id="generics">
+    <div class="section-title">Generics (&lt;T&gt;)</div>
+    <div class="analogy-box">
+      <div class="label">The analogy</div>
+      <p><strong>A generic function is a shipping label template with a blank "contents" field.</strong> The box handles the packing and shipping logic identically no matter what's inside — but it still writes down, precisely, what's actually in this particular box, so nobody down the line has to guess or unwrap it to find out. <code>any</code> would be leaving that field permanently blank: the box still ships, but nobody downstream knows what's safe to assume about what's inside until they open it.</p>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>&lt;T&gt;</code> is a placeholder for a <em>type</em>, the same way a function parameter is a placeholder for a <em>value</em>. Regular parameters let you write one function that works for many different values; generics let you write one function that works for many different types, while TypeScript still tracks exactly which type you used each time — so you keep type safety instead of giving it up.</p>
+    </div>
+    <div class="code-cols">
+      <div class="code-block dim-left"><span class="cm">// Hardcoded — reusable for nothing else</span>
+<span class="ck">function</span> useDebounce(value: <span class="ck">string</span>, delayMs: <span class="ck">number</span>): <span class="ck">string</span> {
+  <span class="cm">// ...</span>
+}</div>
+      <div class="code-block dim-right"><span class="cm">// any — reusable, but no type safety left</span>
+<span class="ck">function</span> useDebounce(value: <span class="ck">any</span>, delayMs: <span class="ck">number</span>): <span class="ck">any</span> {
+  <span class="cm">// ...</span>
+}</div>
+    </div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p>Hardcoding a type (e.g. <code>string</code>) works fine for one call site — a search box — but makes the hook useless for debouncing a number, an object, anything else; you'd copy-paste the whole hook per type, defeating the point of extracting reusable logic. Reaching for <code>any</code> instead "works" for every type, but TypeScript stops checking anything — the result comes back typed <code>any</code>, so nothing warns you if you treat it as the wrong shape later. You've made it reusable, but thrown away the safety net that's the reason you're using TypeScript at all.</p>
+    </div>
+    <div class="code-block"><span class="cm">// Generic — reusable AND still type-checked</span>
+<span class="ck">function</span> useDebounce&lt;T&gt;(value: T, delayMs: <span class="ck">number</span>): T {
+  <span class="ck">const</span> [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    <span class="ck">const</span> timeoutId = setTimeout(() => setDebouncedValue(value), delayMs);
+    <span class="ck">return</span> () => clearTimeout(timeoutId);
+  }, [value, delayMs]);
+
+  <span class="ck">return</span> debouncedValue;
+}</div>
+    <div class="info-card" style="margin-bottom:16px">
+      <p><code>&lt;T&gt;</code> declares "this function has a type variable named <code>T</code>, and I don't know what it is yet — whoever calls this function will tell me, based on what they actually pass in." <code>T</code> then gets reused everywhere it needs to line up: the <code>value</code> parameter is <code>T</code>, <code>useState(value)</code> therefore holds a <code>T</code>, and the return type is declared <code>T</code> too — so TypeScript can guarantee "whatever type you put in is exactly the type you get back."</p>
+    </div>
+    <div class="code-block"><span class="ck">const</span> debouncedSearch = useDebounce(<span class="cs">'hello'</span>, <span class="cs">300</span>);
+<span class="cm">// T = string here, debouncedSearch is typed `string`</span>
+
+<span class="ck">const</span> debouncedCount = useDebounce(<span class="cs">42</span>, <span class="cs">300</span>);
+<span class="cm">// T = number here, debouncedCount is typed `number`</span>
+
+<span class="ck">const</span> debouncedFilters = useDebounce({ category: <span class="cs">'sales'</span> }, <span class="cs">300</span>);
+<span class="cm">// T = { category: string } here, keeps that exact shape</span></div>
+    <div class="info-card">
+      <p>You never actually have to write <code>useDebounce&lt;string&gt;('hello', 300)</code> yourself in normal use — TypeScript looks at what you passed as <code>value</code> and figures out <code>T</code> automatically. That's <strong>type inference</strong>, and it's why generics don't feel as clunky in practice as the <code>&lt;T&gt;</code> syntax suggests at first glance. The exact same pattern shows up anywhere a hook or function needs to stay reusable across shapes while still being precisely typed — e.g. a <code>useFetch&lt;T&gt;</code> hook, where <code>useFetch&lt;DataRecord[]&gt;('/api/data')</code> tells TypeScript exactly what the resolved data will look like, rather than everyone getting back an untyped blob.</p>
+    </div>
+  </div>
+
+  <!-- DECISION SUMMARY -->
+  <div class="section-title">Interview-ready reasoning</div>
+  <div class="decision-box">
+    <div class="db-label">What to say when this comes up</div>
+    <h3>Naming this concept under pressure</h3>
+    <ul>
+      <li><strong>Generics:</strong> "a placeholder for a type, the same way a parameter is a placeholder for a value — lets one function stay reusable across types without giving up type-checking, unlike `any`." Be ready to explain why hardcoding a type and using `any` both fail the reusable-and-safe bar that generics clear.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-footer">
+  <span>TypeScript · Interview essentials</span>
+  <span>Reference — not exhaustive, will grow</span>
+</div>
+
+<script src="theme.js"></script>
+<script src="notes.js"></script>
+</body>
+</html>

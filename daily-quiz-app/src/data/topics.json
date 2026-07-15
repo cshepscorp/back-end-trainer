@@ -75,6 +75,16 @@
     "accent": "sky"
   },
   {
+    "id": "react",
+    "label": "React",
+    "accent": "pink"
+  },
+  {
+    "id": "typescript",
+    "label": "TypeScript",
+    "accent": "azure"
+  },
+  {
     "id": "synthesis",
     "label": "Cross-topic",
     "accent": "synth"

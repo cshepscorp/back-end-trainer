@@ -40,6 +40,8 @@ const TOPIC_ORDER = [
   'javascript',
   'ai-llm',
   'infra-as-code',
+  'react',
+  'typescript',
   'synthesis',
 ];
 // 'hard'/'advanced' deliberately excluded — the daily rotation only ever
