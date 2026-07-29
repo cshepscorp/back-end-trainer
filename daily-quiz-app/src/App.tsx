@@ -12,6 +12,10 @@ const topics = topicsData as TopicMeta[];
 const difficulties = difficultiesData as DifficultyMeta[];
 
 const AUTO_COMPLETE_THRESHOLD = 80;
+// Matches the Lambda's QUESTIONS_PER_DAY — no hard requirement they stay in
+// sync, just keeps an on-demand practice session feeling the same length as
+// a normal daily one.
+const PRACTICE_QUESTIONS_PER_SESSION = 8;
 
 // The static study guide (index.html, quiz.html, all topic pages) is hosted
 // separately via GitHub Pages, decoupled from this app's own Amplify
@@ -45,6 +49,26 @@ type StoredAnswer = {
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
+
+function shuffle<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// One-off session generated client-side for "Take again" on a Progress row
+// that isn't today's live AM/PM topic. Without this, un-completing that row
+// just flips its status to 'in-progress' with nothing anywhere in the app
+// that actually lets you sit down and retake it — you'd have to wait for
+// the daily rotation to maybe pick it back up.
+type PracticeSession = {
+  topic: string;
+  difficulty: string;
+  questionIds: string[];
+};
 
 function topicLabel(id: string): string {
   return topics.find((t) => t.id === id)?.label ?? id;
@@ -183,6 +207,7 @@ function QuizSession({
   onPreview,
   onSubmit,
   onRetake,
+  onClose,
 }: {
   label: string;
   record: SessionRecord | null;
@@ -204,6 +229,11 @@ function QuizSession({
   // Progress is already 'in-progress' but the card itself is still locked
   // (stale data from before a fix, or just wanting to redo a 100% session).
   onRetake: () => void;
+  // Only passed for an on-demand practice session — the two permanent AM/PM
+  // cards are always present (they just show "not generated yet" when
+  // there's nothing today), but a practice session should be dismissible
+  // once you're done with it instead of sitting on the page forever.
+  onClose?: () => void;
 }) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [flipRevealed, setFlipRevealed] = useState<Record<string, boolean>>({});
@@ -308,6 +338,18 @@ function QuizSession({
               }}
             >
               {collapsed ? 'Show ▾' : 'Hide ▴'}
+            </button>
+          )}
+          {onClose && (
+            <button
+              type="button"
+              className="collapse-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+              }}
+            >
+              Close ✕
             </button>
           )}
         </div>
@@ -582,6 +624,14 @@ export default function App() {
   // just-answered/correct highlighting for a moment.
   const [amResetToken, setAmResetToken] = useState(0);
   const [pmResetToken, setPmResetToken] = useState(0);
+  // The on-demand session started when "Take again" is clicked on a
+  // Progress row that isn't today's live AM/PM topic. null when nothing's
+  // being practiced. Bumping practiceResetToken forces a fresh mount (new
+  // key), same reset-token pattern as am/pmResetToken, so retaking a
+  // practice session clears its local answer state instead of reopening
+  // already-submitted answers.
+  const [practiceSession, setPracticeSession] = useState<PracticeSession | null>(null);
+  const [practiceResetToken, setPracticeResetToken] = useState(0);
   // Every DailyQuiz row (not just today's) — kept around so History can be
   // built without a second round-trip; loadEverything already fetches this
   // full list for computeStreak, it just used to throw the rest away.
@@ -687,6 +737,20 @@ export default function App() {
         }
       : null;
 
+  // Always fresh (completed: false) — a practice session never carries over
+  // a previous attempt's lock state the way amRecord/pmRecord can, since
+  // starting one always means "give me a brand new attempt right now."
+  const practiceRecord: SessionRecord | null = practiceSession
+    ? {
+        topic: practiceSession.topic,
+        difficulty: practiceSession.difficulty,
+        questionIds: practiceSession.questionIds,
+        answeredCount: null,
+        correctCount: null,
+        completed: false,
+      }
+    : null;
+
   const historyEntries = useMemo(() => buildHistoryEntries(allDailyQuizzes), [allDailyQuizzes]);
 
   // This client returns { data, errors } rather than throwing on a failed
@@ -786,6 +850,76 @@ export default function App() {
     return { done: isDone };
   }
 
+  // Submits an on-demand practice session — same Progress-updating logic as
+  // submitSession, minus anything touching DailyQuiz, since a practice
+  // session was never a DailyQuiz row to begin with. Doesn't clear
+  // practiceSession on success — QuizSession's own Retake button (wired to
+  // startPracticeSession again below) lets you go again immediately, and
+  // Close is the explicit way to dismiss it.
+  async function submitPracticeSession(result: {
+    total: number;
+    correct: number;
+    answers: StoredAnswer[];
+  }): Promise<{ done: boolean } | null> {
+    if (!practiceSession) return null;
+    const { topic, difficulty } = practiceSession;
+    const pct = result.total ? Math.round((100 * result.correct) / result.total) : 0;
+
+    const key = `${topic}::${difficulty}`;
+    const existing = progressList.find((p) => `${p.topic}::${p.difficulty}` === key);
+    const newBest = Math.max(existing?.bestScorePct ?? 0, pct);
+    const autoComplete = pct >= AUTO_COMPLETE_THRESHOLD;
+    // Same fallback as submitSession: a below-80% practice attempt on a
+    // topic that's already complete shouldn't silently un-complete it —
+    // Take again is the deliberate way to do that, not scoring low on a
+    // drill session.
+    const nextStatus = existing?.completedManually
+      ? 'complete'
+      : autoComplete
+        ? 'complete'
+        : existing?.status === 'complete'
+          ? 'complete'
+          : 'in-progress';
+    const isDone = nextStatus === 'complete';
+
+    const progressResult = existing
+      ? await client.models.Progress.update({
+          topic: existing.topic,
+          difficulty: existing.difficulty,
+          status: nextStatus,
+          bestScorePct: newBest,
+          streak: (existing.streak ?? 0) + 1,
+          lastAttemptDate: todayStr(),
+        })
+      : await client.models.Progress.create({
+          topic,
+          difficulty,
+          status: nextStatus,
+          bestScorePct: pct,
+          streak: 1,
+          lastAttemptDate: todayStr(),
+          completedManually: false,
+        });
+    if (progressResult.errors) {
+      setError(`Score saved locally, but updating your progress failed: ${describeErrors(progressResult.errors)}.`);
+      return null;
+    }
+    void loadEverything({ silent: true });
+    return { done: isDone };
+  }
+
+  // Picks a fresh random set of questions for topic+difficulty and shows
+  // them as a dismissible session, independent of today's AM/PM cadence —
+  // this is what actually lets "Take again" (below) be retakeable right
+  // away for a topic that isn't already live today, instead of just
+  // flipping a status flag with nothing to act on.
+  function startPracticeSession(topic: string, difficulty: string) {
+    const pool = questions.filter((q) => q.topic === topic && q.difficulty === difficulty);
+    const picked = shuffle(pool).slice(0, Math.min(PRACTICE_QUESTIONS_PER_SESSION, pool.length));
+    setPracticeSession({ topic, difficulty, questionIds: picked.map((q) => q.questionId) });
+    setPracticeResetToken((n) => n + 1);
+  }
+
   // Direct reset for a specific slot, independent of Progress.status
   // entirely — unlike Reopen (which only exists as a byproduct of toggling
   // Progress), this works no matter what Progress currently says, which is
@@ -862,6 +996,7 @@ export default function App() {
     // onto stale "already submitted" local state.
     let amNeedsRemount = false;
     let pmNeedsRemount = false;
+    let matchedLiveSlot = false;
     if (!goingComplete && dailyQuiz) {
       if (dailyQuiz.topic === p.topic && dailyQuiz.difficulty === p.difficulty) {
         const resetResult = await client.models.DailyQuiz.update({
@@ -874,6 +1009,7 @@ export default function App() {
           setError(`Reopened, but resetting today's card failed: ${describeErrors(resetResult.errors)}`);
         }
         amNeedsRemount = true;
+        matchedLiveSlot = true;
       }
       if (dailyQuiz.pmTopic === p.topic && dailyQuiz.pmDifficulty === p.difficulty) {
         const resetResult = await client.models.DailyQuiz.update({
@@ -886,6 +1022,7 @@ export default function App() {
           setError(`Reopened, but resetting today's card failed: ${describeErrors(resetResult.errors)}`);
         }
         pmNeedsRemount = true;
+        matchedLiveSlot = true;
       }
     }
 
@@ -896,6 +1033,15 @@ export default function App() {
     await loadEverything({ silent: true });
     if (amNeedsRemount) setAmResetToken((n) => n + 1);
     if (pmNeedsRemount) setPmResetToken((n) => n + 1);
+
+    // Un-completing a topic that ISN'T today's live AM/PM session — nothing
+    // above gave you anywhere to actually retake it, so start an ad-hoc
+    // practice session right here instead of leaving the row stuck at
+    // 'in-progress' with no way to clear it back except clicking "Mark
+    // complete" without actually retaking anything.
+    if (!goingComplete && !matchedLiveSlot) {
+      startPracticeSession(p.topic, p.difficulty);
+    }
   }
 
   if (loading) return <div className="wrap"><p>Loading...</p></div>;
@@ -978,6 +1124,18 @@ export default function App() {
         onRetake={() => void retakeSession('pm')}
       />
 
+      {practiceSession && (
+        <QuizSession
+          key={`practice-${practiceResetToken}`}
+          label={`Retaking: ${topicLabel(practiceSession.topic)} (${difficultyLabel(practiceSession.difficulty)})`}
+          record={practiceRecord}
+          onPreview={setPreviewUrl}
+          onSubmit={(result) => submitPracticeSession(result)}
+          onRetake={() => startPracticeSession(practiceSession.topic, practiceSession.difficulty)}
+          onClose={() => setPracticeSession(null)}
+        />
+      )}
+
       <section className="card">
         <h2>Progress</h2>
         <table className="progress-table">
@@ -1007,6 +1165,18 @@ export default function App() {
                   <td>
                     <button className="link-btn" onClick={() => toggleManualComplete(p)}>
                       {p.status === 'complete' ? 'Take again' : 'Mark complete'}
+                    </button>
+                    {/* Independent of the toggle above — works no matter what
+                        status currently reads, so a row already stuck at
+                        'in-progress' (e.g. from before this button existed)
+                        still has a way to actually be retaken on demand
+                        rather than only via "Mark complete" with no retake. */}
+                    <button
+                      className="link-btn"
+                      style={{ marginLeft: 8 }}
+                      onClick={() => startPracticeSession(p.topic, p.difficulty)}
+                    >
+                      Practice
                     </button>
                   </td>
                 </tr>
